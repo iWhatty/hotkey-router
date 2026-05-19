@@ -4,7 +4,7 @@
   "description": "A tiny, deterministic keyboard routing engine for modern web apps.",
   "type": "module",
   "author": "WATT3D <WATT3D@protonmail.com>",
-  "license": "AGPL-3.0-only",
+  "license": "SEE LICENSE IN LICENSE",
   "keywords": [
     "hotkeys",
     "keyboard",
