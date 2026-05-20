@@ -55,10 +55,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iWhatty/hotkey-router-js.git"
+    "url": "git+https://github.com/iWhatty/hotkey-router.git"
   },
   "bugs": {
-    "url": "https://github.com/iWhatty/hotkey-router-js/issues"
+    "url": "https://github.com/iWhatty/hotkey-router/issues"
   },
-  "homepage": "https://github.com/iWhatty/hotkey-router-js#readme"
+  "homepage": "https://github.com/iWhatty/hotkey-router#readme"
 }
