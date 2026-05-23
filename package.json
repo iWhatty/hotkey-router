@@ -14,15 +14,19 @@
   ],
   "main": "./dist/hotkey-router.cjs",
   "module": "./dist/hotkey-router.js",
+  "types": "./dist/types/hotkey-router.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/hotkey-router.d.ts",
       "import": "./dist/hotkey-router.js",
       "require": "./dist/hotkey-router.cjs"
     },
     "./auto": {
+      "types": "./dist/types/auto.d.ts",
       "import": "./dist/auto.js"
     },
     "./reservations": {
+      "types": "./dist/types/reservations.d.ts",
       "import": "./dist/reservations.js"
     },
     "./data/browser-hotkeys.json": "./data/browser-hotkeys.json"
@@ -38,8 +42,9 @@
   ],
   "scripts": {
     "build": "node build.js",
+    "build:types": "tsc -p tsconfig.types.json",
     "prepare": "node build.js",
-    "prepublishOnly": "node build.js",
+    "prepublishOnly": "node build.js && npm run build:types",
     "test": "vitest run --environment jsdom",
     "test:watch": "vitest --environment jsdom",
     "scrape:diff": "node scripts/scrape-reservations.mjs",
@@ -48,6 +53,7 @@
   "devDependencies": {
     "esbuild": "^0.21.0",
     "jsdom": "^24.0.0",
+    "typescript": "^5.9.3",
     "vitest": "^3.1.2"
   },
   "engines": {
