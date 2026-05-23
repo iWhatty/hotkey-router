@@ -142,6 +142,30 @@ export function lookupKeyFromCombo(combo) {
 
 // --- public lookup ------------------------------------------------------------
 
+/**
+ * @typedef {'mac' | 'windows' | 'linux'} Platform
+ * @typedef {'chrome' | 'firefox' | 'safari' | 'edge'} Browser
+ * @typedef {'hard' | 'hard-fullscreen' | 'soft' | 'soft-warn'} Severity
+ *
+ * @typedef {{
+ *   source: 'browser' | 'system',
+ *   platform: Platform,
+ *   browser: Browser | undefined,
+ *   lookupKey: string,
+ *   action: string,
+ *   severity: Severity
+ * }} Reservation
+ */
+
+/**
+ * Look up whether a parsed hotkey combo is reserved by the host platform
+ * or browser. Returns `null` when not reserved or when the data table
+ * hasn't loaded.
+ *
+ * @param {object | null} combo  parsed combo from `hotkey-router`'s `parseHotkey`
+ * @param {{ platform?: Platform, browser?: Browser }} [opts]
+ * @returns {Reservation | null}
+ */
 export function lookupReservation(combo, { platform, browser } = {}) {
   if (!SCHEMA_OK) return null
   const lookupKey = lookupKeyFromCombo(combo)
@@ -180,14 +204,23 @@ export function lookupReservation(combo, { platform, browser } = {}) {
 
 const PLATFORM_LABEL = { mac: 'macOS', windows: 'Windows', linux: 'Linux' }
 
+/** @param {Severity | string} severity @returns {boolean} */
 export function severityIsHard(severity) {
   return HARD_SEVERITIES.has(severity)
 }
 
+/** @param {Severity | string} severity @returns {boolean} */
 export function severityIsSoft(severity) {
   return SOFT_SEVERITIES.has(severity)
 }
 
+/**
+ * Render a console-friendly warning string for a reservation.
+ *
+ * @param {Reservation} reservation
+ * @param {string} rawHotkey
+ * @returns {string}
+ */
 export function formatReservationWarning(reservation, rawHotkey) {
   const platformLabel = PLATFORM_LABEL[reservation.platform] || reservation.platform
   const sourceLabel = reservation.source === 'browser'
@@ -199,6 +232,15 @@ export function formatReservationWarning(reservation, rawHotkey) {
   return `[hotkey-router] "${rawHotkey}" (${reservation.lookupKey}) reserved by ${sourceLabel}: "${reservation.action}" [${reservation.severity}] — ${tag}.`
 }
 
+/**
+ * Emit a reservation warning via the given console (or the global `console`
+ * by default). Hard reservations log via `warn`; soft ones via `info`.
+ *
+ * @param {Reservation} reservation
+ * @param {string} rawHotkey
+ * @param {Console} [console_]
+ * @returns {void}
+ */
 export function emitReservationWarning(reservation, rawHotkey, console_ = console) {
   const msg = formatReservationWarning(reservation, rawHotkey)
   const fn = severityIsHard(reservation.severity) ? console_.warn : console_.info
@@ -222,6 +264,15 @@ export function emitReservationWarning(reservation, rawHotkey, console_ = consol
 //   platform — override auto-detected 'mac' | 'windows' | 'linux'
 //   browser  — override auto-detected 'firefox' | 'chrome' | 'safari' | 'edge'
 //   console  — inject a custom console-like object (used by tests)
+/**
+ * @param {object} hotkeys  a hotkey-router default-export instance
+ * @param {{
+ *   platform?: Platform,
+ *   browser?: Browser,
+ *   console?: Console
+ * }} [opts]
+ * @returns {() => void} uninstall function
+ */
 export function installReservationWarnings(hotkeys, opts = {}) {
   if (!hotkeys || typeof hotkeys.onBind !== 'function') {
     throw new TypeError(

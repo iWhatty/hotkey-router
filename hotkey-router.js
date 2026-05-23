@@ -12,6 +12,61 @@
 // `hotkey-router/reservations` module. Bundlers tree-shake the data file
 // out entirely when neither is imported.
 
+// -----------------------------------------------------------------------------
+// Public type surface (consumed by the tsc-from-JSDoc pipeline)
+// -----------------------------------------------------------------------------
+
+/**
+ * Handler invoked when a bound hotkey fires. Receives the underlying
+ * `KeyboardEvent` (real one from the DOM, or a synthetic one produced by
+ * {@link trigger}).
+ *
+ * @typedef {(e: KeyboardEvent) => void} HotkeyHandler
+ */
+
+/**
+ * Optional per-binding behavior modifiers. See the inline comment on
+ * `normalizeOptions` for the canonical list.
+ *
+ * @typedef {{
+ *   preventDefault?: boolean,
+ *   stopPropagation?: boolean,
+ *   stopImmediatePropagation?: boolean,
+ *   repeat?: boolean,
+ *   once?: boolean,
+ *   when?: (e: KeyboardEvent) => boolean,
+ *   allowIn?: (e: KeyboardEvent) => boolean,
+ *   priority?: number
+ * }} BindOptions
+ */
+
+/**
+ * Return value of {@link bind}: callable to unbind, plus `id` (the unique
+ * binding id used internally) and `hotkey` (the original input string).
+ *
+ * @typedef {(() => boolean) & { id: number, hotkey: string }} BindOff
+ */
+
+/**
+ * Payload passed to subscribers registered via {@link onBind} after each
+ * successful bind.
+ *
+ * @typedef {{
+ *   combo: ReturnType<typeof parseHotkey>['combo'],
+ *   raw: string,
+ *   options: BindOptions,
+ *   plugin: string | null,
+ *   id: number
+ * }} BindEvent
+ */
+
+/**
+ * Plugin shape accepted by {@link registerPlugin}: a map from hotkey
+ * strings to either a handler or a `[handler, options]` tuple.
+ *
+ * @typedef {Record<string, HotkeyHandler | [HotkeyHandler, BindOptions]>} HotkeyMap
+ */
+
 // --- tiny event helper ---
 function on(target, type, fn, options) {
   target.addEventListener(type, fn, options)
@@ -367,6 +422,16 @@ function removeById(id) {
 
 // --- public API: bind / unbind ---
 // bind returns an off() function; off.id is exposed for plugin bookkeeping.
+
+/**
+ * Bind a hotkey combo string to a handler.
+ *
+ * @param {string} hotkeyStr      e.g. `'ctrl+shift+k'`, `'meta+slash'`, `'alt+code:KeyX'`
+ * @param {HotkeyHandler} handler
+ * @param {string | null} [plugin]  optional plugin/namespace tag for bulk cleanup
+ * @param {BindOptions} [options]
+ * @returns {BindOff} unbind function with `id` + `hotkey` props
+ */
 function bind(hotkeyStr, handler, plugin = null, options = {}) {
   const { combo, type, raw } = parseHotkey(hotkeyStr)
   const comboStr = comboKeyFromParts(combo)
@@ -408,6 +473,14 @@ function bind(hotkeyStr, handler, plugin = null, options = {}) {
 //   { combo, raw, options, plugin, id }
 // after the binding is registered. Returns an unsubscribe function. Used by
 // extensions like `installReservationWarnings` from `hotkey-router/reservations`.
+
+/**
+ * Subscribe to {@link bind} events. The hook is called after each successful
+ * bind with a {@link BindEvent} payload.
+ *
+ * @param {(info: BindEvent) => void} hook
+ * @returns {() => void} unsubscribe
+ */
 function onBind(hook) {
   if (typeof hook !== 'function') {
     throw new TypeError('hotkeys.onBind(hook) expects a function')
@@ -419,8 +492,14 @@ function onBind(hook) {
 }
 
 
-// unbind('ctrl+k') -> remove all for that combo/type
-// unbind('ctrl+k', fn) -> remove only that handler
+/**
+ * Remove bindings for a combo string. Omit `handler` to remove all bindings
+ * for the combo/type; pass a specific handler to remove just that one.
+ *
+ * @param {string} hotkeyStr
+ * @param {HotkeyHandler} [handler]
+ * @returns {void}
+ */
 function unbind(hotkeyStr, handler) {
   const { combo, type } = parseHotkey(hotkeyStr)
   const comboStr = comboKeyFromParts(combo)
@@ -449,6 +528,16 @@ function unbind(hotkeyStr, handler) {
 
 // --- plugin system ---
 // registerPlugin returns unregister function.
+
+/**
+ * Register a named plugin that bulk-binds a {@link HotkeyMap}. All bindings
+ * are tagged with the plugin name so {@link unregisterPlugin} can clean them
+ * up together without touching other plugins' bindings.
+ *
+ * @param {string} name        plugin name (must be unique)
+ * @param {HotkeyMap} hotkeyMap
+ * @returns {() => void} unregister fn for this plugin
+ */
 function registerPlugin(name, hotkeyMap) {
   if (plugins.has(name)) throw new Error(`Plugin "${name}" already registered`)
   const ids = []
@@ -463,6 +552,13 @@ function registerPlugin(name, hotkeyMap) {
   return () => unregisterPlugin(name)
 }
 
+/**
+ * Remove all bindings owned by the named plugin. Silent no-op if no such
+ * plugin is registered.
+ *
+ * @param {string} name
+ * @returns {void}
+ */
 function unregisterPlugin(name) {
   const ids = plugins.get(name)
   if (!ids) return
@@ -471,20 +567,40 @@ function unregisterPlugin(name) {
 }
 
 // --- control ---
+
+/** Pause dispatch — bindings stay registered but no handlers fire. @returns {void} */
 function pause() {
   paused = true
 }
 
+/** Resume dispatch after a {@link pause}. @returns {void} */
 function resume() {
   paused = false
 }
 
+/**
+ * Toggle whether handlers fire when the event target is an editable element
+ * (input/textarea/contenteditable). Default `true`. Override per-binding via
+ * `options.allowIn`.
+ *
+ * @param {boolean} [value]
+ * @returns {void}
+ */
 function ignoreInput(value = true) {
   ignoreEditable = !!value
 }
 
 // allow changing the default target (iframes/tests).
 // we intentionally do not auto-rebind to keep the core tiny.
+
+/**
+ * Replace the default target (used by {@link init} when no `target` is
+ * provided). Useful for iframes and tests. Does NOT auto-rebind existing
+ * listeners — call {@link destroy} + {@link init} to re-attach.
+ *
+ * @param {EventTarget | null} target
+ * @returns {void}
+ */
 function setTarget(target) {
   defaultTarget = target
 }
@@ -551,6 +667,14 @@ function handleEvent(type) {
 let stopDown = null
 let stopUp = null
 
+/**
+ * Initialize the router by attaching `keydown`/`keyup` listeners to a target.
+ * Re-initializes cleanly if already running (calls {@link destroy} first).
+ * Auto-runs on `window` at module-load time in browser environments.
+ *
+ * @param {{ target?: EventTarget, capture?: boolean }} [opts]
+ * @returns {void}
+ */
 function init({ target = defaultTarget, capture = false } = {}) {
   if (!target) throw new Error('hotkeys.init() requires a target (e.g. window)')
   if (stopDown || stopUp) destroy()
@@ -560,6 +684,13 @@ function init({ target = defaultTarget, capture = false } = {}) {
 }
 
 
+/**
+ * Tear down listeners and clear all bindings + plugins. Bind-hook
+ * subscribers ({@link onBind}) deliberately survive — consumer
+ * extensions should install once and live across `init`/`destroy` cycles.
+ *
+ * @returns {void}
+ */
 function destroy() {
   stopDown?.()
   stopUp?.()
@@ -587,6 +718,15 @@ const BARE_MOD_TO_KEY = {
   meta: 'Meta',
 }
 
+/**
+ * Programmatically fire any bindings for `hotkeyStr`. Used by tests and
+ * automation; not a typical app-runtime path. Returns `true` if a binding
+ * was found and invoked, `false` otherwise.
+ *
+ * @param {string} hotkeyStr
+ * @param {{ type?: 'keydown' | 'keyup' }} [opts]
+ * @returns {boolean}
+ */
 function trigger(hotkeyStr, { type: forcedType } = {}) {
   const { combo, type } = parseHotkey(hotkeyStr)
   const comboStr = comboKeyFromParts(combo)
