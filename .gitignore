@@ -31,3 +31,5 @@ coverage/
 
 
 *.tgz
+# Lockfile drop-litter from pnpm install --ignore-workspace
+pnpm-lock.yaml
