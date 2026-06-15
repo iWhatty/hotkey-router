@@ -57,6 +57,9 @@ hotkeys.bind('ctrl+k', () => {
   openCommandPalette()
 })
 
+// Multi-modifier combos, including the spacebar
+hotkeys.bind('mod+shift+space', summonCommandPalette)
+
 // Keyup using " up" suffix
 hotkeys.bind('ctrl+p up', () => {
   console.log('Released CTRL+P')
@@ -392,7 +395,7 @@ Modifiers must appear before the base key.
 
 - `escape`, `esc`
 - `enter`, `return`
-- `space`
+- `space`, `spacebar`
 - `tab`
 - `backspace`
 - `delete`, `del`
