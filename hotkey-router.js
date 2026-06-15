@@ -173,9 +173,14 @@ let nextId = 1
 
 // --- helpers ---
 function normalizeKey(key) {
-  const raw = String(key ?? '').trim()
-  const k = raw.toLowerCase()
-  return keyAliases[k] ?? (raw === ' ' ? ' ' : k)
+  const original = String(key ?? '')
+  // A lone space IS the spacebar key — `.trim()` would erase it to '', so guard
+  // on the ORIGINAL before trimming. (The `space`/`spacebar` aliases resolve to
+  // ' ' and land here; without this, `space` bindings collapse to no base key.)
+  if (original === ' ') return ' '
+  const trimmed = original.trim()
+  const k = trimmed.toLowerCase()
+  return keyAliases[k] ?? k
 }
 
 function comboKeyFromParts({ ctrl, shift, alt, meta, key, code, bareModifier }) {

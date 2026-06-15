@@ -2,6 +2,18 @@
 
 > Initial cut seeded from `git log` by the host repo's `tools/seed-changelogs.mjs` script. Version groupings infer release boundaries from tags and commit subjects; rough cuts are expected — review and tighten as part of normal maintenance.
 
+## 0.2.3 — 2026-06-15
+
+### Fixed
+
+- **Space-key bindings were impossible.** `normalizeKey()` called `.trim()` before
+  its `raw === ' '` guard, so the `space`/`spacebar` aliases (which resolve to
+  `' '`) collapsed to `''` and the base key was lost. Any space binding —
+  `space`, `ctrl+shift+space`, etc. — threw "missing base key" or "multi-modifier
+  bare bindings not supported." Now guards on the original value before trimming,
+  so the spacebar survives both at parse time and in `comboKeyFromEvent`. Added
+  regression tests.
+
 ## Unreleased — 2026-05-18
 
 - chore: normalize README shields row  `7895a8c`

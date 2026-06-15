@@ -450,4 +450,27 @@ describe('hotkey-router', () => {
       expect(seen).toHaveBeenCalledWith('KeyX')
     })
   })
+
+  // Regression: normalizeKey() used to .trim() before its `raw === ' '` guard,
+  // so the `space`/`spacebar` aliases (which resolve to ' ') collapsed to '' —
+  // any space binding threw "missing base key" / "multi-modifier bare bindings".
+  describe('space key bindings', () => {
+    it('binds a bare "space" without throwing and fires on the spacebar', () => {
+      expect(() => hotkeys.bind('space', log)).not.toThrow()
+      dispatch('keydown', ' ', { code: 'Space' })
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('binds a multi-modifier space combo (the original repro) and fires it', () => {
+      expect(() => hotkeys.bind('ctrl+shift+space', log)).not.toThrow()
+      dispatch('keydown', ' ', { ctrlKey: true, shiftKey: true, code: 'Space' })
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('accepts the "spacebar" alias too', () => {
+      hotkeys.bind('alt+spacebar', log)
+      dispatch('keydown', ' ', { altKey: true, code: 'Space' })
+      expect(log).toHaveBeenCalledOnce()
+    })
+  })
 })
