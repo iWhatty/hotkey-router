@@ -3,8 +3,9 @@
 [![npm](https://img.shields.io/npm/v/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
 [![downloads](https://img.shields.io/npm/dm/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/hotkey-router)](https://bundlephobia.com/package/hotkey-router)
-[![license](https://img.shields.io/npm/l/hotkey-router)](https://github.com/iWhatty/hotkey-router-js/blob/main/LICENSE)
-[![stars](https://img.shields.io/github/stars/iWhatty/hotkey-router-js?style=social)](https://github.com/iWhatty/hotkey-router-js)
+[![license](https://img.shields.io/npm/l/hotkey-router)](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE)
+[![stars](https://img.shields.io/github/stars/iWhatty/hotkey-router?style=social)](https://github.com/iWhatty/hotkey-router)
+[![types](https://img.shields.io/npm/types/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
 
 A tiny, deterministic keyboard routing engine for modern web apps. Not a key utility, a predictable plugin-first routing layer for keyboard shortcuts.
 

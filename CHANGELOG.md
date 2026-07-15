@@ -16,6 +16,12 @@
 
 ## Unreleased — 2026-05-18
 
+- Repair the npm lockfile so clean installs include TypeScript and current
+  package metadata.
+- Restore the tested Node.js 18 support floor and refresh development tooling
+  to patched Vitest, Vite, and esbuild releases.
+- Point README shields at the canonical repository and expose the types badge.
+
 - chore: normalize README shields row  `7895a8c`
 - chore: rebrand author to WATT3D, interim license  `7c79e2c`
 - feat: relicense to AGPL-3.0 + WATT3D AI Training Rider  `3af3497`

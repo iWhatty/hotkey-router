@@ -51,13 +51,13 @@
     "scrape:apply": "node scripts/scrape-reservations.mjs --apply"
   },
   "devDependencies": {
-    "esbuild": "^0.21.0",
+    "esbuild": "^0.28.1",
     "jsdom": "^24.0.0",
     "typescript": "^5.9.3",
     "vitest": "^3.1.2"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "repository": {
     "type": "git",
