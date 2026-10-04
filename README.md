@@ -430,6 +430,36 @@ and `listSites()`. Platforms: `windows` (also used for Linux), `mac`,
 `chromeos`. The runtime table is ~7 KB gzipped and imports nothing from the
 core, so it never creates a second router.
 
+### Validating a recorded combo (v0.3.0+)
+
+For a "press your keys" setting: record with `comboFromEvent`, then check
+with `hotkey-router/validate` before saving. Reasons come in plain language,
+ready to show.
+
+```js
+import { comboFromEvent } from 'hotkey-router'
+import { validateCombo } from 'hotkey-router/validate'
+
+field.addEventListener('keydown', (e) => {
+  e.preventDefault()
+  const combo = comboFromEvent(e, { useMod: true })
+  if (!combo) return // still holding modifiers
+  const { ok, reasons } = validateCombo(combo, {
+    requirePrimary: true,          // must include Ctrl (Cmd on macOS)
+    minModifiers: 2,
+    taken: ['mod+shift+code:Space'],
+  })
+  show(reasons.map((r) => r.message))
+  if (ok) save(combo)
+})
+```
+
+Errors (`ok: false`): no key, no modifier, Alt as the only modifier on
+Windows/Linux, a rule you asked for (`requirePrimary`, `minModifiers`),
+already in `taken`, or reserved by a browser/OS (never reaches the page).
+Warnings (`ok: true`): reserved only in some situations, Ctrl+Alt acting as
+AltGr on some Windows layouts, and sites that use the same keys.
+
 ### Supported syntax
 
 **Standard:**

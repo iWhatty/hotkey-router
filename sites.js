@@ -87,9 +87,14 @@ function keyToBase(key) {
 
 /**
  * Parse a hotkey string (`mod+shift+code:Period`, `ctrl+alt+,`) into modifier
- * flags and a base key, resolving `mod` for the platform.
+ * flags and a canonical base key name (`period`), resolving `mod` for the
+ * platform. Shared with validate.js.
+ *
+ * @param {string} str
+ * @param {SitePlatform} platform
+ * @returns {{ ctrl: boolean, meta: boolean, alt: boolean, shift: boolean, base: string | null }}
  */
-function parseComboString(str, platform) {
+export function parseComboString(str, platform) {
   const flags = { ctrl: false, meta: false, alt: false, shift: false }
   let base = null
   const tokens = String(str).trim().toLowerCase().replace(/\s+up$/, '').split('+')

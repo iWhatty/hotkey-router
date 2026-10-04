@@ -20,6 +20,11 @@
   meaning (everything in capture).
 - **`comboFromEvent(e, { physical, useMod })`** for key recorders, and
   **`parseHotkey`** as a named export.
+- **`hotkey-router/validate`**: `validateCombo(combo, { requirePrimary,
+  minModifiers, taken, platforms, browsers, sites })` returns `{ ok, reasons }`
+  with plain-language reasons (errors: no key, no modifier, Alt-only, app
+  rules, taken, browser/OS-reserved; warnings: soft reservations, AltGr,
+  sites using the keys) for recorder UIs.
 
 ### Changed
 

@@ -33,6 +33,10 @@
       "types": "./dist/types/sites.d.ts",
       "import": "./dist/sites.js"
     },
+    "./validate": {
+      "types": "./dist/types/validate.d.ts",
+      "import": "./dist/validate.js"
+    },
     "./data/browser-hotkeys.json": "./data/browser-hotkeys.json",
     "./data/site-hotkeys.json": "./data/site-hotkeys.json",
     "./data/site-hotkeys.runtime.json": "./data/site-hotkeys.runtime.json"
