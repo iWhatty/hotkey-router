@@ -36,7 +36,10 @@
  *   once?: boolean,
  *   when?: (e: KeyboardEvent) => boolean,
  *   allowIn?: (e: KeyboardEvent) => boolean,
- *   priority?: number
+ *   priority?: number,
+ *   capture?: boolean,
+ *   altGraph?: boolean,
+ *   composing?: boolean
  * }} BindOptions
  */
 
@@ -380,6 +383,12 @@ function isFromInputTarget(e) {
 //  when(e) -> boolean (gate)
 //  allowIn(e) -> boolean (override ignoreInput)
 //  priority (higher wins)
+//  capture (true: handled in the capture phase, before the page's own
+//    listeners; see init)
+//  altGraph (true: also fire on an AltGr keystroke that types a character;
+//    by default those are skipped, since Windows reports AltGr as Ctrl+Alt
+//    and binding ctrl+alt+X would swallow the character the user typed)
+//  composing (true: also fire during IME composition; skipped by default)
 function normalizeOptions(type, options) {
   const o = options ? { ...options } : {}
   if (type === 'keydown' && o.repeat == null) o.repeat = false
@@ -624,10 +633,29 @@ function pickWinner(bindings) {
 }
 
 
-function handleEvent(type) {
+// An AltGr keystroke that produces a character: Chrome on Windows reports it
+// as ctrlKey + altKey with getModifierState('AltGraph'), and a one-character
+// `key` (AltGr+, types '<' on Polish, Czech and Canadian layouts).
+function isAltGraphCharacter(e) {
+  return Boolean(
+    e.ctrlKey && e.altKey &&
+    typeof e.getModifierState === 'function' && e.getModifierState('AltGraph') &&
+    typeof e.key === 'string' && e.key.length === 1
+  )
+}
+
+function isComposingEvent(e) {
+  return Boolean(e.isComposing || e.keyCode === 229)
+}
+
+// phase: 'all' (one listener handles every binding), 'capture' (only
+// bindings with options.capture) or 'bubble' (only bindings without it).
+function handleEvent(type, phase = 'all') {
   return (e) => {
     if (paused) return
 
+    const altGraphChar = isAltGraphCharacter(e)
+    const composing = isComposingEvent(e)
     const fromInput = ignoreEditable && isFromInputTarget(e)
     const comboStr = comboKeyFromEvent(e)
     const codeStr = codeKeyFromEvent(e)
@@ -646,6 +674,10 @@ function handleEvent(type) {
 
       for (const b of bindings) {
         const o = b.options
+        if (phase === 'capture' && !o.capture) continue
+        if (phase === 'bubble' && o.capture) continue
+        if (altGraphChar && !o.altGraph) continue
+        if (composing && !o.composing) continue
         if (fromInput && !o.allowIn?.(e)) continue
         if (type === 'keydown' && o.repeat === false && e.repeat) continue
         if (o.when && o.when(e) === false) continue
@@ -672,10 +704,18 @@ function handleEvent(type) {
 let stopDown = null
 let stopUp = null
 
+let stopCaptureDown = null
+let stopCaptureUp = null
+
 /**
  * Initialize the router by attaching `keydown`/`keyup` listeners to a target.
  * Re-initializes cleanly if already running (calls {@link destroy} first).
  * Auto-runs on `window` at module-load time in browser environments.
+ *
+ * `capture: true` handles every binding in the capture phase. With the
+ * default (`false`), bindings run in the bubble phase except those bound
+ * with `{ capture: true }`, which a second, capture-phase listener handles:
+ * they see the key before the page's own listeners and can stop it.
  *
  * @param {{ target?: EventTarget, capture?: boolean }} [opts]
  * @returns {void}
@@ -684,8 +724,15 @@ function init({ target = defaultTarget, capture = false } = {}) {
   if (!target) throw new Error('hotkeys.init() requires a target (e.g. window)')
   if (stopDown || stopUp) destroy()
 
-  stopDown = on(target, 'keydown', handleEvent('keydown'), { capture })
-  stopUp = on(target, 'keyup', handleEvent('keyup'), { capture })
+  if (capture) {
+    stopDown = on(target, 'keydown', handleEvent('keydown'), { capture: true })
+    stopUp = on(target, 'keyup', handleEvent('keyup'), { capture: true })
+    return
+  }
+  stopDown = on(target, 'keydown', handleEvent('keydown', 'bubble'), { capture: false })
+  stopUp = on(target, 'keyup', handleEvent('keyup', 'bubble'), { capture: false })
+  stopCaptureDown = on(target, 'keydown', handleEvent('keydown', 'capture'), { capture: true })
+  stopCaptureUp = on(target, 'keyup', handleEvent('keyup', 'capture'), { capture: true })
 }
 
 
@@ -699,8 +746,12 @@ function init({ target = defaultTarget, capture = false } = {}) {
 function destroy() {
   stopDown?.()
   stopUp?.()
+  stopCaptureDown?.()
+  stopCaptureUp?.()
   stopDown = null
   stopUp = null
+  stopCaptureDown = null
+  stopCaptureUp = null
   registry.clear()
   plugins.clear()
   bindingIndex.clear()
@@ -784,6 +835,35 @@ function trigger(hotkeyStr, { type: forcedType } = {}) {
 }
 
 
+/**
+ * The hotkey string for a keyboard event, for a "press your keys" recorder.
+ * Physical by default (`ctrl+shift+code:Period`), so the binding survives
+ * keyboard layouts. With `useMod`, the platform's primary modifier (Cmd on
+ * macOS, Ctrl elsewhere) is written as `mod`. Returns null for a bare
+ * modifier press (the user hasn't pressed the base key yet).
+ *
+ * @param {KeyboardEvent} e
+ * @param {{ physical?: boolean, useMod?: boolean }} [opts]
+ * @returns {string | null}
+ */
+function comboFromEvent(e, { physical = true, useMod = false } = {}) {
+  if (!e || MODIFIER_KEY_TOKEN[e.key]) return null
+  const parts = []
+  const primaryIsMeta = isMac
+  if (useMod && (primaryIsMeta ? e.metaKey : e.ctrlKey)) parts.push('mod')
+  if (e.ctrlKey && !(useMod && !primaryIsMeta)) parts.push('ctrl')
+  if (e.metaKey && !(useMod && primaryIsMeta)) parts.push('meta')
+  if (e.altKey) parts.push('alt')
+  if (e.shiftKey) parts.push('shift')
+  if (physical && e.code) parts.push(`code:${e.code}`)
+  else {
+    const key = normalizeKey(e.key)
+    if (!key) return null
+    parts.push(key === ' ' ? 'space' : key)
+  }
+  return parts.join('+')
+}
+
 // Auto-init on window by default (browser only)
 if (defaultTarget) init()
 
@@ -809,4 +889,10 @@ export default {
 
   // testing / automation
   trigger,
+
+  // helpers
+  parseHotkey,
+  comboFromEvent,
 }
+
+export { parseHotkey, comboFromEvent }

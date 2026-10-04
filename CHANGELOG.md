@@ -2,6 +2,32 @@
 
 > Initial cut seeded from `git log` by the host repo's `tools/seed-changelogs.mjs` script. Version groupings infer release boundaries from tags and commit subjects; rough cuts are expected — review and tighten as part of normal maintenance.
 
+## 0.3.0 — Unreleased
+
+### Added
+
+- **Website shortcut awareness** (`hotkey-router/sites`): a researched table
+  of popular sites' own shortcuts in the Ctrl/Cmd+Shift, Ctrl/Cmd+Alt,
+  Shift+Alt and Ctrl/Cmd+Alt+Shift families (21 sites, 432 chords, sourced
+  per row in `data/site-hotkeys.json`; reference `docs/site-hotkeys.md`;
+  research notes `docs/site-hotkeys/`), with `siteAware()` to build a
+  `when()` gate that yields to the site unless the user is engaged with the
+  app, plus `lookupSiteConflicts`, `matchSites`, `siteLookupKey`,
+  `detectSitePlatform` and `listSites`.
+- **Per-binding capture phase**: `bind(..., { capture: true })` runs in a
+  second, capture-phase listener so it sees the key before the page's own
+  listeners (and can stop them). `init({ capture: true })` keeps its old
+  meaning (everything in capture).
+- **`comboFromEvent(e, { physical, useMod })`** for key recorders, and
+  **`parseHotkey`** as a named export.
+
+### Changed
+
+- **AltGr keystrokes that type a character no longer trigger Ctrl+Alt
+  bindings** (Windows reports AltGr as Ctrl+Alt; AltGr+, types `<` on
+  Polish, Czech and Canadian layouts). Opt back in with `{ altGraph: true }`.
+- **Keys during IME composition are skipped** unless `{ composing: true }`.
+
 ## 0.2.3 — 2026-06-15
 
 ### Fixed

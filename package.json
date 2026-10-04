@@ -1,6 +1,6 @@
 {
   "name": "hotkey-router",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "A tiny, deterministic keyboard routing engine for modern web apps.",
   "type": "module",
   "author": "WATT3D <WATT3D@protonmail.com>",
@@ -29,7 +29,13 @@
       "types": "./dist/types/reservations.d.ts",
       "import": "./dist/reservations.js"
     },
-    "./data/browser-hotkeys.json": "./data/browser-hotkeys.json"
+    "./sites": {
+      "types": "./dist/types/sites.d.ts",
+      "import": "./dist/sites.js"
+    },
+    "./data/browser-hotkeys.json": "./data/browser-hotkeys.json",
+    "./data/site-hotkeys.json": "./data/site-hotkeys.json",
+    "./data/site-hotkeys.runtime.json": "./data/site-hotkeys.runtime.json"
   },
   "sideEffects": false,
   "files": [
@@ -48,7 +54,8 @@
     "test": "vitest run --environment jsdom",
     "test:watch": "vitest --environment jsdom",
     "scrape:diff": "node scripts/scrape-reservations.mjs",
-    "scrape:apply": "node scripts/scrape-reservations.mjs --apply"
+    "scrape:apply": "node scripts/scrape-reservations.mjs --apply",
+    "sites:build": "node scripts/build-site-hotkeys.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.1",

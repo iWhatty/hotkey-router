@@ -114,8 +114,16 @@ off()
   allowIn?: (event) => boolean
   priority?: number        // default 0
   warnOnReserved?: boolean // only read when conflict warnings are installed
+  capture?: boolean        // v0.3.0+: run in the capture phase, before the page's listeners
+  altGraph?: boolean       // v0.3.0+: also fire on an AltGr keystroke that types a character
+  composing?: boolean      // v0.3.0+: also fire during IME composition
 }
 ```
+
+By default (v0.3.0+), a binding is skipped when the keystroke is AltGr typing
+a character (Windows reports AltGr as Ctrl+Alt, so `ctrl+alt+code:Comma`
+would otherwise swallow the `<` a Polish or Czech user typed) and while an
+IME is composing.
 
 **Examples**
 
@@ -218,6 +226,27 @@ hotkeys.init({
 ```
 
 Auto-initializes on `window` by default (browser environments).
+
+With `capture: false` (the default), bindings run in the bubble phase except
+those bound with `{ capture: true }`, which a second, capture-phase listener
+handles (v0.3.0+). `capture: true` here runs every binding in the capture
+phase.
+
+### `parseHotkey(hotkey)` / `comboFromEvent(event, options?)` (v0.3.0+)
+
+Named exports (also on the default object). `comboFromEvent` turns a
+keyboard event into a hotkey string for a "press your keys" recorder:
+physical by default, `{ useMod: true }` writes the platform's primary
+modifier as `mod`, and it returns `null` while only a modifier is held.
+
+```js
+import { comboFromEvent } from 'hotkey-router'
+
+input.addEventListener('keydown', (e) => {
+  const combo = comboFromEvent(e, { useMod: true }) // 'mod+shift+code:Period'
+  if (combo) save(combo)
+})
+```
 
 ### `destroy()`
 
@@ -363,6 +392,43 @@ const off = hotkeys.onBind(({ combo, raw, options, plugin, id }) => {
 })
 // off() unsubscribes.
 ```
+
+### Website shortcuts (v0.3.0+)
+
+Apps that run on other people's pages (browser extensions, embedded widgets)
+collide with the page's own shortcuts: Google Docs uses Ctrl+Shift+. for font
+size, GitHub for "quote". Unlike browser keys, those reach the page, so the
+app can choose. `hotkey-router/sites` knows which popular sites use which
+chords in the Ctrl/Cmd+Shift, Ctrl/Cmd+Alt, Shift+Alt and Ctrl/Cmd+Alt+Shift
+families ([docs/site-hotkeys.md](docs/site-hotkeys.md), sourced data in
+`data/site-hotkeys.json`) and builds a `when()` gate that yields to the site
+unless the user is focused on the app:
+
+```js
+import hotkeys from 'hotkey-router'
+import { siteAware } from 'hotkey-router/sites'
+
+hotkeys.bind('mod+shift+code:Period', nextTypo, null, {
+  capture: true,          // see the key before the page's editor
+  preventDefault: true,
+  stopPropagation: true,  // when we take it, the page doesn't run it too
+  allowIn: () => true,
+  when: siteAware('mod+shift+code:Period', {
+    engaged: () => popupIsOpen() || panelHasFocus(),
+  }),
+})
+```
+
+On sites that don't use the chord the gate is always true. On sites that do
+(Docs, Slides, Confluence, GitHub, WordPress ...), it returns `engaged()`;
+when that is false, the router leaves the event untouched and the site's
+shortcut runs.
+
+Also exported: `lookupSiteConflicts(combo, { url, platform, verifiedOnly })`,
+`matchSites(url)`, `siteLookupKey(combo, platform)`, `detectSitePlatform()`
+and `listSites()`. Platforms: `windows` (also used for Linux), `mac`,
+`chromeos`. The runtime table is ~7 KB gzipped and imports nothing from the
+core, so it never creates a second router.
 
 ### Supported syntax
 

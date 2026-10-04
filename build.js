@@ -83,6 +83,18 @@ await build({
   banner,
 })
 
+// --- Sites module (ESM) ---
+// `import { siteAware, lookupSiteConflicts } from 'hotkey-router/sites'`.
+// Website shortcut table inlined; self-contained (no core import).
+await build({
+  ...common,
+  entryPoints: ['sites.js'],
+  outfile: 'dist/sites.js',
+  format: 'esm',
+  sourcemap: true,
+  banner,
+})
+
 // --- Auto entry (ESM) ---
 // One-import: same default export as core, with warnings pre-installed.
 await build({
@@ -116,5 +128,6 @@ console.log('  ' + report('dist/hotkey-router.js'))
 console.log('  ' + report('dist/hotkey-router.min.js'))
 console.log('  ' + report('dist/hotkey-router.cjs'))
 console.log('  ' + report('dist/reservations.js'))
+console.log('  ' + report('dist/sites.js'))
 console.log('  ' + report('dist/auto.js'))
 console.log('  ' + report('dist/auto.min.js'))

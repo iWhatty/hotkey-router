@@ -1,0 +1,4571 @@
+{
+  "$comment": "Popular websites' own keyboard shortcuts in the Ctrl/Cmd+Shift, Ctrl/Cmd+Alt, Shift+Alt and Ctrl/Cmd+Alt+Shift families, so an app can tell when its hotkey would collide with the page it runs on. Companion to docs/site-hotkeys.md (generated from this file) and the research notes in docs/site-hotkeys/. Unlike data/browser-hotkeys.json (browser/OS keys that never reach the page), these keys DO reach the page and the site handles them; the app decides whether to yield.",
+  "version": {
+    "researched": "2026-10-03",
+    "schema": "1.0",
+    "method": "Vendor help pages and keymap source, read by research agents (often through a summarizing fetch). verified=true means read on the vendor page or source in that session; false means a secondary source or inference. Sites the agents could not read have researched=false and no rows."
+  },
+  "$keyFormat": "Same as data/browser-hotkeys.json: lowercase, modifiers in canonical order ctrl, meta, alt, shift, then the key (letters, digits, period, comma, semicolon, quote, slash, backslash, bracketleft, bracketright, minus, equal, backquote, enter, space, tab, arrows, home, end, pageup, pagedown, f1..f12). Physical keys: Ctrl+> is ctrl+shift+period. Per platform: windows (also used for linux), mac (meta = Cmd, alt = Option, ctrl = Control), chromeos.",
+  "$hostFormat": "hosts: exact hostnames, \"*.example.com\" for any subdomain, or \"*\" for any host (then pathPrefixes narrow it). hostsConfirmed=false means the hostnames were inferred, not observed.",
+  "sites": [
+    {
+      "id": "google-docs",
+      "name": "Google Docs",
+      "group": "google",
+      "hosts": [
+        "docs.google.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/document/"
+      ],
+      "sources": [
+        "https://support.google.com/docs/answer/179738"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+v",
+          "mac": "meta+shift+v",
+          "chromeos": "ctrl+shift+v",
+          "action": "Paste without formatting",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+z",
+          "mac": "meta+shift+z",
+          "chromeos": "ctrl+shift+z",
+          "action": "Redo",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+g",
+          "mac": "meta+shift+g",
+          "chromeos": "ctrl+shift+g",
+          "action": "Find previous",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+f",
+          "mac": "ctrl+shift+f",
+          "chromeos": "ctrl+shift+f",
+          "action": "Hide menus (compact mode)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac uses Ctrl, not Cmd"
+        },
+        {
+          "windows": "ctrl+shift+period",
+          "mac": "meta+shift+period",
+          "chromeos": "ctrl+shift+period",
+          "action": "Increase font size",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+comma",
+          "mac": "meta+shift+comma",
+          "chromeos": "ctrl+shift+comma",
+          "action": "Decrease font size",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+k",
+          "mac": "alt+shift+k",
+          "chromeos": null,
+          "action": "Small caps",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Option+Shift+K; ChromeOS not listed"
+        },
+        {
+          "windows": "ctrl+shift+l",
+          "mac": "meta+shift+l",
+          "chromeos": "ctrl+shift+l",
+          "action": "Left align",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+e",
+          "mac": "meta+shift+e",
+          "chromeos": "ctrl+shift+e",
+          "action": "Center align",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+r",
+          "mac": "meta+shift+r",
+          "chromeos": "ctrl+shift+r",
+          "action": "Right align",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+j",
+          "mac": "meta+shift+j",
+          "chromeos": "ctrl+shift+j",
+          "action": "Justify",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Numbered list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Bulleted list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+9",
+          "mac": "meta+shift+9",
+          "chromeos": null,
+          "action": "Checklist",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "ChromeOS not listed"
+        },
+        {
+          "windows": "ctrl+shift+arrowup",
+          "mac": "ctrl+shift+arrowup",
+          "chromeos": null,
+          "action": "Move paragraph up",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac uses Ctrl, not Cmd"
+        },
+        {
+          "windows": "ctrl+shift+arrowdown",
+          "mac": "ctrl+shift+arrowdown",
+          "chromeos": null,
+          "action": "Move paragraph down",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac uses Ctrl, not Cmd"
+        },
+        {
+          "windows": "ctrl+shift+x",
+          "mac": null,
+          "chromeos": "ctrl+shift+x",
+          "action": "Context (right-click) menu",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC and ChromeOS; Mac list has only Cmd+Shift+Backslash"
+        },
+        {
+          "windows": "ctrl+shift+backslash",
+          "mac": "meta+shift+backslash",
+          "chromeos": null,
+          "action": "Context (right-click) menu (alternate)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Listed for PC and Mac; ChromeOS list shows only Ctrl+Shift+X"
+        },
+        {
+          "windows": "ctrl+shift+y",
+          "mac": "meta+shift+y",
+          "chromeos": "ctrl+shift+y",
+          "action": "Open dictionary",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+c",
+          "mac": "meta+shift+c",
+          "chromeos": "ctrl+shift+c",
+          "action": "Word count",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+s",
+          "mac": "meta+shift+s",
+          "chromeos": "ctrl+shift+s",
+          "action": "Start voice typing",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": null,
+          "mac": "meta+shift+h",
+          "chromeos": null,
+          "action": "Find and replace (Mac form)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC and ChromeOS use plain Ctrl+H"
+        },
+        {
+          "windows": "ctrl+shift+arrowleft",
+          "mac": null,
+          "chromeos": "ctrl+shift+arrowleft",
+          "action": "Extend selection one word left",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac not listed as a Cmd+Shift chord on this page"
+        },
+        {
+          "windows": "ctrl+shift+arrowright",
+          "mac": null,
+          "chromeos": "ctrl+shift+arrowright",
+          "action": "Extend selection one word right",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac not listed as a Cmd+Shift chord on this page"
+        },
+        {
+          "windows": "ctrl+shift+home",
+          "mac": "meta+shift+arrowup",
+          "chromeos": null,
+          "action": "Extend selection to document start",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+end",
+          "mac": "meta+shift+arrowdown",
+          "chromeos": null,
+          "action": "Extend selection to document end",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+shift+pagedown",
+          "mac": null,
+          "chromeos": null,
+          "action": "Move to next tab",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC only on this page"
+        },
+        {
+          "windows": "ctrl+shift+pageup",
+          "mac": null,
+          "chromeos": null,
+          "action": "Move to previous tab",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC only on this page"
+        },
+        {
+          "windows": null,
+          "mac": "meta+shift+k",
+          "chromeos": null,
+          "action": "Toggle input controls",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac only"
+        },
+        {
+          "windows": "ctrl+alt+1",
+          "mac": "meta+alt+1",
+          "chromeos": "ctrl+alt+1",
+          "action": "Apply heading style 1",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+2",
+          "mac": "meta+alt+2",
+          "chromeos": "ctrl+alt+2",
+          "action": "Apply heading style 2",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+3",
+          "mac": "meta+alt+3",
+          "chromeos": "ctrl+alt+3",
+          "action": "Apply heading style 3",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+4",
+          "mac": "meta+alt+4",
+          "chromeos": "ctrl+alt+4",
+          "action": "Apply heading style 4",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+5",
+          "mac": "meta+alt+5",
+          "chromeos": "ctrl+alt+5",
+          "action": "Apply heading style 5",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+6",
+          "mac": "meta+alt+6",
+          "chromeos": "ctrl+alt+6",
+          "action": "Apply heading style 6",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+0",
+          "mac": "meta+alt+0",
+          "chromeos": "ctrl+alt+0",
+          "action": "Apply normal text style",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+y",
+          "mac": "meta+alt+y",
+          "chromeos": "ctrl+alt+y",
+          "action": "Alt text",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+k",
+          "mac": "ctrl+meta+k",
+          "chromeos": "ctrl+alt+k",
+          "action": "Resize larger (drawing)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Cmd+Ctrl, not Cmd+Option"
+        },
+        {
+          "windows": "ctrl+alt+b",
+          "mac": "ctrl+meta+b",
+          "chromeos": "ctrl+alt+b",
+          "action": "Resize larger horizontally (drawing)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Cmd+Ctrl, not Cmd+Option"
+        },
+        {
+          "windows": "ctrl+alt+i",
+          "mac": "ctrl+meta+i",
+          "chromeos": "ctrl+alt+i",
+          "action": "Resize larger vertically (drawing)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Cmd+Ctrl, not Cmd+Option"
+        },
+        {
+          "windows": "ctrl+alt+j",
+          "mac": "ctrl+meta+j",
+          "chromeos": "ctrl+alt+j",
+          "action": "Resize smaller (drawing)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Cmd+Ctrl, not Cmd+Option"
+        },
+        {
+          "windows": "ctrl+alt+w",
+          "mac": "ctrl+meta+w",
+          "chromeos": "ctrl+alt+w",
+          "action": "Resize smaller horizontally (drawing)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Cmd+Ctrl, not Cmd+Option"
+        },
+        {
+          "windows": "ctrl+alt+q",
+          "mac": "ctrl+meta+q",
+          "chromeos": "ctrl+alt+q",
+          "action": "Resize smaller vertically (drawing)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Cmd+Ctrl, not Cmd+Option"
+        },
+        {
+          "windows": "ctrl+alt+m",
+          "mac": "meta+alt+m",
+          "chromeos": "ctrl+alt+m",
+          "action": "Insert comment",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+f",
+          "mac": "meta+alt+f",
+          "chromeos": "ctrl+alt+f",
+          "action": "Insert footnote",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+c",
+          "mac": "meta+alt+c",
+          "chromeos": "ctrl+alt+c",
+          "action": "Copy text formatting",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+v",
+          "mac": "meta+alt+v",
+          "chromeos": "ctrl+alt+v",
+          "action": "Paste text formatting",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+x",
+          "mac": "meta+alt+x",
+          "chromeos": null,
+          "action": "Open spelling and grammar",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Also F7; ChromeOS not listed"
+        },
+        {
+          "windows": "ctrl+alt+z",
+          "mac": "meta+alt+z",
+          "chromeos": "ctrl+alt+z",
+          "action": "Enable screen reader support",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Option+Cmd+Z; PC also Alt+Shift+~"
+        },
+        {
+          "windows": "ctrl+alt+h",
+          "mac": "meta+alt+h",
+          "chromeos": "ctrl+alt+h",
+          "action": "Enable braille support",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+enter",
+          "mac": "meta+alt+enter",
+          "chromeos": "ctrl+alt+enter",
+          "action": "Toggle checkbox",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+period",
+          "mac": "meta+alt+period",
+          "chromeos": "alt+shift+period",
+          "action": "Go to side panel",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "ChromeOS uses Alt+Shift+."
+        },
+        {
+          "windows": "ctrl+alt+comma",
+          "mac": "meta+alt+comma",
+          "chromeos": "alt+shift+comma",
+          "action": "Go to side panel (alternate)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "ChromeOS uses Alt+Shift+,"
+        },
+        {
+          "windows": "ctrl+alt+k",
+          "mac": null,
+          "chromeos": "ctrl+alt+k",
+          "action": "Move to next edit",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Same chord as drawing Resize larger; context decides. PC and ChromeOS only"
+        },
+        {
+          "windows": "ctrl+alt+j",
+          "mac": null,
+          "chromeos": "ctrl+alt+j",
+          "action": "Move to previous edit",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Same chord as drawing Resize smaller; PC and ChromeOS only"
+        },
+        {
+          "windows": "alt+shift+5",
+          "mac": "meta+shift+x",
+          "chromeos": "alt+shift+5",
+          "action": "Strikethrough",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "alt+shift+arrowleft",
+          "mac": "alt+shift+arrowleft",
+          "chromeos": "alt+shift+arrowleft",
+          "action": "Rotate counterclockwise 1 degree (drawing)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "alt+shift+arrowright",
+          "mac": "alt+shift+arrowright",
+          "chromeos": "alt+shift+arrowright",
+          "action": "Rotate clockwise 1 degree (drawing)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "alt+shift+backquote",
+          "mac": null,
+          "chromeos": "alt+shift+backquote",
+          "action": "Enable screen reader support (alternate)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Listed as Alt+Shift+~ (shifted backquote)"
+        },
+        {
+          "windows": null,
+          "mac": "alt+shift+arrowup",
+          "chromeos": null,
+          "action": "Extend selection one paragraph up",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac only, Option+Shift+Up"
+        },
+        {
+          "windows": null,
+          "mac": "alt+shift+arrowdown",
+          "chromeos": null,
+          "action": "Extend selection one paragraph down",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac only, Option+Shift+Down"
+        },
+        {
+          "windows": "alt+shift+f",
+          "mac": "ctrl+alt+f",
+          "chromeos": null,
+          "action": "File menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+f). Mac is Ctrl+Option+f (a ctrl+alt chord). ChromeOS uses plain Alt+f"
+        },
+        {
+          "windows": "alt+shift+e",
+          "mac": "ctrl+alt+e",
+          "chromeos": null,
+          "action": "Edit menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+e). Mac is Ctrl+Option+e (a ctrl+alt chord). ChromeOS uses plain Alt+e"
+        },
+        {
+          "windows": "alt+shift+v",
+          "mac": "ctrl+alt+v",
+          "chromeos": null,
+          "action": "View menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+v). Mac is Ctrl+Option+v (a ctrl+alt chord). ChromeOS uses plain Alt+v"
+        },
+        {
+          "windows": "alt+shift+i",
+          "mac": "ctrl+alt+i",
+          "chromeos": null,
+          "action": "Insert menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+i). Mac is Ctrl+Option+i (a ctrl+alt chord). ChromeOS uses plain Alt+i"
+        },
+        {
+          "windows": "alt+shift+o",
+          "mac": "ctrl+alt+o",
+          "chromeos": null,
+          "action": "Format menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+o). Mac is Ctrl+Option+o (a ctrl+alt chord). ChromeOS uses plain Alt+o"
+        },
+        {
+          "windows": "alt+shift+t",
+          "mac": "ctrl+alt+t",
+          "chromeos": null,
+          "action": "Tools menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+t). Mac is Ctrl+Option+t (a ctrl+alt chord). ChromeOS uses plain Alt+t"
+        },
+        {
+          "windows": "alt+shift+h",
+          "mac": "ctrl+alt+h",
+          "chromeos": null,
+          "action": "Help menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+h). Mac is Ctrl+Option+h (a ctrl+alt chord). ChromeOS uses plain Alt+h"
+        },
+        {
+          "windows": "alt+shift+a",
+          "mac": "ctrl+alt+a",
+          "chromeos": null,
+          "action": "Accessibility menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "PC non-Chrome form (Chrome uses Alt+a). Mac is Ctrl+Option+a (a ctrl+alt chord). ChromeOS uses plain Alt+a"
+        },
+        {
+          "windows": "ctrl+alt+shift+a",
+          "mac": "meta+alt+shift+a",
+          "chromeos": "ctrl+alt+shift+a",
+          "action": "Open discussion thread / comment history",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+k",
+          "mac": "meta+alt+shift+k",
+          "chromeos": "ctrl+alt+shift+k",
+          "action": "Input Tools menu",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+r",
+          "mac": "meta+alt+shift+r",
+          "chromeos": "ctrl+alt+shift+r",
+          "action": "Show live edits",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+m",
+          "mac": "meta+alt+shift+m",
+          "chromeos": "ctrl+alt+shift+m",
+          "action": "Move focus out of editing area",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+z",
+          "mac": "meta+alt+shift+z",
+          "chromeos": "ctrl+alt+shift+z",
+          "action": "Switch to editing",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+x",
+          "mac": "meta+alt+shift+x",
+          "chromeos": "ctrl+alt+shift+x",
+          "action": "Switch to suggesting",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+c",
+          "mac": "meta+alt+shift+c",
+          "chromeos": "ctrl+alt+shift+c",
+          "action": "Switch to viewing",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+h",
+          "mac": "meta+alt+shift+h",
+          "chromeos": "ctrl+alt+shift+h",
+          "action": "Open revision history",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+i",
+          "mac": "meta+alt+shift+i",
+          "chromeos": "ctrl+alt+shift+i",
+          "action": "Open Explore tool",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738"
+        },
+        {
+          "windows": "ctrl+alt+shift+arrowleft",
+          "mac": "ctrl+meta+shift+arrowleft",
+          "chromeos": "ctrl+alt+shift+arrowleft",
+          "action": "Select multiple text sections (left)",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Ctrl+Cmd+Shift"
+        },
+        {
+          "windows": "ctrl+alt+shift+arrowright",
+          "mac": "ctrl+meta+shift+arrowright",
+          "chromeos": "ctrl+alt+shift+arrowright",
+          "action": "Select multiple text sections (right)",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/179738",
+          "notes": "Mac is Ctrl+Cmd+Shift"
+        }
+      ],
+      "gaps": "Read via a summarizing fetch of the vendor page, not a visual read; Mac/ChromeOS nulls may just be unlisted. Ctrl+Alt then letter sequences excluded. In-app list not opened."
+    },
+    {
+      "id": "google-slides",
+      "name": "Google Slides",
+      "group": "google",
+      "hosts": [
+        "docs.google.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/presentation/"
+      ],
+      "sources": [
+        "https://support.google.com/docs/answer/1696717"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+z",
+          "mac": "meta+shift+z",
+          "chromeos": "ctrl+shift+z",
+          "action": "Redo",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+g",
+          "mac": "meta+shift+g",
+          "chromeos": "ctrl+shift+g",
+          "action": "Find previous",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+f",
+          "mac": "ctrl+shift+f",
+          "chromeos": "ctrl+shift+f",
+          "action": "Hide or show menus",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac uses Ctrl"
+        },
+        {
+          "windows": "ctrl+shift+c",
+          "mac": "meta+shift+c",
+          "chromeos": "ctrl+shift+c",
+          "action": "Turn on captions",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+backslash",
+          "mac": "meta+shift+backslash",
+          "chromeos": null,
+          "action": "Context menu",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+x",
+          "mac": null,
+          "chromeos": "ctrl+shift+x",
+          "action": "Context menu (alternate)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+arrowup",
+          "mac": "meta+shift+arrowup",
+          "chromeos": "ctrl+shift+arrowup",
+          "action": "Move slide to beginning / Bring to front",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+arrowdown",
+          "mac": "meta+shift+arrowdown",
+          "chromeos": "ctrl+shift+arrowdown",
+          "action": "Move slide to end / Send to back",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+period",
+          "mac": "meta+shift+period",
+          "chromeos": "ctrl+shift+period",
+          "action": "Increase font size / playback rate",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+comma",
+          "mac": "meta+shift+comma",
+          "chromeos": "ctrl+shift+comma",
+          "action": "Decrease font size / playback rate",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+l",
+          "mac": "meta+shift+l",
+          "chromeos": null,
+          "action": "Left align",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+r",
+          "mac": "meta+shift+r",
+          "chromeos": "ctrl+shift+r",
+          "action": "Right align",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+e",
+          "mac": "meta+shift+e",
+          "chromeos": "ctrl+shift+e",
+          "action": "Center align",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+j",
+          "mac": "meta+shift+j",
+          "chromeos": "ctrl+shift+j",
+          "action": "Justify",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Bulleted list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Numbered list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+shift+k",
+          "mac": "meta+shift+k",
+          "chromeos": "ctrl+shift+k",
+          "action": "Toggle input controls",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": null,
+          "mac": "meta+shift+h",
+          "chromeos": null,
+          "action": "Find and replace (Mac form)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": null,
+          "mac": "meta+shift+f",
+          "chromeos": null,
+          "action": "Toggle full screen (present, Mac form)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC and ChromeOS use F11"
+        },
+        {
+          "windows": "ctrl+alt+c",
+          "mac": "meta+alt+c",
+          "chromeos": "ctrl+alt+c",
+          "action": "Copy formatting",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+v",
+          "mac": "meta+alt+v",
+          "chromeos": "ctrl+alt+v",
+          "action": "Paste formatting",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+y",
+          "mac": "meta+alt+y",
+          "chromeos": "ctrl+alt+y",
+          "action": "Alt text",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+m",
+          "mac": "meta+alt+m",
+          "chromeos": "ctrl+alt+m",
+          "action": "Insert comment",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+g",
+          "mac": "meta+alt+g",
+          "chromeos": "ctrl+alt+g",
+          "action": "Group",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+b",
+          "mac": "ctrl+meta+b",
+          "chromeos": "ctrl+alt+b",
+          "action": "Resize larger horizontally",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Cmd+Ctrl"
+        },
+        {
+          "windows": "ctrl+alt+i",
+          "mac": "ctrl+meta+i",
+          "chromeos": "ctrl+alt+i",
+          "action": "Resize larger vertically",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Cmd+Ctrl"
+        },
+        {
+          "windows": "ctrl+alt+j",
+          "mac": "ctrl+meta+j",
+          "chromeos": "ctrl+alt+j",
+          "action": "Resize smaller",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Cmd+Ctrl"
+        },
+        {
+          "windows": "ctrl+alt+k",
+          "mac": "ctrl+meta+k",
+          "chromeos": "ctrl+alt+k",
+          "action": "Resize larger",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Cmd+Ctrl"
+        },
+        {
+          "windows": "ctrl+alt+w",
+          "mac": "ctrl+meta+w",
+          "chromeos": "ctrl+alt+w",
+          "action": "Resize smaller horizontally",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Cmd+Ctrl"
+        },
+        {
+          "windows": "ctrl+alt+9",
+          "mac": null,
+          "chromeos": "ctrl+alt+9",
+          "action": "Resize smaller vertically",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Page lists N/A for Mac; low confidence in this row"
+        },
+        {
+          "windows": "ctrl+alt+x",
+          "mac": "ctrl+meta+x",
+          "chromeos": "ctrl+alt+x",
+          "action": "Verbalize selection",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Ctrl+Cmd+X"
+        },
+        {
+          "windows": "ctrl+alt+r",
+          "mac": "ctrl+meta+r",
+          "chromeos": "ctrl+alt+r",
+          "action": "Verbalize from cursor",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Ctrl+Cmd+R"
+        },
+        {
+          "windows": "ctrl+alt+z",
+          "mac": "meta+alt+z",
+          "chromeos": "ctrl+alt+z",
+          "action": "Enable screen reader",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "Mac is Option+Cmd+Z"
+        },
+        {
+          "windows": "ctrl+alt+h",
+          "mac": "meta+alt+h",
+          "chromeos": "ctrl+alt+h",
+          "action": "Enable braille",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+period",
+          "mac": "meta+alt+period",
+          "chromeos": "alt+shift+period",
+          "action": "Go to side panel",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+comma",
+          "mac": "meta+alt+comma",
+          "chromeos": "alt+shift+comma",
+          "action": "Go to side panel (alternate)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+5",
+          "mac": "meta+shift+x",
+          "chromeos": "alt+shift+5",
+          "action": "Strikethrough",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+arrowdown",
+          "mac": "alt+shift+arrowdown",
+          "chromeos": null,
+          "action": "Move paragraph down",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+arrowup",
+          "mac": "alt+shift+arrowup",
+          "chromeos": null,
+          "action": "Move paragraph up",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+arrowleft",
+          "mac": "alt+shift+arrowleft",
+          "chromeos": "alt+shift+arrowleft",
+          "action": "Rotate counterclockwise 1 degree",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+arrowright",
+          "mac": "alt+shift+arrowright",
+          "chromeos": "alt+shift+arrowright",
+          "action": "Rotate clockwise 1 degree",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+backquote",
+          "mac": null,
+          "chromeos": "alt+shift+backquote",
+          "action": "Enable screen reader (alternate)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "alt+shift+f",
+          "mac": null,
+          "chromeos": null,
+          "action": "File menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+f)"
+        },
+        {
+          "windows": "alt+shift+e",
+          "mac": null,
+          "chromeos": null,
+          "action": "Edit menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+e)"
+        },
+        {
+          "windows": "alt+shift+v",
+          "mac": null,
+          "chromeos": null,
+          "action": "View menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+v)"
+        },
+        {
+          "windows": "alt+shift+i",
+          "mac": null,
+          "chromeos": null,
+          "action": "Insert menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+i)"
+        },
+        {
+          "windows": "alt+shift+o",
+          "mac": null,
+          "chromeos": null,
+          "action": "Format menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+o)"
+        },
+        {
+          "windows": "alt+shift+t",
+          "mac": null,
+          "chromeos": null,
+          "action": "Tools menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+t)"
+        },
+        {
+          "windows": "alt+shift+h",
+          "mac": null,
+          "chromeos": null,
+          "action": "Help menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+h)"
+        },
+        {
+          "windows": "alt+shift+a",
+          "mac": null,
+          "chromeos": null,
+          "action": "Accessibility menu",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717",
+          "notes": "PC non-Chrome form. Page lists Mac as N/A (Docs lists Ctrl+Option+a)"
+        },
+        {
+          "windows": "ctrl+alt+shift+f",
+          "mac": "meta+alt+shift+f",
+          "chromeos": "ctrl+alt+shift+f",
+          "action": "Move to filmstrip",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+c",
+          "mac": "meta+alt+shift+c",
+          "chromeos": "ctrl+alt+shift+c",
+          "action": "Move to canvas",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+s",
+          "mac": "meta+alt+shift+s",
+          "chromeos": "ctrl+alt+shift+s",
+          "action": "Open speaker notes",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+p",
+          "mac": "meta+alt+shift+p",
+          "chromeos": "ctrl+alt+shift+p",
+          "action": "HTML view",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+b",
+          "mac": "meta+alt+shift+b",
+          "chromeos": "ctrl+alt+shift+b",
+          "action": "Open animations",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+i",
+          "mac": "meta+alt+shift+i",
+          "chromeos": "ctrl+alt+shift+i",
+          "action": "Open Explore",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+a",
+          "mac": "meta+alt+shift+a",
+          "chromeos": "ctrl+alt+shift+a",
+          "action": "Open comment thread",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+j",
+          "mac": "meta+alt+shift+j",
+          "chromeos": "ctrl+alt+shift+j",
+          "action": "Hide comment",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+g",
+          "mac": "meta+alt+shift+g",
+          "chromeos": "ctrl+alt+shift+g",
+          "action": "Ungroup",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+k",
+          "mac": "meta+alt+shift+k",
+          "chromeos": "ctrl+alt+shift+k",
+          "action": "Input tools menu",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        },
+        {
+          "windows": "ctrl+alt+shift+h",
+          "mac": "meta+alt+shift+h",
+          "chromeos": null,
+          "action": "Revision history",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.google.com/docs/answer/1696717"
+        }
+      ],
+      "gaps": "Same fetch caveat. Slides page (answer/1696717); some rows look doubtful (Ctrl+Alt+9, Mac menus N/A). Sequences excluded."
+    },
+    {
+      "id": "gmail",
+      "name": "Gmail",
+      "group": "google",
+      "hosts": [
+        "mail.google.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [
+        "https://support.google.com/mail/answer/6594"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+c",
+          "mac": "meta+shift+c",
+          "chromeos": "ctrl+shift+c",
+          "action": "Add cc recipients",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+b",
+          "mac": "meta+shift+b",
+          "chromeos": "ctrl+shift+b",
+          "action": "Add bcc recipients",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+f",
+          "mac": "meta+shift+f",
+          "chromeos": "ctrl+shift+f",
+          "action": "Access custom From",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+5",
+          "mac": "meta+shift+5",
+          "chromeos": "ctrl+shift+5",
+          "action": "Previous font",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+6",
+          "mac": "meta+shift+6",
+          "chromeos": "ctrl+shift+6",
+          "action": "Next font",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+minus",
+          "mac": "meta+shift+minus",
+          "chromeos": "ctrl+shift+minus",
+          "action": "Decrease text size",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+equal",
+          "mac": "meta+shift+equal",
+          "chromeos": "ctrl+shift+equal",
+          "action": "Increase text size",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594",
+          "notes": "Listed as Ctrl+Shift and +; physical key is equal"
+        },
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Numbered list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Bulleted list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+9",
+          "mac": "meta+shift+9",
+          "chromeos": "ctrl+shift+9",
+          "action": "Quote",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+l",
+          "mac": "meta+shift+l",
+          "chromeos": "ctrl+shift+l",
+          "action": "Align left",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+e",
+          "mac": "meta+shift+e",
+          "chromeos": "ctrl+shift+e",
+          "action": "Align center",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+shift+r",
+          "mac": "meta+shift+r",
+          "chromeos": "ctrl+shift+r",
+          "action": "Align right",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        },
+        {
+          "windows": "ctrl+alt+comma",
+          "mac": "meta+alt+comma",
+          "chromeos": "ctrl+alt+comma",
+          "action": "Switch between Calendar/Keep/Tasks sidebar and inbox",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594",
+          "notes": "Listed as Cmd/Ctrl+Alt/Option+, and +."
+        },
+        {
+          "windows": "ctrl+alt+period",
+          "mac": "meta+alt+period",
+          "chromeos": "ctrl+alt+period",
+          "action": "Switch between Calendar/Keep/Tasks sidebar and inbox (alternate)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.google.com/mail/answer/6594"
+        }
+      ],
+      "gaps": "Page lists Ctrl/Cmd together with no ChromeOS column; ChromeOS assumed same as Windows. Shortcuts need keyboard shortcuts enabled in Gmail settings (compose formatting works regardless). No alt+shift chords found. g-sequences (g then i/s/b/t/d/a/k/l/n/p) excluded."
+    },
+    {
+      "id": "google-keep",
+      "name": "Google Keep",
+      "group": "google",
+      "hosts": [
+        "keep.google.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [
+        "https://support.google.com/keep/answer/12862970"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Toggle checkboxes",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.google.com/keep/answer/12862970",
+          "notes": "ChromeOS assumed same as PC; page lists PC and Mac only"
+        }
+      ],
+      "gaps": "Only one chord found in the three families; fetch summary only, so Keep may have more than listed."
+    },
+    {
+      "id": "word-web",
+      "name": "Word for the web",
+      "group": "microsoft",
+      "hosts": [
+        "word.cloud.microsoft",
+        "*.officeapps.live.com",
+        "onedrive.live.com",
+        "sharepoint.com"
+      ],
+      "hostsConfirmed": false,
+      "pathPrefixes": [],
+      "sources": [
+        "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+f6",
+          "mac": null,
+          "chromeos": null,
+          "action": "Move between ribbon and document content (Ctrl+F6 also)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+shift+arrowright",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select right one word",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+shift+arrowleft",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select left one word",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+shift+arrowup",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select up one paragraph",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+shift+arrowdown",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select down one paragraph",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+shift+home",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select to beginning of document",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+shift+end",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select to end of document",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Read on the Word for the web page this session; the fetch summary may have blended in desktop tables, so treat as reasonably but not fully certain. No Mac column on the web page."
+        },
+        {
+          "windows": "ctrl+alt+g",
+          "mac": null,
+          "chromeos": null,
+          "action": "Select image",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Appeared in fetch summary; section (web vs desktop) unclear"
+        },
+        {
+          "windows": "alt+shift+arrowleft",
+          "mac": null,
+          "chromeos": null,
+          "action": "Outdent / select left by word",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Section unclear in fetch summary; may be desktop"
+        },
+        {
+          "windows": "alt+shift+arrowright",
+          "mac": null,
+          "chromeos": null,
+          "action": "Indent",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Section unclear in fetch summary; may be desktop"
+        },
+        {
+          "windows": "ctrl+alt+shift+tab",
+          "mac": null,
+          "chromeos": null,
+          "action": "Task Switcher",
+          "family": "ctrl+alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/keyboard-shortcuts-in-word-web-app-2554e572-59c4-4406-bc4d-94a29c9879fb",
+          "notes": "Section unclear; likely not a Word web feature"
+        }
+      ],
+      "gaps": "Origins not verified by loading the app. Fetch tool returns summaries, so web vs desktop table boundaries on the Word page were not confirmed. Mac shortcuts for web not listed. Word web also inherits browser chords (e.g. Ctrl+Shift+N, Ctrl+Shift+T) that the page does not document. Many desktop-only chords (e.g. Ctrl+Shift+L, Ctrl+Shift+C/V format painter, Ctrl+Alt+1..3 headings) exist in Word web editing but were not confirmed."
+    },
+    {
+      "id": "outlook-web",
+      "name": "Outlook on the web",
+      "group": "microsoft",
+      "hosts": [
+        "outlook.office.com",
+        "outlook.live.com",
+        "outlook.cloud.microsoft",
+        "outlook.office365.com"
+      ],
+      "hostsConfirmed": false,
+      "pathPrefixes": [],
+      "sources": [
+        "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+r",
+          "mac": null,
+          "chromeos": null,
+          "action": "Reply all",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session. Mac not listed."
+        },
+        {
+          "windows": "ctrl+shift+f",
+          "mac": null,
+          "chromeos": null,
+          "action": "Forward message",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "ctrl+shift+2",
+          "mac": null,
+          "chromeos": null,
+          "action": "Go to calendar",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "ctrl+shift+1",
+          "mac": null,
+          "chromeos": null,
+          "action": "Go to mail / Inbox",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "From a search snippet, not read on the page"
+        },
+        {
+          "windows": "ctrl+alt+arrowleft",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: previous day/period",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "ctrl+alt+arrowright",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: next day/period",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "ctrl+alt+1",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Day view",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "ctrl+alt+2",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Week / work week view",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session. Page text ambiguous between work week and full week"
+        },
+        {
+          "windows": "ctrl+alt+4",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Month view",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "alt+shift+y",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: go to today",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Outlook on the web / new Outlook section of the Outlook page, read this session."
+        },
+        {
+          "windows": "alt+shift+1",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Day view (shift+alt set)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Listed as Shift+Alt+1 for web/new. The page also lists Alt+Shift+1..3 for classic Contacts, Email 1..3"
+        },
+        {
+          "windows": "alt+shift+2",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Work week view",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Listed as Shift+Alt+2"
+        },
+        {
+          "windows": "alt+shift+3",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Full week view",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Listed as Shift+Alt+3"
+        },
+        {
+          "windows": "alt+shift+4",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar: Month view",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/office/keyboard-shortcuts-for-outlook-3cdeb221-7ae5-4c1d-8c1d-9e63216c1efd",
+          "notes": "Listed as Shift+Alt+4"
+        }
+      ],
+      "gaps": "Outlook web has several selectable shortcut schemes (Outlook, Gmail, Yahoo style) in settings; only the default Outlook scheme was read. Mac columns not listed. Origins unconfirmed. Single-key and Ctrl+Enter chords are out of scope. Page was fetched as a summary so some rows (Ctrl+Shift+M new message? Ctrl+Shift+S?) may be missed."
+    },
+    {
+      "id": "teams-web",
+      "name": "Microsoft Teams (web)",
+      "group": "microsoft",
+      "hosts": [
+        "teams.microsoft.com",
+        "teams.live.com",
+        "teams.cloud.microsoft"
+      ],
+      "hostsConfirmed": false,
+      "pathPrefixes": [],
+      "sources": [
+        "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+f",
+          "mac": "meta+shift+f",
+          "chromeos": null,
+          "action": "Open filter",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+n",
+          "mac": "meta+shift+n",
+          "chromeos": null,
+          "action": "Start chat in new window (desktop; browser reserves new incognito window)",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+x",
+          "mac": "meta+shift+x",
+          "chromeos": null,
+          "action": "Expand compose box",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+c",
+          "mac": "meta+shift+c",
+          "chromeos": null,
+          "action": "Insert inline code",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+b",
+          "mac": "meta+shift+b",
+          "chromeos": null,
+          "action": "Insert code block",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+i",
+          "mac": "meta+shift+i",
+          "chromeos": null,
+          "action": "Mark message important",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+a",
+          "mac": "meta+shift+a",
+          "chromeos": null,
+          "action": "Accept video call",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+s",
+          "mac": null,
+          "chromeos": null,
+          "action": "Accept audio call",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+shift+d",
+          "mac": "meta+shift+d",
+          "chromeos": null,
+          "action": "Decline call",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+m",
+          "mac": "meta+shift+m",
+          "chromeos": null,
+          "action": "Toggle mute",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+u",
+          "mac": null,
+          "chromeos": null,
+          "action": "Toggle speaker",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+shift+o",
+          "mac": "meta+shift+o",
+          "chromeos": null,
+          "action": "Toggle video",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+e",
+          "mac": "meta+shift+e",
+          "chromeos": null,
+          "action": "Toggle share tray",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+h",
+          "mac": "meta+shift+h",
+          "chromeos": null,
+          "action": "End call",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+k",
+          "mac": "meta+shift+k",
+          "chromeos": null,
+          "action": "Raise/lower hand",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+l",
+          "mac": "meta+shift+l",
+          "chromeos": null,
+          "action": "Announce raised hands",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+y",
+          "mac": "meta+shift+y",
+          "chromeos": null,
+          "action": "Admit from lobby",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+shift+j",
+          "mac": null,
+          "chromeos": null,
+          "action": "Join from meeting toast",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+shift+r",
+          "mac": null,
+          "chromeos": null,
+          "action": "Open meeting chat from notification",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+shift+q",
+          "mac": null,
+          "chromeos": null,
+          "action": "Create meeting request",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+shift+1",
+          "mac": null,
+          "chromeos": null,
+          "action": "Download diagnostic logs (also: opens 1st app on web per page note)",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+enter",
+          "mac": null,
+          "chromeos": null,
+          "action": "Move focus to pane divider",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+r",
+          "mac": "meta+alt+r",
+          "chromeos": null,
+          "action": "React to last message",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+u",
+          "mac": "meta+alt+u",
+          "chromeos": null,
+          "action": "See all unread chats",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+c",
+          "mac": "meta+alt+c",
+          "chromeos": null,
+          "action": "See all chats",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+a",
+          "mac": "meta+alt+a",
+          "chromeos": null,
+          "action": "See all channel conversations",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+b",
+          "mac": "meta+alt+b",
+          "chromeos": null,
+          "action": "See all meeting chats",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+z",
+          "mac": "meta+alt+z",
+          "chromeos": null,
+          "action": "Clear all filters",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+p",
+          "mac": "meta+alt+p",
+          "chromeos": null,
+          "action": "Paragraph style",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+4",
+          "mac": null,
+          "chromeos": null,
+          "action": "Insert block quote",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+x",
+          "mac": null,
+          "chromeos": null,
+          "action": "Strikethrough",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+l",
+          "mac": "meta+alt+l",
+          "chromeos": null,
+          "action": "Add Loop paragraph",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+5",
+          "mac": "meta+alt+4",
+          "chromeos": null,
+          "action": "Insert code",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+1",
+          "mac": "meta+alt+1",
+          "chromeos": null,
+          "action": "Heading 1",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+2",
+          "mac": "meta+alt+2",
+          "chromeos": null,
+          "action": "Heading 2",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+3",
+          "mac": "meta+alt+3",
+          "chromeos": null,
+          "action": "Heading 3",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "ctrl+alt+f",
+          "mac": null,
+          "chromeos": null,
+          "action": "Forward an event",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+k",
+          "mac": null,
+          "chromeos": null,
+          "action": "Mark all as read (Activity)",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+m",
+          "mac": null,
+          "chromeos": null,
+          "action": "Filter activity to mentions",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+arrowleft",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar previous day/week",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+arrowright",
+          "mac": null,
+          "chromeos": null,
+          "action": "Calendar next day/week",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+r",
+          "mac": "meta+shift+r",
+          "chromeos": null,
+          "action": "Reply to last message",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+o",
+          "mac": "meta+alt+o",
+          "chromeos": null,
+          "action": "Attach file",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+e",
+          "mac": null,
+          "chromeos": null,
+          "action": "Open video recorder",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+a",
+          "mac": null,
+          "chromeos": null,
+          "action": "Start audio call",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+v",
+          "mac": null,
+          "chromeos": null,
+          "action": "Start video call",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+equal",
+          "mac": "meta+alt+equal",
+          "chromeos": null,
+          "action": "Zoom in shared content",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+minus",
+          "mac": "meta+alt+minus",
+          "chromeos": null,
+          "action": "Zoom out shared content",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+0",
+          "mac": "meta+alt+0",
+          "chromeos": null,
+          "action": "Reset zoom",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+arrowup",
+          "mac": "meta+alt+arrowup",
+          "chromeos": null,
+          "action": "Pan up",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+arrowdown",
+          "mac": "meta+alt+arrowdown",
+          "chromeos": null,
+          "action": "Pan down",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+arrowleft",
+          "mac": "meta+alt+arrowleft",
+          "chromeos": null,
+          "action": "Pan left",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+arrowright",
+          "mac": "meta+alt+arrowright",
+          "chromeos": null,
+          "action": "Pan right",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web. Mac chord cross-matched by action from the page Mac tables; verify."
+        },
+        {
+          "windows": "alt+shift+j",
+          "mac": null,
+          "chromeos": null,
+          "action": "Join from meeting details",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+s",
+          "mac": null,
+          "chromeos": null,
+          "action": "Go to suggested time",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+1",
+          "mac": null,
+          "chromeos": null,
+          "action": "Day view",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+2",
+          "mac": null,
+          "chromeos": null,
+          "action": "Work week view",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+3",
+          "mac": null,
+          "chromeos": null,
+          "action": "Week view",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+4",
+          "mac": null,
+          "chromeos": null,
+          "action": "Month view",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+5",
+          "mac": null,
+          "chromeos": null,
+          "action": "Agenda in month view",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "alt+shift+y",
+          "mac": null,
+          "chromeos": null,
+          "action": "Go to today",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+shift+r",
+          "mac": "meta+alt+shift+r",
+          "chromeos": null,
+          "action": "Report a problem",
+          "family": "ctrl+alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        },
+        {
+          "windows": "ctrl+alt+shift+1",
+          "mac": null,
+          "chromeos": null,
+          "action": "Download diagnostic logs",
+          "family": "ctrl+alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/office/2e8e2a70-e8d8-4a19-949b-4c36dd5292d2",
+          "notes": "Teams page read this session; the fetched tables are labelled Windows desktop and the page does NOT clearly mark which rows apply to the web app. Marked unverified for web."
+        }
+      ],
+      "gaps": "Page lists Windows desktop and Mac desktop; web differences only partly noted (page says web uses Ctrl+Shift+ instead of Ctrl+ for some navigation, e.g. Ctrl+Shift+1 for the first app). Call and meeting chords are believed to work in the browser client but not confirmed per row. Browser-reserved chords (Ctrl+Shift+N) may never reach the page. Mac mapping cross-matched by action, so a few Mac rows may be misaligned. Personal Teams page not read."
+    },
+    {
+      "id": "onenote-web",
+      "name": "OneNote for the web",
+      "group": "microsoft",
+      "hosts": [
+        "onenote.cloud.microsoft",
+        "www.onenote.com",
+        "*.officeapps.live.com",
+        "onedrive.live.com"
+      ],
+      "hostsConfirmed": false,
+      "pathPrefixes": [],
+      "sources": [
+        "https://support.microsoft.com/office/44b8b3f4-c274-4bcc-a089-e80fdcc87950"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+f",
+          "mac": null,
+          "chromeos": null,
+          "action": "Create a new outline",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/44b8b3f4-c274-4bcc-a089-e80fdcc87950",
+          "notes": "OneNote for the web section of the OneNote shortcuts page, read this session."
+        },
+        {
+          "windows": "alt+shift+arrowright",
+          "mac": null,
+          "chromeos": null,
+          "action": "Increase paragraph indent",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/44b8b3f4-c274-4bcc-a089-e80fdcc87950",
+          "notes": "OneNote for the web section of the OneNote shortcuts page, read this session."
+        },
+        {
+          "windows": "alt+shift+arrowleft",
+          "mac": null,
+          "chromeos": null,
+          "action": "Decrease paragraph indent",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/office/44b8b3f4-c274-4bcc-a089-e80fdcc87950",
+          "notes": "OneNote for the web section of the OneNote shortcuts page, read this session."
+        }
+      ],
+      "gaps": "Web section found no Ctrl+Alt chords. Windows and Mac desktop sections list many more (Ctrl+Shift+M, Ctrl+Alt+D etc.) which are desktop only and NOT recorded here. Origins unconfirmed. Fetch was a summary."
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "group": "collaboration",
+      "hosts": [
+        "www.notion.so",
+        "www.notion.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [
+        "https://www.notion.com/help/keyboard-shortcuts"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+n",
+          "mac": "meta+shift+n",
+          "chromeos": "ctrl+shift+n",
+          "action": "Open a new Notion window",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Probably desktop app oriented."
+        },
+        {
+          "windows": "ctrl+shift+l",
+          "mac": "meta+shift+l",
+          "chromeos": "ctrl+shift+l",
+          "action": "Toggle dark/light mode",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+m",
+          "mac": "meta+shift+m",
+          "chromeos": "ctrl+shift+m",
+          "action": "Create a comment",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+s",
+          "mac": "meta+shift+s",
+          "chromeos": "ctrl+shift+s",
+          "action": "Strikethrough",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+u",
+          "mac": "meta+shift+u",
+          "chromeos": "ctrl+shift+u",
+          "action": "Go up one level in page hierarchy",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+h",
+          "mac": "meta+shift+h",
+          "chromeos": "ctrl+shift+h",
+          "action": "Apply last used text or highlight color",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts"
+        },
+        {
+          "windows": null,
+          "mac": "ctrl+shift+k",
+          "chromeos": null,
+          "action": "Previous database page in peek view",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Mac only, uses Ctrl+Shift (not Cmd)."
+        },
+        {
+          "windows": null,
+          "mac": "ctrl+shift+j",
+          "chromeos": null,
+          "action": "Next database page in peek view",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Mac only, uses Ctrl+Shift (not Cmd)."
+        },
+        {
+          "windows": "ctrl+shift+arrowup",
+          "mac": "meta+shift+arrowup",
+          "chromeos": "ctrl+shift+arrowup",
+          "action": "Move selected block(s) up",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says \"arrow keys\"; direction inferred."
+        },
+        {
+          "windows": "ctrl+shift+arrowdown",
+          "mac": "meta+shift+arrowdown",
+          "chromeos": "ctrl+shift+arrowdown",
+          "action": "Move selected block(s) down",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says \"arrow keys\"; direction inferred."
+        },
+        {
+          "windows": "ctrl+shift+arrowleft",
+          "mac": "meta+shift+arrowleft",
+          "chromeos": "ctrl+shift+arrowleft",
+          "action": "Move/outdent selected block(s)",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Not confirmed individually."
+        },
+        {
+          "windows": "ctrl+shift+arrowright",
+          "mac": "meta+shift+arrowright",
+          "chromeos": "ctrl+shift+arrowright",
+          "action": "Move/indent selected block(s)",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Not confirmed individually."
+        },
+        {
+          "windows": "ctrl+shift+t",
+          "mac": "meta+alt+t",
+          "chromeos": "ctrl+shift+t",
+          "action": "Expand or close all toggles in a toggle list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + T. Windows read as ctrl+shift+t, Mac as meta+alt+t."
+        },
+        {
+          "windows": "ctrl+shift+0",
+          "mac": "meta+alt+0",
+          "chromeos": "ctrl+shift+0",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+1",
+          "mac": "meta+alt+1",
+          "chromeos": "ctrl+shift+1",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+2",
+          "mac": "meta+alt+2",
+          "chromeos": "ctrl+shift+2",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+3",
+          "mac": "meta+alt+3",
+          "chromeos": "ctrl+shift+3",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+4",
+          "mac": "meta+alt+4",
+          "chromeos": "ctrl+shift+4",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+5",
+          "mac": "meta+alt+5",
+          "chromeos": "ctrl+shift+5",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+6",
+          "mac": "meta+alt+6",
+          "chromeos": "ctrl+shift+6",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+alt+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+alt+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        },
+        {
+          "windows": "ctrl+shift+9",
+          "mac": "meta+alt+9",
+          "chromeos": "ctrl+shift+9",
+          "action": "Turn block into text/heading/to-do/list/code/page (digit)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://www.notion.com/help/keyboard-shortcuts",
+          "notes": "Page says Cmd/Ctrl + Option/Shift + 0-9. Windows read as ctrl+shift+N, Mac as meta+alt+N. Per-digit mapping not read."
+        }
+      ],
+      "gaps": "Page read through a summarizer. Per-digit block-type mapping and the exact Windows modifier for the 0-9 and toggle shortcuts are inferred from \"Cmd/Ctrl + Option/Shift\". Alt+Shift+click shortcuts are mouse only and omitted."
+    },
+    {
+      "id": "slack",
+      "name": "Slack",
+      "group": "collaboration",
+      "hosts": [
+        "app.slack.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/client/"
+      ],
+      "sources": [
+        "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+k",
+          "mac": "meta+shift+k",
+          "chromeos": "ctrl+shift+k",
+          "action": "Compose new message / Browse DMs",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Ambiguous: Windows row says Browse DMs is Ctrl+Shift+2 and the Mac row repeats Cmd+Shift+K for both."
+        },
+        {
+          "windows": "ctrl+shift+2",
+          "mac": null,
+          "chromeos": "ctrl+shift+2",
+          "action": "Browse DMs (Windows row)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Windows/Linux only per page."
+        },
+        {
+          "windows": "ctrl+shift+y",
+          "mac": "meta+shift+y",
+          "chromeos": "ctrl+shift+y",
+          "action": "Set status",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+n",
+          "mac": "meta+shift+n",
+          "chromeos": "ctrl+shift+n",
+          "action": "Create new canvas",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+j",
+          "mac": "meta+shift+j",
+          "chromeos": "ctrl+shift+j",
+          "action": "View downloaded files",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+enter",
+          "mac": "meta+shift+enter",
+          "chromeos": "ctrl+shift+enter",
+          "action": "Create snippet",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+backquote",
+          "mac": "meta+shift+backquote",
+          "chromeos": "ctrl+shift+backquote",
+          "action": "Add emoji reaction",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Page lists several layout-dependent keys; \"may differ by keyboard\"."
+        },
+        {
+          "windows": "ctrl+shift+backslash",
+          "mac": "meta+shift+backslash",
+          "chromeos": "ctrl+shift+backslash",
+          "action": "Add emoji reaction (layout variant)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Listed among layout-dependent keys."
+        },
+        {
+          "windows": "ctrl+shift+h",
+          "mac": "meta+shift+h",
+          "chromeos": "ctrl+shift+h",
+          "action": "Start/join/leave huddle (canvas: find and replace)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+space",
+          "mac": "meta+shift+space",
+          "chromeos": "ctrl+shift+space",
+          "action": "Toggle huddle mute",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+w",
+          "mac": "meta+shift+w",
+          "chromeos": "ctrl+shift+w",
+          "action": "Reopen last closed window",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Likely desktop only; not marked on page."
+        },
+        {
+          "windows": "ctrl+shift+e",
+          "mac": "meta+shift+e",
+          "chromeos": "ctrl+shift+e",
+          "action": "Open People view",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+m",
+          "mac": "meta+shift+m",
+          "chromeos": "ctrl+shift+m",
+          "action": "Open Activity view",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Desktop app only per Slack page."
+        },
+        {
+          "windows": "ctrl+shift+t",
+          "mac": "meta+shift+t",
+          "chromeos": "ctrl+shift+t",
+          "action": "Open Threads view",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Desktop app only per Slack page."
+        },
+        {
+          "windows": "ctrl+shift+l",
+          "mac": "meta+shift+l",
+          "chromeos": "ctrl+shift+l",
+          "action": "Browse channels",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Desktop app only per Slack page."
+        },
+        {
+          "windows": "ctrl+shift+i",
+          "mac": "meta+shift+i",
+          "chromeos": "ctrl+shift+i",
+          "action": "Open conversation details",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+a",
+          "mac": "meta+shift+a",
+          "chromeos": "ctrl+shift+a",
+          "action": "Open All unreads view",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+s",
+          "mac": "meta+shift+s",
+          "chromeos": "ctrl+shift+s",
+          "action": "Expand/collapse workspace switcher",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+x",
+          "mac": "meta+shift+x",
+          "chromeos": "ctrl+shift+x",
+          "action": "Strikethrough text",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+u",
+          "mac": "meta+shift+u",
+          "chromeos": "ctrl+shift+u",
+          "action": "Hyperlink text",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+9",
+          "mac": "meta+shift+9",
+          "chromeos": "ctrl+shift+9",
+          "action": "Quote text",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Bulleted list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Numbered list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+c",
+          "mac": "meta+shift+c",
+          "chromeos": "ctrl+shift+c",
+          "action": "Code text",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+f",
+          "mac": "meta+shift+f",
+          "chromeos": "ctrl+shift+f",
+          "action": "Apply markdown formatting",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+0",
+          "mac": "meta+shift+0",
+          "chromeos": "ctrl+shift+0",
+          "action": "Format as checklist (canvas)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+g",
+          "mac": "meta+shift+g",
+          "chromeos": "ctrl+shift+g",
+          "action": "Find previous (canvas)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+z",
+          "mac": "meta+shift+z",
+          "chromeos": "ctrl+shift+z",
+          "action": "Redo (canvas)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": null,
+          "mac": "meta+shift+slash",
+          "chromeos": null,
+          "action": "Open context menu (canvas), Mac",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Windows equivalent is Shift+F10 (outside these families)."
+        },
+        {
+          "windows": "ctrl+shift+1",
+          "mac": null,
+          "chromeos": "ctrl+shift+1",
+          "action": "Switch to tab by number (Shift Ctrl [number], digits 1-9)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Windows row only."
+        },
+        {
+          "windows": "alt+shift+arrowup",
+          "mac": "alt+shift+arrowup",
+          "chromeos": "alt+shift+arrowup",
+          "action": "Jump to previous unread channel/DM",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "alt+shift+arrowdown",
+          "mac": "alt+shift+arrowdown",
+          "chromeos": "alt+shift+arrowdown",
+          "action": "Jump to next unread channel/DM",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+shift+c",
+          "mac": "meta+alt+shift+c",
+          "chromeos": "ctrl+alt+shift+c",
+          "action": "Codeblock text",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+0",
+          "mac": "meta+alt+0",
+          "chromeos": "ctrl+alt+0",
+          "action": "Paragraph (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+1",
+          "mac": "meta+alt+1",
+          "chromeos": "ctrl+alt+1",
+          "action": "Big heading (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+2",
+          "mac": "meta+alt+2",
+          "chromeos": "ctrl+alt+2",
+          "action": "Medium heading (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+3",
+          "mac": "meta+alt+3",
+          "chromeos": "ctrl+alt+3",
+          "action": "Small heading (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+t",
+          "mac": "meta+alt+t",
+          "chromeos": "ctrl+alt+t",
+          "action": "View comment thread (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+r",
+          "mac": "meta+alt+r",
+          "chromeos": "ctrl+alt+r",
+          "action": "Show reader/edit view (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+arrowup",
+          "mac": "meta+alt+arrowup",
+          "chromeos": "ctrl+alt+arrowup",
+          "action": "Move list item up (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+arrowdown",
+          "mac": "meta+alt+arrowdown",
+          "chromeos": "ctrl+alt+arrowdown",
+          "action": "Move list item down (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+q",
+          "mac": "ctrl+alt+q",
+          "chromeos": "ctrl+alt+q",
+          "action": "Copy anchor link (canvas)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts",
+          "notes": "Mac uses Ctrl+Option, not Cmd."
+        }
+      ],
+      "gaps": "Page read through a summarizer; Compose and Browse DMs rows conflict between platforms. Emoji reaction keys are layout-dependent; only backquote and backslash recorded. Path /client/ is general knowledge, not read on the page."
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "group": "collaboration",
+      "hosts": [
+        "discord.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/channels/"
+      ],
+      "sources": [
+        "https://discord.com/blog/how-to-use-keyboard-shortcuts-on-discord-create-custom-keybinds",
+        "https://support.discord.com/hc/en-us/articles/1500000056121 (HTTP 403)",
+        "https://support.discord.com/hc/en-us/articles/31232432266647 (HTTP 403)"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+m",
+          "mac": "meta+shift+m",
+          "chromeos": "ctrl+shift+m",
+          "action": "Toggle mute",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://discord.com/blog/how-to-use-keyboard-shortcuts-on-discord-create-custom-keybinds",
+          "notes": "Read from the Discord blog; support-center pages returned 403. Desktop app works unfocused; browser needs focus."
+        },
+        {
+          "windows": "ctrl+shift+d",
+          "mac": "meta+shift+d",
+          "chromeos": "ctrl+shift+d",
+          "action": "Toggle deafen",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://discord.com/blog/how-to-use-keyboard-shortcuts-on-discord-create-custom-keybinds"
+        },
+        {
+          "windows": "ctrl+shift+u",
+          "mac": "meta+shift+u",
+          "chromeos": "ctrl+shift+u",
+          "action": "Attach a file to your message",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://discord.com/blog/how-to-use-keyboard-shortcuts-on-discord-create-custom-keybinds"
+        },
+        {
+          "windows": "ctrl+shift+b",
+          "mac": "meta+shift+b",
+          "chromeos": "ctrl+shift+b",
+          "action": "Open soundboard during voice call",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://discord.com/blog/how-to-use-keyboard-shortcuts-on-discord-create-custom-keybinds"
+        },
+        {
+          "windows": "ctrl+alt+shift+v",
+          "mac": "meta+alt+shift+v",
+          "chromeos": "ctrl+alt+shift+v",
+          "action": "Return to your active voice call",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://discord.com/blog/how-to-use-keyboard-shortcuts-on-discord-create-custom-keybinds",
+          "notes": "Page writes Ctrl/Cmd+Shift+Alt/Opt+V."
+        }
+      ],
+      "gaps": "support.discord.com returned HTTP 403 for both keyboard articles, so only the blog was read. The in-app list (Ctrl/Cmd+/) is the full source. Alt+Shift+Up/Down (unread channel) is widely reported but NOT confirmed this session, so not recorded. Path /channels/ not confirmed on the page."
+    },
+    {
+      "id": "confluence",
+      "name": "Confluence Cloud",
+      "group": "collaboration",
+      "hosts": [
+        "*.atlassian.net"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/wiki/"
+      ],
+      "sources": [
+        "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Numbered list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Bullet list",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+9",
+          "mac": "meta+shift+9",
+          "chromeos": "ctrl+shift+9",
+          "action": "Quote",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+m",
+          "mac": "meta+shift+m",
+          "chromeos": "ctrl+shift+m",
+          "action": "Code",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+s",
+          "mac": "alt+shift+s",
+          "chromeos": "ctrl+shift+s",
+          "action": "Strikethrough",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac uses Opt+Shift+S per page."
+        },
+        {
+          "windows": "ctrl+shift+comma",
+          "mac": "alt+shift+comma",
+          "chromeos": "ctrl+shift+comma",
+          "action": "Subscript",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac uses Opt+Shift+comma per page."
+        },
+        {
+          "windows": "ctrl+shift+period",
+          "mac": "alt+shift+period",
+          "chromeos": "ctrl+shift+period",
+          "action": "Superscript",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac uses Opt+Shift+period per page."
+        },
+        {
+          "windows": "ctrl+shift+enter",
+          "mac": "meta+shift+enter",
+          "chromeos": "ctrl+shift+enter",
+          "action": "Publish with note",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+i",
+          "mac": "ctrl+shift+i",
+          "chromeos": "ctrl+shift+i",
+          "action": "Open details panel",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac uses Ctrl+Shift+I per page."
+        },
+        {
+          "windows": "ctrl+shift+u",
+          "mac": "meta+shift+u",
+          "chromeos": "ctrl+shift+u",
+          "action": "Next unread comment",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+d",
+          "mac": "meta+shift+d",
+          "chromeos": "ctrl+shift+d",
+          "action": "Insert markup",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+a",
+          "mac": "meta+shift+a",
+          "chromeos": "ctrl+shift+a",
+          "action": "Macro",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": null,
+          "mac": "meta+shift+i",
+          "chromeos": null,
+          "action": "Insert table (Mac only per page)",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Conflicts with details panel on Mac. Mac column from a summarized page; some Mac rows looked inconsistent, re-check in the in-app dialog."
+        },
+        {
+          "windows": "ctrl+alt+shift+b",
+          "mac": "meta+alt+shift+b",
+          "chromeos": "ctrl+alt+shift+b",
+          "action": "Blog post",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+o",
+          "mac": "meta+alt+o",
+          "chromeos": "ctrl+alt+o",
+          "action": "Open notifications",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+h",
+          "mac": "meta+alt+h",
+          "chromeos": "ctrl+alt+h",
+          "action": "Go Home",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+g",
+          "mac": "meta+alt+g",
+          "chromeos": "ctrl+alt+g",
+          "action": "Open recent",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+8",
+          "mac": "meta+alt+8",
+          "chromeos": "ctrl+alt+8",
+          "action": "Open starred",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+v",
+          "mac": "meta+alt+v",
+          "chromeos": "ctrl+alt+v",
+          "action": "Go to space overview",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+0",
+          "mac": "meta+alt+0",
+          "chromeos": "ctrl+alt+0",
+          "action": "Paragraph",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+1",
+          "mac": "meta+alt+1",
+          "chromeos": "ctrl+alt+1",
+          "action": "Heading 1",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+2",
+          "mac": "meta+alt+2",
+          "chromeos": "ctrl+alt+2",
+          "action": "Heading 2",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+3",
+          "mac": "meta+alt+3",
+          "chromeos": "ctrl+alt+3",
+          "action": "Heading 3",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+4",
+          "mac": "meta+alt+4",
+          "chromeos": "ctrl+alt+4",
+          "action": "Heading 4",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+5",
+          "mac": "meta+alt+5",
+          "chromeos": "ctrl+alt+5",
+          "action": "Heading 5",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+6",
+          "mac": "meta+alt+6",
+          "chromeos": "ctrl+alt+6",
+          "action": "Heading 6",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+y",
+          "mac": "meta+alt+y",
+          "chromeos": "ctrl+alt+y",
+          "action": "Highlight yellow",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+c",
+          "mac": "meta+alt+c",
+          "chromeos": "ctrl+alt+c",
+          "action": "Comment",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows Ctrl+Alt+C; Mac Cmd+Opt+C."
+        },
+        {
+          "windows": "ctrl+alt+w",
+          "mac": "meta+alt+w",
+          "chromeos": "ctrl+alt+w",
+          "action": "Watch",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+s",
+          "mac": "meta+alt+s",
+          "chromeos": "ctrl+alt+s",
+          "action": "Share",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+e",
+          "mac": "meta+alt+e",
+          "chromeos": "ctrl+alt+e",
+          "action": "Align center",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+t",
+          "mac": "meta+alt+t",
+          "chromeos": "ctrl+alt+t",
+          "action": "Align right",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+a",
+          "mac": "ctrl+alt+a",
+          "chromeos": "ctrl+alt+a",
+          "action": "Edit labels",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac uses Ctrl+Option+A."
+        },
+        {
+          "windows": "ctrl+alt+f",
+          "mac": "ctrl+alt+f",
+          "chromeos": "ctrl+alt+f",
+          "action": "Favorite content",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac uses Ctrl+Option+F."
+        },
+        {
+          "windows": null,
+          "mac": "ctrl+alt+c",
+          "chromeos": null,
+          "action": "Create page (Mac)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows page lists Win+Alt+C (not in these families). Mac column from a summarized page; some Mac rows looked inconsistent, re-check in the in-app dialog."
+        },
+        {
+          "windows": null,
+          "mac": "ctrl+alt+t",
+          "chromeos": null,
+          "action": "Attachments (Mac)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Mac column from a summarized page; some Mac rows looked inconsistent, re-check in the in-app dialog."
+        },
+        {
+          "windows": "ctrl+alt+p",
+          "mac": null,
+          "chromeos": "ctrl+alt+p",
+          "action": "Presenter mode",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows only on page."
+        },
+        {
+          "windows": "ctrl+alt+arrowup",
+          "mac": null,
+          "chromeos": "ctrl+alt+arrowup",
+          "action": "Table row/column operations (Ctrl+Alt+Arrow keys)",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows only on page; all four arrows."
+        },
+        {
+          "windows": "ctrl+alt+equal",
+          "mac": null,
+          "chromeos": "ctrl+alt+equal",
+          "action": "Table insert row/column",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows only on page."
+        },
+        {
+          "windows": "ctrl+alt+minus",
+          "mac": null,
+          "chromeos": "ctrl+alt+minus",
+          "action": "Table delete row/column",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows only on page."
+        },
+        {
+          "windows": "alt+shift+z",
+          "mac": "ctrl+alt+z",
+          "chromeos": "alt+shift+z",
+          "action": "Quick search",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows Alt+Shift+Z; Mac Ctrl+Option+Z. Matches Atlassian access-key style."
+        },
+        {
+          "windows": "ctrl+alt+shift+r",
+          "mac": "meta+alt+shift+r",
+          "chromeos": "ctrl+alt+shift+r",
+          "action": "Table resize (whiteboard/table)",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+shift+arrowup",
+          "mac": "meta+alt+shift+arrowup",
+          "chromeos": "ctrl+alt+shift+arrowup",
+          "action": "Table column selection (Up/Down arrows)",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+shift+arrowdown",
+          "mac": "meta+alt+shift+arrowdown",
+          "chromeos": "ctrl+alt+shift+arrowdown",
+          "action": "Table column selection",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+shift+arrowleft",
+          "mac": "meta+alt+shift+arrowleft",
+          "chromeos": "ctrl+alt+shift+arrowleft",
+          "action": "Table row selection (Left/Right arrows)",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+alt+shift+arrowright",
+          "mac": "meta+alt+shift+arrowright",
+          "chromeos": "ctrl+alt+shift+arrowright",
+          "action": "Table row selection",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+1",
+          "mac": "meta+shift+1",
+          "chromeos": "ctrl+shift+1",
+          "action": "Whiteboard: zoom to fit",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete"
+        },
+        {
+          "windows": "ctrl+shift+2",
+          "mac": null,
+          "chromeos": "ctrl+shift+2",
+          "action": "Whiteboard: zoom to selection",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/confluence-cloud/docs/keyboard-shortcuts-markdown-and-autocomplete",
+          "notes": "Windows only on page."
+        }
+      ],
+      "gaps": "Read through a summarizer. Mac column has odd rows (Create live doc, Select comment, Insert table) so Mac values need re-check in the in-app dialog (press ?). Windows Create page listed as Win+Alt+C. Some entries (Cmd/Ctrl+Opt navigation) may be Mac-only variants of Windows chords. Shortcuts may be globally disabled in the General tab."
+    },
+    {
+      "id": "jira",
+      "name": "Jira Cloud",
+      "group": "collaboration",
+      "hosts": [
+        "*.atlassian.net"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/jira/",
+        "/browse/"
+      ],
+      "sources": [
+        "https://support.atlassian.com/jira-software-cloud/docs/use-keyboard-shortcuts/"
+      ],
+      "researched": true,
+      "shortcuts": [],
+      "modifierNotes": [
+        {
+          "windows": "alt+shift+<key>",
+          "mac": "ctrl+alt+<key>",
+          "chromeos": null,
+          "action": "Access-key modifier for shortcuts that need one (Chrome/Edge on Windows: Alt+Shift; Chrome/Safari on Mac: Ctrl+Option; Firefox Windows: Alt+Shift, Firefox Mac: Ctrl)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.atlassian.com/jira-software-cloud/docs/use-keyboard-shortcuts/",
+          "notes": "Pattern, not a specific key. Page names no specific key; the list lives in the in-app dialog (Help, Keyboard shortcuts, or ?)."
+        }
+      ],
+      "gaps": "Public page lists only single-key shortcuts (C, O, A, I, M, J, K, N, P) and the modifier pattern. No specific Ctrl+Shift or Ctrl+Alt Jira shortcuts confirmed. Shares origin with Confluence; distinguish by path."
+    },
+    {
+      "id": "linear",
+      "name": "Linear",
+      "group": "collaboration",
+      "hosts": [
+        "linear.app"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [
+        "https://fastshortcuts.com/shortcuts/linear/",
+        "https://linear.app/enablement/guides/navigating-linear"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+o",
+          "mac": "meta+shift+o",
+          "chromeos": "ctrl+shift+o",
+          "action": "Create sub-issue",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+arrowup",
+          "mac": "meta+shift+arrowup",
+          "chromeos": "ctrl+shift+arrowup",
+          "action": "Open parent issue",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+s",
+          "mac": "meta+shift+s",
+          "chromeos": "ctrl+shift+s",
+          "action": "Manage subscribers",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+m",
+          "mac": "meta+shift+m",
+          "chromeos": "ctrl+shift+m",
+          "action": "Move to another team",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+period",
+          "mac": "meta+shift+period",
+          "chromeos": "ctrl+shift+period",
+          "action": "Copy Git branch name",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+comma",
+          "mac": "meta+shift+comma",
+          "chromeos": "ctrl+shift+comma",
+          "action": "Copy issue URL",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+d",
+          "mac": "meta+shift+d",
+          "chromeos": "ctrl+shift+d",
+          "action": "Remove due date",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "alt+shift+f",
+          "mac": "alt+shift+f",
+          "chromeos": "alt+shift+f",
+          "action": "Clear all filters",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+1",
+          "mac": "meta+shift+1",
+          "chromeos": "ctrl+shift+1",
+          "action": "Go to team 1",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+2",
+          "mac": "meta+shift+2",
+          "chromeos": "ctrl+shift+2",
+          "action": "Go to team 2",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+3",
+          "mac": "meta+shift+3",
+          "chromeos": "ctrl+shift+3",
+          "action": "Go to team 3",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+4",
+          "mac": "meta+shift+4",
+          "chromeos": "ctrl+shift+4",
+          "action": "Go to team 4",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+5",
+          "mac": "meta+shift+5",
+          "chromeos": "ctrl+shift+5",
+          "action": "Go to team 5",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+6",
+          "mac": "meta+shift+6",
+          "chromeos": "ctrl+shift+6",
+          "action": "Go to team 6",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": "ctrl+shift+7",
+          "action": "Go to team 7",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": "ctrl+shift+8",
+          "action": "Go to team 8",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+shift+9",
+          "mac": "meta+shift+9",
+          "chromeos": "ctrl+shift+9",
+          "action": "Go to team 9",
+          "family": "ctrl+shift",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+1",
+          "mac": "meta+alt+1",
+          "chromeos": "ctrl+alt+1",
+          "action": "Set status by position 1",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+2",
+          "mac": "meta+alt+2",
+          "chromeos": "ctrl+alt+2",
+          "action": "Set status by position 2",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+3",
+          "mac": "meta+alt+3",
+          "chromeos": "ctrl+alt+3",
+          "action": "Set status by position 3",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+4",
+          "mac": "meta+alt+4",
+          "chromeos": "ctrl+alt+4",
+          "action": "Set status by position 4",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+5",
+          "mac": "meta+alt+5",
+          "chromeos": "ctrl+alt+5",
+          "action": "Set status by position 5",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+6",
+          "mac": "meta+alt+6",
+          "chromeos": "ctrl+alt+6",
+          "action": "Set status by position 6",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+7",
+          "mac": "meta+alt+7",
+          "chromeos": "ctrl+alt+7",
+          "action": "Set status by position 7",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+8",
+          "mac": "meta+alt+8",
+          "chromeos": "ctrl+alt+8",
+          "action": "Set status by position 8",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        },
+        {
+          "windows": "ctrl+alt+9",
+          "mac": "meta+alt+9",
+          "chromeos": "ctrl+alt+9",
+          "action": "Set status by position 9",
+          "family": "ctrl+alt",
+          "verified": false,
+          "source": "https://fastshortcuts.com/shortcuts/linear/",
+          "notes": "Third-party cheat sheet (fastshortcuts.com); linear.app pages fetched did not list modifier shortcuts and linear.app/docs/keyboard-shortcuts returned 404."
+        }
+      ],
+      "gaps": "No vendor page with the full list could be read (docs URL 404; enablement guide only points to ? in-app). All entries are unverified third-party."
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "group": "publishing",
+      "hosts": [
+        "github.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [
+        "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts",
+        "https://raw.githubusercontent.com/github/markdown-toolbar-element/main/src/index.ts"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+shift+7",
+          "mac": "meta+shift+7",
+          "chromeos": null,
+          "action": "Ordered list markdown (comment box, file editor)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+8",
+          "mac": "meta+shift+8",
+          "chromeos": null,
+          "action": "Unordered list markdown (comment box, file editor)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+period",
+          "mac": "meta+shift+period",
+          "chromeos": null,
+          "action": "Quote markdown (comment box, file editor)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+g",
+          "mac": "meta+shift+g",
+          "chromeos": null,
+          "action": "Find previous (code editor)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+r",
+          "mac": "meta+alt+shift+f",
+          "chromeos": null,
+          "action": "Replace all (code editor)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts",
+          "notes": "Mac chord is Cmd+Shift+Option+F, so it is in the ctrl+alt+shift family on Mac."
+        },
+        {
+          "windows": "ctrl+shift+p",
+          "mac": "meta+shift+p",
+          "chromeos": null,
+          "action": "Toggle Write/Preview tabs (comments, issues, PRs, editor)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+v",
+          "mac": "meta+shift+v",
+          "chromeos": null,
+          "action": "Paste HTML link as plain text",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+alt+shift+v",
+          "mac": "meta+alt+shift+v",
+          "chromeos": null,
+          "action": "Paste HTML link as plain text (alternate chord)",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+enter",
+          "mac": "meta+shift+enter",
+          "chromeos": null,
+          "action": "Submit a review comment (Files changed tab)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "ctrl+shift+backslash",
+          "mac": "meta+shift+backslash",
+          "chromeos": null,
+          "action": "Open row actions menu (Projects)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "alt+shift+c",
+          "mac": "alt+shift+c",
+          "chromeos": null,
+          "action": "Open line menu for selected code (code view/editor)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "alt+shift+c",
+          "mac": "alt+shift+c",
+          "chromeos": null,
+          "action": "Create a new sub-issue (issues)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts",
+          "notes": "Same chord as the line menu, different page context."
+        },
+        {
+          "windows": "alt+shift+a",
+          "mac": "alt+shift+a",
+          "chromeos": null,
+          "action": "Add an existing issue as sub-issue",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        },
+        {
+          "windows": "alt+shift+p",
+          "mac": "alt+shift+p",
+          "chromeos": null,
+          "action": "Edit parent issue",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://docs.github.com/en/get-started/accessibility/keyboard-shortcuts"
+        }
+      ],
+      "gaps": "No Ctrl+Alt chords listed on the docs page. markdown-toolbar-element (index.ts) defines no chords itself; github.com supplies the bold/italic hotkeys elsewhere, so the docs page is the source. The page was read through a summarizer; the Mac Cmd+Shift+P line in the editor section and the Replace all chords deserve a human recheck."
+    },
+    {
+      "id": "gutenberg",
+      "name": "WordPress block editor (Gutenberg)",
+      "group": "publishing",
+      "hosts": [
+        "*"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [
+        "/wp-admin/post.php",
+        "/wp-admin/post-new.php"
+      ],
+      "sources": [
+        "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+        "https://wordpress.org/documentation/article/keyboard-shortcuts-classic-editor/"
+      ],
+      "researched": true,
+      "shortcuts": [
+        {
+          "windows": "ctrl+alt+shift+m",
+          "mac": "meta+alt+shift+m",
+          "chromeos": null,
+          "action": "Switch visual editor / code editor",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+alt+shift+f",
+          "mac": "meta+alt+shift+f",
+          "chromeos": null,
+          "action": "Toggle fullscreen mode",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "alt+shift+o",
+          "mac": "ctrl+alt+o",
+          "chromeos": null,
+          "action": "Open block list view",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Mac uses Ctrl+Option."
+        },
+        {
+          "windows": "ctrl+shift+comma",
+          "mac": "meta+shift+comma",
+          "chromeos": null,
+          "action": "Show/hide settings sidebar",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "alt+shift+n",
+          "mac": "ctrl+alt+n",
+          "chromeos": null,
+          "action": "Navigate to next part of editor",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Alternate to Ctrl+backquote (outside these families). Mac uses Ctrl+Option."
+        },
+        {
+          "windows": "ctrl+shift+backquote",
+          "mac": "ctrl+shift+backquote",
+          "chromeos": null,
+          "action": "Navigate to previous part of editor",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Mac is Ctrl+Shift+backquote per the page, not Cmd."
+        },
+        {
+          "windows": "alt+shift+p",
+          "mac": "ctrl+alt+p",
+          "chromeos": null,
+          "action": "Navigate to previous part of editor (alternate)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Mac uses Ctrl+Option."
+        },
+        {
+          "windows": "ctrl+shift+z",
+          "mac": "meta+shift+z",
+          "chromeos": null,
+          "action": "Redo",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Ctrl+Y also works on Windows."
+        },
+        {
+          "windows": "ctrl+shift+0",
+          "mac": "meta+shift+0",
+          "chromeos": null,
+          "action": "Zoom out toggle",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Needs Show template active in a Full Site Editing theme."
+        },
+        {
+          "windows": "ctrl+shift+d",
+          "mac": "meta+shift+d",
+          "chromeos": null,
+          "action": "Duplicate selected block(s)",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "alt+shift+z",
+          "mac": "ctrl+alt+z",
+          "chromeos": null,
+          "action": "Remove selected block(s)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Mac uses Ctrl+Option."
+        },
+        {
+          "windows": "ctrl+alt+t",
+          "mac": "meta+alt+t",
+          "chromeos": null,
+          "action": "Insert block before selection",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+alt+y",
+          "mac": "meta+alt+y",
+          "chromeos": null,
+          "action": "Insert block after selection",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+alt+shift+t",
+          "mac": "meta+alt+shift+t",
+          "chromeos": null,
+          "action": "Move selected block(s) up",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+alt+shift+y",
+          "mac": "meta+alt+shift+y",
+          "chromeos": null,
+          "action": "Move selected block(s) down",
+          "family": "ctrl+alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+alt+v",
+          "mac": "meta+alt+v",
+          "chromeos": null,
+          "action": "Paste styles from copied block",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+shift+k",
+          "mac": "meta+shift+k",
+          "chromeos": null,
+          "action": "Remove link",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "ctrl+alt+x",
+          "mac": "meta+alt+x",
+          "chromeos": null,
+          "action": "Inline code",
+          "family": "ctrl+alt",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/"
+        },
+        {
+          "windows": "alt+shift+1",
+          "mac": "meta+alt+1",
+          "chromeos": null,
+          "action": "Convert paragraph/heading to heading level 1",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+2",
+          "mac": "meta+alt+2",
+          "chromeos": null,
+          "action": "Convert paragraph/heading to heading level 2",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+3",
+          "mac": "meta+alt+3",
+          "chromeos": null,
+          "action": "Convert paragraph/heading to heading level 3",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+4",
+          "mac": "meta+alt+4",
+          "chromeos": null,
+          "action": "Convert paragraph/heading to heading level 4",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+5",
+          "mac": "meta+alt+5",
+          "chromeos": null,
+          "action": "Convert paragraph/heading to heading level 5",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+6",
+          "mac": "meta+alt+6",
+          "chromeos": null,
+          "action": "Convert paragraph/heading to heading level 6",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+0",
+          "mac": "meta+alt+0",
+          "chromeos": null,
+          "action": "Convert heading to paragraph",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Mac is Cmd+Alt+digit, which differs from the Ctrl+Option pattern of other Shift+Alt chords; Gutenberg source not read, so the Mac chord is uncertain."
+        },
+        {
+          "windows": "alt+shift+h",
+          "mac": "ctrl+alt+h",
+          "chromeos": null,
+          "action": "Show list of all editor shortcuts",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://wordpress.org/documentation/article/keyboard-shortcuts-block-editor/",
+          "notes": "Page says Shift+Alt+H or Ctrl+Option+H."
+        }
+      ],
+      "gaps": "Same editor runs on wordpress.com and the site editor (/wp-admin/site-editor.php, not in pathPrefixes). Gutenberg source (keycodes package, registerShortcut calls) was not read; raw URLs returned 404. Classic editor (TinyMCE) uses Alt+Shift+letter on Windows and Ctrl+Option+letter on Mac for many letters and digits 1-6, 9; not itemized because the block editor is the target."
+    },
+    {
+      "id": "medium",
+      "name": "Medium",
+      "group": "publishing",
+      "hosts": [
+        "medium.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [],
+      "researched": false,
+      "shortcuts": [],
+      "gaps": "help.medium.com returned 403, nothing read. No shortcuts in these families verified. Not guessed."
+    },
+    {
+      "id": "reddit",
+      "name": "Reddit",
+      "group": "publishing",
+      "hosts": [
+        "www.reddit.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [],
+      "researched": false,
+      "shortcuts": [],
+      "gaps": "Reddit help wiki could not be fetched by the tool. No verified shortcuts in these families. Not guessed."
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "group": "publishing",
+      "hosts": [
+        "www.linkedin.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [],
+      "researched": false,
+      "shortcuts": [],
+      "gaps": "The help URL tried returned an unrelated page; no shortcuts page read. No verified shortcuts in these families. Not guessed."
+    },
+    {
+      "id": "x",
+      "name": "X / Twitter",
+      "group": "publishing",
+      "hosts": [
+        "x.com",
+        "twitter.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [],
+      "researched": false,
+      "shortcuts": [],
+      "gaps": "help.x.com returned 403 and developer.x.com 402. No verified shortcuts in these families. Not guessed."
+    },
+    {
+      "id": "substack",
+      "name": "Substack",
+      "group": "publishing",
+      "hosts": [
+        "substack.com"
+      ],
+      "hostsConfirmed": true,
+      "pathPrefixes": [],
+      "sources": [],
+      "researched": false,
+      "shortcuts": [],
+      "gaps": "support.substack.com returned 403. No verified shortcuts in these families. Not guessed."
+    }
+  ],
+  "systemNotes": [
+    {
+      "id": "windows-input-switching",
+      "name": "Windows input switching (OS level)",
+      "platform": "windows",
+      "sources": [
+        "https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-windows-dcc61a57-8ff0-cffe-9796-cb9706c75eec"
+      ],
+      "notes": [
+        {
+          "windows": "meta+space",
+          "mac": null,
+          "chromeos": null,
+          "action": "Windows+Space switches forward through input languages and layouts (Win+Shift+Space backward)",
+          "family": "alt+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-windows-dcc61a57-8ff0-cffe-9796-cb9706c75eec",
+          "notes": "Context only."
+        },
+        {
+          "windows": "alt+shift",
+          "mac": null,
+          "chromeos": null,
+          "action": "Left Alt+Shift switches input language (default when several languages are installed; can be changed or set to Not Assigned under Advanced keyboard settings, Input language hot keys)",
+          "family": "alt+shift",
+          "verified": false,
+          "source": "https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-windows-dcc61a57-8ff0-cffe-9796-cb9706c75eec",
+          "notes": "Not on the Windows shortcuts page fetched. Default known from Microsoft settings guidance and forum answers, not read on a vendor page this session."
+        },
+        {
+          "windows": "ctrl+shift",
+          "mac": null,
+          "chromeos": null,
+          "action": "Ctrl+Shift switches keyboard layout when multiple layouts are available",
+          "family": "ctrl+shift",
+          "verified": true,
+          "source": "https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-windows-dcc61a57-8ff0-cffe-9796-cb9706c75eec",
+          "notes": "Wording on the Windows shortcuts page: when multiple keyboard layouts are available, switch the keyboard layout."
+        }
+      ],
+      "gaps": "Whether the page still receives the keydown is NOT confirmed from a Microsoft page. Expected behavior (unverified): the switch triggers when the bare modifier pair is released with no other key, browsers still see keydown for Shift and Alt, and Shift+Alt+<key> chords are not stolen. Needs a live test."
+    }
+  ]
+}
