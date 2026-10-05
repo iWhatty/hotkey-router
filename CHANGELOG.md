@@ -2,7 +2,7 @@
 
 > Initial cut seeded from `git log` by the host repo's `tools/seed-changelogs.mjs` script. Version groupings infer release boundaries from tags and commit subjects; rough cuts are expected — review and tighten as part of normal maintenance.
 
-## 0.3.0 — Unreleased
+## 0.3.0 — 2026-10-04
 
 ### Added
 
@@ -32,6 +32,13 @@
   bindings** (Windows reports AltGr as Ctrl+Alt; AltGr+, types `<` on
   Polish, Czech and Canadian layouts). Opt back in with `{ altGraph: true }`.
 - **Keys during IME composition are skipped** unless `{ composing: true }`.
+
+### Fixed
+
+- The package now ships its TypeScript declarations. Since `dist/types` was
+  added, `prepare` (which npm runs after `prepublishOnly`) rebuilt `dist/`
+  without them, so 0.2.x went out with `types` exports pointing at missing
+  files. `prepare` builds the types too; `prepublishOnly` runs the tests.
 
 ## 0.2.3 — 2026-06-15
 

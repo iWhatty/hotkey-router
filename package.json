@@ -53,8 +53,8 @@
   "scripts": {
     "build": "node build.js",
     "build:types": "tsc -p tsconfig.types.json",
-    "prepare": "node build.js",
-    "prepublishOnly": "node build.js && npm run build:types",
+    "prepare": "node build.js && npm run build:types",
+    "prepublishOnly": "npm test",
     "test": "vitest run --environment jsdom",
     "test:watch": "vitest --environment jsdom",
     "scrape:diff": "node scripts/scrape-reservations.mjs",
