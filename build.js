@@ -97,12 +97,16 @@ await build({
 
 // --- Validate module (ESM) ---
 // `import { validateCombo } from 'hotkey-router/validate'`, for key recorders.
+// Imports dist/reservations.js and dist/sites.js instead of inlining them, so
+// an app that also imports those subpaths bundles one copy of each table,
+// not two.
 await build({
   ...common,
   entryPoints: ['validate.js'],
   outfile: 'dist/validate.js',
   format: 'esm',
   sourcemap: true,
+  external: ['./reservations.js', './sites.js'],
   banner,
 })
 

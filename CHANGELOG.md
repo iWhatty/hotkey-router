@@ -35,6 +35,9 @@
 
 ### Fixed
 
+- `dist/validate.js` imports `dist/reservations.js` and `dist/sites.js`
+  instead of carrying its own copies (69 KB -> 5 KB), so an app that also
+  imports those subpaths bundles each table once.
 - The package now ships its TypeScript declarations. Since `dist/types` was
   added, `prepare` (which npm runs after `prepublishOnly`) rebuilt `dist/`
   without them, so 0.2.x went out with `types` exports pointing at missing
