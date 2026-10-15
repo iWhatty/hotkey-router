@@ -123,13 +123,27 @@ function codeToKey(code) {
   return code.toLowerCase()
 }
 
+// Punctuation and space typed as `event.key` (`meta+shift+/`, `meta+space`)
+// map to the same symbolic names the data uses for `code:Slash` and friends,
+// so both spellings of a combo find the same entry. Mirrors sites.js.
+const PUNCT_KEYS = {
+  '.': 'period', ',': 'comma', ';': 'semicolon', "'": 'quote', '/': 'slash',
+  '\\': 'backslash', '[': 'bracketleft', ']': 'bracketright', '-': 'minus',
+  '=': 'equal', '`': 'backquote', ' ': 'space',
+}
+
+function keyToBase(key) {
+  if (key == null) return null
+  return PUNCT_KEYS[key] || key
+}
+
 // Build the canonical lookup key from a hotkey-router parsed combo. Mirrors
 // WebRadar's `lookupKey()` but works against the parsed structure rather than
 // the raw string, so `mod` is already resolved and `code:KeyX` is normalized.
 export function lookupKeyFromCombo(combo) {
   if (!combo) return null
   if (combo.bareModifier) return null // bare modifiers aren't tracked in the data
-  const base = combo.code ? codeToKey(combo.code) : combo.key
+  const base = combo.code ? codeToKey(combo.code) : keyToBase(combo.key)
   if (!base) return null
   const parts = []
   if (combo.ctrl) parts.push('ctrl')

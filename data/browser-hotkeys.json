@@ -1,7 +1,7 @@
 {
   "$comment": "Machine-readable companion to docs/browser-hotkeys.md. Each combo entry describes who claims the binding and how strongly. Intended for runtime conflict warnings in keyboard-routing libraries (e.g. hotkey-router) and dev-time validation in apps like WebRadar. Update both this file and the markdown together — the markdown is the human source of truth, this file is the machine projection.",
   "version": {
-    "generated": "2026-05-17",
+    "generated": "2026-10-15",
     "schema": "1.0",
     "sources": [
       "https://support.mozilla.org/en-US/kb/keyboard-shortcuts-perform-firefox-tasks-quickly",
@@ -154,7 +154,11 @@
         "meta+shift+q": { "action": "Log out", "severity": "os" },
         "meta+ctrl+q": { "action": "Lock screen", "severity": "os" },
         "meta+ctrl+space": { "action": "Character Viewer", "severity": "os" },
-        "meta+alt+esc": { "action": "Force-quit dialog", "severity": "os" }
+        "meta+alt+esc": { "action": "Force-quit dialog", "severity": "os" },
+        "meta+shift+slash": { "action": "Help menu search (Cmd+?)", "severity": "os" },
+        "meta+alt+h": { "action": "Hide other apps", "severity": "os" },
+        "meta+alt+d": { "action": "Show or hide the Dock", "severity": "os" },
+        "meta+backquote": { "action": "Switch windows of the front app", "severity": "os" }
       },
       "noteForLetterCombos": {
         "alt+a..z": { "behavior": "compose", "note": "Option+letter types special characters in text inputs (Option+E→´, Option+A→å, Option+F→ƒ). Outside inputs, free for page world." },

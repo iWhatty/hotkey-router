@@ -370,6 +370,7 @@ Accepted platforms: `'mac' | 'windows' | 'linux'`. Browsers: `'firefox' | 'chrom
 - Reservations reflect **default** keybindings. Users with custom shortcuts (Edge 95+ rebinds, Firefox add-ons, OS-level customization) may not match.
 - KDE/XFCE desktop reservations beyond GNOME are not yet catalogued. Linux coverage is conservative.
 - Layout-specific differences (Dvorak, AZERTY) change which physical key produces `event.key === 'f'`. For layout-stable bindings against the physical key, use `code:KeyX` syntax. The reservation lookup normalizes both.
+- macOS menu-bar shortcuts that every app gets from the system (Cmd+Shift+/ for Help menu search, Cmd+H, Cmd+Option+H, Cmd+M, Cmd+Q, Cmd+`) are listed under the mac `system` table. Punctuation matches whether you bind it by code (`mod+shift+code:Slash`) or by key (`mod+shift+/`); a shifted character such as `?` depends on the layout, so bind the physical key.
 
 **Programmatic lookup.** If you want to query the table yourself (e.g. building a cheatsheet that flags conflicts):
 

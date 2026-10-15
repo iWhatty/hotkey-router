@@ -36,6 +36,14 @@ describe('validateCombo', () => {
     expect(codes(r)).toContain('taken')
   })
 
+  it('rejects Cmd+Shift+/ on a Mac (Help menu search), not on Windows', () => {
+    const r = validateCombo('mod+shift+code:Slash', { platforms: ['mac', 'windows'], browsers: ['chrome'] })
+    expect(r.ok).toBe(false)
+    const hit = r.reasons.find((x) => x.code === 'reserved')
+    expect(hit.platforms).toEqual(['mac'])
+    expect(hit.details.action).toMatch(/help menu/i)
+  })
+
   it('rejects keys the browser takes before the page (hard reservation)', () => {
     const r = validateCombo('mod+code:KeyT', { platforms: ['windows'], browsers: ['chrome'] })
     expect(r.ok).toBe(false)

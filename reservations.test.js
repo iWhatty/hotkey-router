@@ -159,14 +159,27 @@ describe('lookupReservation — WebRadar smoke scenarios', () => {
 
   it('falls through to platform.system when browser table misses', () => {
     // meta+space is a macOS system reservation (Spotlight), not a browser one.
+    // The parsed key is ' '; the data spells it "space".
     const r = lookupReservation(combo({ meta: true, key: ' ' }), { platform: 'mac', browser: 'firefox' })
-    // space key: data uses literal "space"? Actually the data uses meta+space.
-    // Our canonicalize lowercases; the data has "meta+space" literally.
-    // Skip if mismatch — the important check is system fallthrough works for
-    // a known entry. Use meta+q (Quit app, system) which is plain.
+    expect(r?.source).toBe('system')
+    expect(r?.action).toBe('Spotlight')
     const q = lookupReservation(combo({ meta: true, key: 'q' }), { platform: 'mac', browser: 'firefox' })
     expect(q?.source).toBe('system')
     expect(q?.severity).toBe('os')
+  })
+
+  it('flags Cmd+Shift+/ (Help menu search) on macOS in every browser, by code or by key', () => {
+    // Found by SpellBolt (2026-10-15): AppKit's Help menu takes Cmd+? in every
+    // Mac app, so a page never sees mod+shift+code:Slash on a Mac.
+    for (const browser of ['chrome', 'firefox', 'safari', 'edge']) {
+      const byCode = lookupReservation(combo({ meta: true, shift: true, code: 'Slash' }), { platform: 'mac', browser })
+      expect(byCode?.lookupKey).toBe('meta+shift+slash')
+      expect(byCode?.action).toMatch(/help menu/i)
+      expect(byCode?.severity).toBe('os')
+    }
+    expect(lookupReservation(combo({ meta: true, shift: true, key: '/' }), { platform: 'mac', browser: 'chrome' })?.action).toMatch(/help menu/i)
+    // Windows/Linux Ctrl+Shift+/ is not an OS chord.
+    expect(lookupReservation(combo({ ctrl: true, shift: true, code: 'Slash' }), { platform: 'windows', browser: 'chrome' })).toBeNull()
   })
 
   it('returns null when platform or browser is unknown', () => {

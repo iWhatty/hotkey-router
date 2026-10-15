@@ -2,6 +2,26 @@
 
 > Initial cut seeded from `git log` by the host repo's `tools/seed-changelogs.mjs` script. Version groupings infer release boundaries from tags and commit subjects; rough cuts are expected — review and tighten as part of normal maintenance.
 
+## 0.3.1 — 2026-10-15
+
+### Fixed
+
+- **Cmd+Shift+/ on macOS is now reserved** (Help menu search, Cmd+?, which
+  AppKit gives every Mac app's menu bar, so Chrome, Firefox, Safari, Edge and
+  Brave all take it before the page). `lookupReservation`, the bind-time
+  warning and `validateCombo` accepted `mod+shift+code:Slash` on a Mac.
+  Found by SpellBolt, which kept its own OS list as a stopgap. Note:
+  `docs/notes/2026-10-15-macos-help-menu-shortcut.md`.
+- Added three more macOS system chords from Apple's Mac keyboard shortcuts
+  page (https://support.apple.com/en-us/102650): Cmd+Option+H (hide other
+  apps), Cmd+Option+D (show or hide the Dock), Cmd+` (switch windows of the
+  front app).
+- Reservation lookup now maps punctuation and space bound by `event.key`
+  (`meta+shift+/`, `meta+space`) to the data's names (`slash`, `space`), so
+  `mod+space` finds Spotlight and `mod+shift+/` finds Help like their
+  `code:` spellings do.
+- `package-lock.json` carried version 0.2.3; now matches `package.json`.
+
 ## 0.3.0 — 2026-10-04
 
 ### Added
