@@ -3,7 +3,7 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## 0.3.2 — unreleased
+## 0.3.2 — 2026-10-22
 
 ### Added
 
