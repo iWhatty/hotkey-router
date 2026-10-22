@@ -12,7 +12,7 @@
 // `hotkey-router/reservations` module. Bundlers tree-shake the data file
 // out entirely when neither is imported.
 
-import { parseHotkey, normalizeKey } from './parse.js'
+import { parseHotkey, normalizeKey, shiftedPunctuationHint } from './parse.js'
 import { detectPlatform } from './platform.js'
 
 // -----------------------------------------------------------------------------
@@ -116,6 +116,9 @@ const bindingIndex = new Map()
 let paused = false
 let nextId = 1
 
+// Combo strings already warned about (shifted punctuation), so each warns once.
+const warnedShifted = new Set()
+
 // --- helpers ---
 function comboKeyFromParts({ ctrl, shift, alt, meta, key, code, bareModifier }) {
   // Bare-modifier bindings get a sentinel namespace so they can't collide with
@@ -166,8 +169,11 @@ function codeKeyFromEvent(e) {
 }
 
 
+// The element the key was typed in. A listener on window sees a shadow root's
+// host as `e.target`; `composedPath()[0]` is the input inside an open root.
+// A closed root keeps its inside hidden, so the host is all we get there.
 function isFromInputTarget(e) {
-  const t = e?.target
+  const t = e?.composedPath?.()[0] ?? e?.target
   if (!t) return false
   const tag = String(t.tagName || '').toUpperCase()
   return (
@@ -271,6 +277,16 @@ function bind(hotkeyStr, handler, plugin = null, options = {}) {
   ensureSlot(comboStr, type).push(binding)
   bindingIndex.set(binding.id, { comboStr, type })
 
+  const warnKey = `${comboStr} ${type}`
+  if (!warnedShifted.has(warnKey)) {
+    const hint = shiftedPunctuationHint(hotkeyStr)
+    if (hint) {
+      warnedShifted.add(warnKey)
+      // eslint-disable-next-line no-console
+      console.warn(`[hotkey-router] ${hint.message}`)
+    }
+  }
+
   // Notify bind subscribers. Hook errors must never break the bind itself.
   if (bindHooks.length) {
     for (const hook of bindHooks) {
@@ -360,9 +376,14 @@ function unbind(hotkeyStr, handler) {
  */
 function registerPlugin(name, hotkeyMap) {
   if (plugins.has(name)) throw new Error(`Plugin "${name}" already registered`)
-  const ids = []
 
-  for (const [hotkeyStr, fnOrTuple] of Object.entries(hotkeyMap)) {
+  // Parse every key string before binding any, so a bad one leaves nothing
+  // bound that unregisterPlugin could not reach.
+  const entries = Object.entries(hotkeyMap)
+  for (const [hotkeyStr] of entries) parseHotkey(hotkeyStr)
+
+  const ids = []
+  for (const [hotkeyStr, fnOrTuple] of entries) {
     const [fn, options] = Array.isArray(fnOrTuple) ? fnOrTuple : [fnOrTuple, {}]
     const off = bind(hotkeyStr, fn, name, options)
     ids.push(off.id)
@@ -497,9 +518,12 @@ function fire(winner, e) {
   if (o.stopImmediatePropagation) e.stopImmediatePropagation()
   else if (o.stopPropagation) e.stopPropagation()
 
-  winner.handler(e)
-
-  if (o.once) removeById(winner.id)
+  // A handler that throws has still had its one run.
+  try {
+    winner.handler(e)
+  } finally {
+    if (o.once) removeById(winner.id)
+  }
 }
 
 function handleEvent(type, phase = 'all') {

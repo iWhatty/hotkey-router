@@ -18,6 +18,7 @@
 import { lookupReservation, severityIsHard } from './reservations.js'
 import { parseComboString, listSites } from './sites.js'
 import { modifierLabel, listModifiers, platformLabel, browserLabel } from './format.js'
+import { shiftedPunctuationHint } from './parse.js'
 
 const ALL_PLATFORMS = ['mac', 'windows', 'linux']
 const ALL_BROWSERS = ['chrome', 'firefox', 'edge', 'safari']
@@ -28,7 +29,7 @@ const SITE_COL = { windows: 0, mac: 1, linux: 0 }
  * @typedef {{
  *   code: 'invalid' | 'no-key' | 'no-modifier' | 'alt-only' | 'needs-primary' |
  *         'too-few-modifiers' | 'taken' | 'reserved' | 'reserved-soft' |
- *         'altgr' | 'site-conflict',
+ *         'altgr' | 'site-conflict' | 'shifted-punctuation',
  *   severity: 'error' | 'warning',
  *   message: string,
  *   platforms?: string[],
@@ -81,6 +82,12 @@ export function validateCombo(combo, {
 
   if (typeof combo !== 'string' || !combo.trim()) {
     return { ok: false, reasons: [{ code: 'invalid', severity: 'error', message: 'No keys were recorded.' }], lookupKeys }
+  }
+
+  // Same on every platform: Shift changes `event.key`, so the combo never matches.
+  const shifted = shiftedPunctuationHint(combo)
+  if (shifted) {
+    add({ code: 'shifted-punctuation', severity: 'error', message: shifted.message, details: { suggestion: shifted.suggestion } })
   }
 
   for (const platform of platforms) {

@@ -1,6 +1,9 @@
 # Sprint 0.3.3: repair and polish
 
-Date: 2026-10-22. Status: **proposed, not started.** Source: a review of
+Date: 2026-10-22. Status: **in progress.** Slices A, B, D and F are done;
+C and E wait for the owner decisions below. In B,
+`validateCombo` reports shifted punctuation as an error (`ok: false`), since
+the combo never fires on US layouts. Source: a review of
 0.3.2 from SpellBolt (core `hotkey-router.js` and `parse.js` read in full; all
 169 tests pass), plus simulated key events against the 0.3.2 source.
 
