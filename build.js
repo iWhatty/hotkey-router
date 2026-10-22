@@ -8,9 +8,9 @@
 //  - dist/hotkey-router.cjs      (CommonJS for require() consumers)
 //
 // Notes:
-//  - We bundle (bundle: true) so the reservations data JSON is inlined into
-//    the dist files. Library is still zero-dependency — the only thing being
-//    pulled in is local `./reservations.js` + `./data/browser-hotkeys.json`.
+//  - We bundle (bundle: true) so local modules (parse.js, platform.js) and
+//    the data JSON are inlined into the dist files. Library is still
+//    zero-dependency.
 //  - We target modern environments (ES2020).
 //  - dist/ is fully recreated on every build to avoid stale artifacts.
 
@@ -95,18 +95,31 @@ await build({
   banner,
 })
 
+// --- Format module (ESM) ---
+// `import { formatCombo, comboTokens } from 'hotkey-router/format'`. No data
+// tables; inlines the shared parser and detector (parse.js, platform.js),
+// which are stateless, so a second copy is harmless.
+await build({
+  ...common,
+  entryPoints: ['format.js'],
+  outfile: 'dist/format.js',
+  format: 'esm',
+  sourcemap: true,
+  banner,
+})
+
 // --- Validate module (ESM) ---
 // `import { validateCombo } from 'hotkey-router/validate'`, for key recorders.
-// Imports dist/reservations.js and dist/sites.js instead of inlining them, so
-// an app that also imports those subpaths bundles one copy of each table,
-// not two.
+// Imports dist/reservations.js, dist/sites.js and dist/format.js instead of
+// inlining them, so an app that also imports those subpaths bundles one copy
+// of each table, not two.
 await build({
   ...common,
   entryPoints: ['validate.js'],
   outfile: 'dist/validate.js',
   format: 'esm',
   sourcemap: true,
-  external: ['./reservations.js', './sites.js'],
+  external: ['./reservations.js', './sites.js', './format.js'],
   banner,
 })
 
@@ -144,6 +157,7 @@ console.log('  ' + report('dist/hotkey-router.min.js'))
 console.log('  ' + report('dist/hotkey-router.cjs'))
 console.log('  ' + report('dist/reservations.js'))
 console.log('  ' + report('dist/sites.js'))
+console.log('  ' + report('dist/format.js'))
 console.log('  ' + report('dist/validate.js'))
 console.log('  ' + report('dist/auto.js'))
 console.log('  ' + report('dist/auto.min.js'))

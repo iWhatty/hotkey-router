@@ -449,6 +449,63 @@ describe('hotkey-router', () => {
       hotkeys.trigger('alt+code:KeyX')
       expect(seen).toHaveBeenCalledWith('KeyX')
     })
+
+    it('a key-based trigger fires a code: binding, and the reverse', () => {
+      const byCode = vi.fn()
+      hotkeys.bind('ctrl+shift+code:Period', byCode)
+      expect(hotkeys.trigger('ctrl+shift+.')).toBe(true)
+      expect(byCode).toHaveBeenCalledOnce()
+
+      const byKey = vi.fn()
+      hotkeys.bind('ctrl+k', byKey)
+      expect(hotkeys.trigger('ctrl+code:KeyK')).toBe(true)
+      expect(byKey).toHaveBeenCalledOnce()
+    })
+
+    it('applies ignoreInput/allowIn when given a target', () => {
+      const input = document.createElement('input')
+      hotkeys.bind('ctrl+k', log)
+      expect(hotkeys.trigger('ctrl+k', { target: input })).toBe(false)
+      expect(log).not.toHaveBeenCalled()
+
+      hotkeys.bind('ctrl+j', log, null, { allowIn: () => true })
+      expect(hotkeys.trigger('ctrl+j', { target: input })).toBe(true)
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('respects pause(), priority and once', () => {
+      const low = vi.fn()
+      const high = vi.fn()
+      hotkeys.bind('ctrl+k', low)
+      hotkeys.bind('ctrl+code:KeyK', high, null, { priority: 5, once: true })
+
+      hotkeys.pause()
+      expect(hotkeys.trigger('ctrl+k')).toBe(false)
+      hotkeys.resume()
+
+      hotkeys.trigger('ctrl+k')
+      hotkeys.trigger('ctrl+k')
+      expect(high).toHaveBeenCalledOnce()
+      expect(low).toHaveBeenCalledOnce()
+    })
+
+    it('a when() gate returning false skips the binding', () => {
+      hotkeys.bind('ctrl+k', log, null, { when: () => false })
+      expect(hotkeys.trigger('ctrl+k')).toBe(false)
+    })
+  })
+
+  describe('parser aliases', () => {
+    it('accepts opt as Alt, like option', () => {
+      hotkeys.bind('opt+k', log)
+      dispatch('keydown', 'k', { altKey: true })
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('resolves mod for a given platform', () => {
+      expect(hotkeys.parseHotkey('mod+k', { platform: 'mac' }).combo.meta).toBe(true)
+      expect(hotkeys.parseHotkey('mod+k', { platform: 'windows' }).combo.ctrl).toBe(true)
+    })
   })
 
   // Regression: normalizeKey() used to .trim() before its `raw === ' '` guard,

@@ -25,10 +25,12 @@
 //
 // Data: data/site-hotkeys.runtime.json (compact projection of the sourced
 // table in data/site-hotkeys.json), human reference docs/site-hotkeys.md.
-// Self-contained (no import of the core router), so importing it never
-// creates a second router instance.
+// Imports the shared parser and detector, never the core router, so
+// importing it never creates a second router instance.
 
 import SITE_DATA from './data/site-hotkeys.runtime.json' with { type: 'json' }
+import { readHotkey, codeToBase, keyToBase, lookupKey } from './parse.js'
+import { detectPlatform } from './platform.js'
 
 // Runtime row layout: [windows, mac, chromeos, action, verified (1 or 0)]
 const COL = { windows: 0, mac: 1, chromeos: 2, action: 3, verified: 4 }
@@ -39,78 +41,33 @@ const SCHEMA_OK = SITE_DATA?.version?.schema === SUPPORTED_SCHEMA
 /** @typedef {'mac' | 'windows' | 'linux' | 'chromeos'} SitePlatform */
 
 /**
+ * `detectPlatform(nav, { chromeos: true })` from the shared detector: the
+ * site table has a ChromeOS column.
+ *
  * @param {Navigator | null} [nav]
  * @returns {SitePlatform | null}
  */
-export function detectSitePlatform(nav = (typeof navigator !== 'undefined' ? navigator : null)) {
-  if (!nav) return null
-  const ua = nav.userAgent || ''
-  if (/\bCrOS\b/.test(ua)) return 'chromeos'
-  const platform = nav.userAgentData?.platform || nav.platform || ''
-  if (/Mac|iPhone|iPad|iPod/i.test(platform)) return 'mac'
-  if (/Win/i.test(platform)) return 'windows'
-  if (/Linux|X11|Chrome OS/i.test(platform)) return /Chrome OS/i.test(platform) ? 'chromeos' : 'linux'
-  return null
+export function detectSitePlatform(nav) {
+  return detectPlatform(nav, { chromeos: true })
 }
 
 // --- combo -> canonical lookup key -------------------------------------------
 
-const PUNCT_KEYS = {
-  '.': 'period', ',': 'comma', ';': 'semicolon', "'": 'quote', '/': 'slash',
-  '\\': 'backslash', '[': 'bracketleft', ']': 'bracketright', '-': 'minus',
-  '=': 'equal', '`': 'backquote', ' ': 'space',
-}
-const NAMED_KEYS = new Set([
-  'period', 'comma', 'semicolon', 'quote', 'slash', 'backslash', 'bracketleft',
-  'bracketright', 'minus', 'equal', 'backquote', 'enter', 'space', 'tab',
-  'backspace', 'delete', 'escape', 'arrowup', 'arrowdown', 'arrowleft',
-  'arrowright', 'home', 'end', 'pageup', 'pagedown',
-])
-const KEY_ALIASES = { esc: 'escape', del: 'delete', spacebar: 'space', return: 'enter', up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright' }
-
-function codeToBase(code) {
-  const letter = /^Key([A-Z])$/.exec(code)
-  if (letter) return letter[1].toLowerCase()
-  const digit = /^(?:Digit|Numpad)(\d)$/.exec(code)
-  if (digit) return digit[1]
-  return code.toLowerCase()
-}
-
-function keyToBase(key) {
-  if (key == null) return null
-  if (PUNCT_KEYS[key]) return PUNCT_KEYS[key]
-  const k = String(key).toLowerCase()
-  if (KEY_ALIASES[k]) return KEY_ALIASES[k]
-  if (/^[a-z0-9]$/.test(k) || /^f\d{1,2}$/.test(k) || NAMED_KEYS.has(k)) return k
-  return k
-}
-
 /**
  * Parse a hotkey string (`mod+shift+code:Period`, `ctrl+alt+,`) into modifier
  * flags and a canonical base key name (`period`), resolving `mod` for the
- * platform. Shared with validate.js.
+ * platform. Same parser as the router (`opt`, `^k`, `ctrl++`), but lenient:
+ * a string the router would refuse still yields what it can, and `base` is
+ * null when there is no key. Shared with validate.js.
  *
  * @param {string} str
  * @param {SitePlatform} platform
  * @returns {{ ctrl: boolean, meta: boolean, alt: boolean, shift: boolean, base: string | null }}
  */
 export function parseComboString(str, platform) {
-  const flags = { ctrl: false, meta: false, alt: false, shift: false }
-  let base = null
-  const tokens = String(str).trim().toLowerCase().replace(/\s+up$/, '').split('+')
-  // A trailing empty token means the key itself was '+'.
-  for (let i = 0; i < tokens.length; i++) {
-    const t = tokens[i]
-    if (t === '' && i === tokens.length - 1) { base = 'equal'; continue }
-    if (t === 'mod') flags[platform === 'mac' ? 'meta' : 'ctrl'] = true
-    else if (t === 'ctrl' || t === 'control') flags.ctrl = true
-    else if (t === 'cmd' || t === 'command' || t === 'meta' || t === 'win') flags.meta = true
-    else if (t === 'alt' || t === 'option' || t === 'opt') flags.alt = true
-    else if (t === 'shift') flags.shift = true
-    else if (t.startsWith('code:')) base = codeToBase(String(str).match(/code:([A-Za-z0-9_]+)/)[1])
-    else base = keyToBase(t)
-  }
-  return { ...flags, base }
+  const { combo } = readHotkey(str, { platform })
+  const base = combo.bareModifier ? null : combo.code ? codeToBase(combo.code) : keyToBase(combo.key)
+  return { ctrl: combo.ctrl, meta: combo.meta, alt: combo.alt, shift: combo.shift, base }
 }
 
 /**
@@ -122,17 +79,8 @@ export function parseComboString(str, platform) {
  * @returns {string | null}
  */
 export function siteLookupKey(combo, platform = detectSitePlatform() || 'windows') {
-  const c = typeof combo === 'string'
-    ? parseComboString(combo, platform)
-    : { ...combo, base: combo?.code ? codeToBase(combo.code) : keyToBase(combo?.key) }
-  if (!c?.base) return null
-  const parts = []
-  if (c.ctrl) parts.push('ctrl')
-  if (c.meta) parts.push('meta')
-  if (c.alt) parts.push('alt')
-  if (c.shift) parts.push('shift')
-  parts.push(c.base)
-  return parts.join('+')
+  if (typeof combo === 'string') return lookupKey(readHotkey(combo, { platform }).combo)
+  return lookupKey(combo)
 }
 
 // --- site matching ------------------------------------------------------------

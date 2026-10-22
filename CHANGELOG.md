@@ -1,6 +1,62 @@
 # CHANGELOG — `hotkey-router`
 
-> Initial cut seeded from `git log` by the host repo's `tools/seed-changelogs.mjs` script. Version groupings infer release boundaries from tags and commit subjects; rough cuts are expected — review and tighten as part of normal maintenance.
+Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
+`git log`, so they list commits rather than describe changes.
+
+## 0.3.2 — unreleased
+
+### Added
+
+- **`hotkey-router/format`**: show a combo to people.
+  `formatCombo('mod+shift+code:Period')` gives `Ctrl+Shift+.` on
+  Windows/Linux, `Shift+Cmd+.` or `⇧⌘.` (`style: 'glyphs'`) on macOS;
+  `comboTokens()` gives one keycap per key with a spoken `name` for screen
+  readers; plus `modifierLabel`, `modifierName`, `keyLabel`, `listModifiers`,
+  `platformLabel`, `browserLabel` and the `KEY_LABELS` map for `code:`
+  values. Modifiers come in the platform's order (Apple's ⌃⌥⇧⌘ on macOS;
+  Win, Ctrl, Alt, Shift elsewhere) unless `order: 'combo'`. No data tables.
+- **`detectPlatform()`** exported from the core (and still from
+  `/reservations`): the one detector everything uses. Reads
+  `navigator.userAgentData.platform` first, and with `{ chromeos: true }`
+  reports ChromeOS (otherwise `'linux'`, as before).
+- `parseHotkey(str, { platform })` and `comboFromEvent(e, { platform })`
+  resolve `mod` for a given platform.
+- `opt` is an alias for Alt/Option in the router too (sites and validate
+  already accepted it).
+
+### Changed
+
+- **`trigger()` fires what a real keypress would.** It used to look up only
+  the key-based binding and skip most guards. The synthetic event now
+  carries `key` and `code` (US layout), so `trigger('ctrl+k')` also fires a
+  `ctrl+code:KeyK` binding and the reverse, and `ignoreInput`/`allowIn`
+  (with a new `target` option), `pause()`, priority and `once` all apply as
+  for a real event. A paused router no longer fires from `trigger()`.
+- One parser (`parse.js`) for the router, sites, reservations and validate.
+  `parseComboString` and `siteLookupKey` now accept everything the router
+  does (AHK prefixes like `^+k`, every alias). `ctrl++` is the `+` key in
+  all of them; table lookups name it `equal` (it is Shift+= on most
+  layouts), which reservations did not do before. Reservations also map
+  `code:Numpad1`..`9` to digits, like sites already did.
+- One platform detector (`platform.js`) instead of three. The core's `mod`
+  now also honours `userAgentData.platform`.
+- validate's messages take their key names from the format helpers: "Include
+  Cmd." / "Include Ctrl.", and the "use at least one modifier" list is in
+  macOS words (Cmd, Option, Control or Shift) when you validate for macOS
+  only, PC words when for Windows/Linux only.
+
+### Fixed
+
+- `Severity` in the reservations types listed severities the data never
+  used; it now lists the real ones (`hard`, `os`, `menu-activation`,
+  `find-bar-only`, `compose`, `system-text`, `devtools-open`).
+- `BindOptions` now declares `warnOnReserved`.
+- Size claims: the reservation table was described as "~5 KB" in comments
+  and the README. Measured (minified): core ~9 KB (~4 KB gzipped);
+  reservations ~23 KB (~5.5 KB gzipped); sites ~38 KB (~9 KB gzipped);
+  validate with both tables ~62 KB (~15 KB gzipped); format ~9 KB.
+- `npm run scrape:diff` printed "bundled data is up to date" although every
+  scraper is a stub. It now says no scraper is implemented and exits 1.
 
 ## 0.3.1 — 2026-10-15
 
@@ -52,6 +108,10 @@
   bindings** (Windows reports AltGr as Ctrl+Alt; AltGr+, types `<` on
   Polish, Czech and Canadian layouts). Opt back in with `{ altGraph: true }`.
 - **Keys during IME composition are skipped** unless `{ composing: true }`.
+- Development baseline: repaired the npm lockfile so clean installs include
+  TypeScript, restored the tested Node.js 18 floor, moved to patched
+  Vitest, Vite and esbuild, and pointed the README shields at the canonical
+  repository (`d1d1f63`).
 
 ### Fixed
 
@@ -75,13 +135,13 @@
   so the spacebar survives both at parse time and in `comboKeyFromEvent`. Added
   regression tests.
 
-## Unreleased — 2026-05-18
+## 0.2.2 — 2026-05-26
 
-- Repair the npm lockfile so clean installs include TypeScript and current
-  package metadata.
-- Restore the tested Node.js 18 support floor and refresh development tooling
-  to patched Vitest, Vite, and esbuild releases.
-- Point README shields at the canonical repository and expose the types badge.
+- chore(types): generate .d.ts from JSDoc via tsc  `5c450b3`
+- chore(types): polish JSDoc — typed bind/handler surface + Reservation types  `9c861ea`
+- chore(pkg): update GitHub repo URL after rename  `86c4624`
+
+## 0.2.1 — 2026-05-19
 
 - chore: normalize README shields row  `7895a8c`
 - chore: rebrand author to WATT3D, interim license  `7c79e2c`
@@ -93,7 +153,6 @@
 - docs(README): apply @whatty README template  `587632a`
 - chore(license): finalize AGPL-3.0 + WATT3D Additional Terms metadata  `0ef9569`
 - chore: patch version bump to ship license metadata update  `b830bd4`
-- chore(pkg): update GitHub repo URL after rename  `86c4624`
 
 ## 0.2.0 — 2026-05-17
 

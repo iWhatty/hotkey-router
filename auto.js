@@ -9,7 +9,8 @@
 //   // [hotkey-router] "meta+shift+f" reserved by firefox on macOS:
 //   //   "Toggle fullscreen" [hard] — will not fire.
 //
-// Pay-to-play: importing this entry pulls in the ~5 KB reservation table.
+// Pay-to-play: importing this entry pulls in the reservation table
+// (reservations module minified: ~23 KB, ~5.5 KB gzipped; measured 0.3.2).
 // If you want the tiny core only, `import hotkeys from 'hotkey-router'` and
 // the data file is tree-shaken out entirely.
 

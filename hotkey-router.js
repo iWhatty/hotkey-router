@@ -12,6 +12,9 @@
 // `hotkey-router/reservations` module. Bundlers tree-shake the data file
 // out entirely when neither is imported.
 
+import { parseHotkey, normalizeKey } from './parse.js'
+import { detectPlatform } from './platform.js'
+
 // -----------------------------------------------------------------------------
 // Public type surface (consumed by the tsc-from-JSDoc pipeline)
 // -----------------------------------------------------------------------------
@@ -39,7 +42,8 @@
  *   priority?: number,
  *   capture?: boolean,
  *   altGraph?: boolean,
- *   composing?: boolean
+ *   composing?: boolean,
+ *   warnOnReserved?: boolean
  * }} BindOptions
  */
 
@@ -76,12 +80,9 @@ function on(target, type, fn, options) {
   return () => target.removeEventListener(type, fn, options)
 }
 
-// --- key alias map ---
-const isMac =
-  typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
-
-
-const modifierTokens = new Set(['ctrl', 'shift', 'alt', 'meta'])
+// --- platform + parser (shared with sites/validate/format) ---
+// `mod` resolves for the platform detected at load (meta on macOS).
+const PLATFORM = detectPlatform()
 
 // Map from KeyboardEvent.key (which IS the modifier name on bare-modifier events)
 // to the canonical token used in combo strings. Used to detect bare-modifier
@@ -95,72 +96,13 @@ const MODIFIER_KEY_TOKEN = Object.freeze({
   OS: 'meta',
 })
 
-const ahkPrefixMap = new Map([
-  ['^', 'ctrl'],  // Ctrl
-  ['!', 'alt'],   // Alt
-  ['+', 'shift'], // Shift
-  ['#', 'meta'],  // Win / Command
-])
-
-
-const keyAliases = Object.freeze({
-  // common
-  esc: 'escape',
-  escape: 'escape',
-  space: ' ',
-  spacebar: ' ',
-  enter: 'enter',
-  return: 'enter',
-  del: 'delete',
-  delete: 'delete',
-  backspace: 'backspace',
-  tab: 'tab',
-
-  // arrows
-  up: 'arrowup',
-  down: 'arrowdown',
-  left: 'arrowleft',
-  right: 'arrowright',
-
-  // navigation
-  home: 'home',
-  end: 'end',
-  pageup: 'pageup',
-  pagedown: 'pagedown',
-  pgup: 'pageup',
-  pgdn: 'pagedown',
-
-  // modifiers (words)
-  cmd: 'meta',
-  command: 'meta',
-  win: 'meta',
-  meta: 'meta',
-  control: 'ctrl',
-  ctrl: 'ctrl',
-  option: 'alt',
-  alt: 'alt',
-  shift: 'shift',
-
-  // modifiers (symbols)
-  '⌘': 'meta',
-  '⌃': 'ctrl',
-  '⌥': 'alt',
-  '⇧': 'shift',
-
-  // cross-platform "mod"
-  mod: isMac ? 'meta' : 'ctrl',
-
-  // plus key ergonomics
-  plus: '+',
-})
-
 // --- config ---
 let ignoreEditable = true
 let defaultTarget = typeof window !== 'undefined' ? window : null
 
 // Bind hooks: subscribers called after each successful bind. Used by the
 // optional reservations module to emit conflict warnings without coupling
-// the core router to the (~5 KB) reservation table.
+// the core router to the reservation table (~23 KB minified, ~5.5 KB gzipped).
 let bindHooks = []
 
 // --- state ---
@@ -175,17 +117,6 @@ let paused = false
 let nextId = 1
 
 // --- helpers ---
-function normalizeKey(key) {
-  const original = String(key ?? '')
-  // A lone space IS the spacebar key — `.trim()` would erase it to '', so guard
-  // on the ORIGINAL before trimming. (The `space`/`spacebar` aliases resolve to
-  // ' ' and land here; without this, `space` bindings collapse to no base key.)
-  if (original === ' ') return ' '
-  const trimmed = original.trim()
-  const k = trimmed.toLowerCase()
-  return keyAliases[k] ?? k
-}
-
 function comboKeyFromParts({ ctrl, shift, alt, meta, key, code, bareModifier }) {
   // Bare-modifier bindings get a sentinel namespace so they can't collide with
   // regular chord combo strings (`'alt+x'` vs `'__bare__:alt'`).
@@ -235,133 +166,6 @@ function codeKeyFromEvent(e) {
 }
 
 
-function isModifierToken(token) {
-  const t = normalizeKey(token)
-  return modifierTokens.has(t)
-}
-
-
-// Matches `code:KeyX` (case-sensitive value). Used to extract code tokens BEFORE
-// the rest of the parser lowercases everything, since KeyboardEvent.code values
-// are camelCase (KeyA, Digit1, ArrowLeft) and must be preserved.
-const CODE_TOKEN_RE = /(^|\+)code:([A-Za-z][A-Za-z0-9_]*)/
-
-function parseHotkey(hotkeyStr) {
-  const raw = String(hotkeyStr || '').trim()
-
-  // Detect ' up' suffix case-insensitively so 'Alt UP' works the same as 'alt up'.
-  const isUp = /\s+up$/i.test(raw)
-  const baseRaw = isUp ? raw.replace(/\s+up$/i, '').trim() : raw
-
-  // --- AHK-style prefix modifiers ---
-  // Examples:
-  //  ^k    => ctrl+k
-  //  !k    => alt+k
-  //  +k    => shift+k
-  //  #k    => meta+k
-  //  ^!k   => ctrl+alt+k
-  //  !code:KeyX => alt+code:KeyX
-  //
-  // We strip these BEFORE both the code-token extraction AND the lowercase
-  // pass, because the AHK prefix chars (^ ! + #) are case-stable, and the
-  // remainder may contain a case-sensitive `code:KeyX` token that must survive.
-  const combo = {
-    ctrl: false, shift: false, alt: false, meta: false,
-    key: null, code: null, bareModifier: null,
-  }
-
-  let stripped = baseRaw
-  while (stripped.length) {
-    const mod = ahkPrefixMap.get(stripped[0]) ?? null
-    if (!mod) break
-    combo[mod] = true
-    stripped = stripped.slice(1).trimStart()
-  }
-
-  // Pull out a code:XXX token before lowercasing; preserve the camelCase value.
-  // Reject multiple code: tokens to avoid silent loss of intent.
-  const codeMatches = stripped.match(/code:[A-Za-z][A-Za-z0-9_]*/g)
-  if (codeMatches && codeMatches.length > 1) {
-    throw new Error(
-      `Invalid hotkey "${hotkeyStr}": multiple code: tokens not supported (got ${codeMatches.length}).`
-    )
-  }
-  let codeValue = null
-  const scrubbed = stripped.replace(CODE_TOKEN_RE, (_, sep, val) => {
-    codeValue = val
-    return sep + '__code__'
-  })
-
-  let cleanStr = scrubbed.toLowerCase()
-
-  // Allow plus key:
-  //  - "ctrl++" => ctrl + "+"
-  //  - "++"     => shift + "+" (AHK '+' prefix sets shift, remaining '+' becomes the base key)
-  // `split('+')` produces empties; we keep that signal.
-  const rawParts = cleanStr.split('+').map((p) => p.trim())
-  const parts = rawParts.filter(Boolean)
-  const impliedPlusKey = rawParts.some((p) => p === '') && cleanStr.includes('++')
-
-  // Enforce: modifiers must come before the base key.
-  // Example: "ctrl+k" ✅  |  "k+ctrl" ❌
-  // We ignore the special "+ key" case (ctrl++) since it has no explicit base token.
-  if (!impliedPlusKey) {
-    let seenBase = false
-    for (const part of parts) {
-      if (isModifierToken(part)) {
-        if (seenBase) {
-          throw new Error(
-            `Invalid hotkey "${hotkeyStr}": modifiers must come before the base key (e.g. "ctrl+k", not "k+ctrl")`
-          )
-        }
-      } else {
-        if (!seenBase) seenBase = true
-      }
-    }
-  }
-
-  // Continue parsing the remaining tokens (words/symbols/aliases)
-  for (const part of parts) {
-    if (part === '__code__') {
-      combo.code = codeValue
-      continue
-    }
-    const actual = keyAliases[part] ?? part
-    if (actual === 'ctrl') combo.ctrl = true
-    else if (actual === 'shift') combo.shift = true
-    else if (actual === 'alt') combo.alt = true
-    else if (actual === 'meta') combo.meta = true
-    else combo.key = normalizeKey(actual)
-  }
-
-  if (!combo.key && !combo.code && impliedPlusKey) combo.key = '+'
-
-  // If no base key/code is set, this might be a bare-modifier binding ('alt' / 'ctrl').
-  // Allow exactly ONE modifier with no other tokens. Multi-modifier bare bindings
-  // (e.g. 'ctrl+alt') are intentionally rejected — add a base key for those.
-  if (!combo.key && !combo.code) {
-    const modCount =
-      (combo.ctrl ? 1 : 0) + (combo.shift ? 1 : 0) +
-      (combo.alt ? 1 : 0) + (combo.meta ? 1 : 0)
-
-    if (modCount === 1) {
-      combo.bareModifier =
-        combo.ctrl ? 'ctrl' :
-        combo.shift ? 'shift' :
-        combo.alt ? 'alt' : 'meta'
-    } else if (modCount > 1) {
-      throw new Error(
-        `Invalid hotkey "${hotkeyStr}": multi-modifier bare bindings not supported. Add a base key (e.g. "ctrl+alt+x").`
-      )
-    } else {
-      throw new Error(`Invalid hotkey "${hotkeyStr}" (missing base key)`)
-    }
-  }
-
-  return { combo, type: isUp ? 'keyup' : 'keydown', raw: hotkeyStr }
-}
-
-
 function isFromInputTarget(e) {
   const t = e?.target
   if (!t) return false
@@ -389,6 +193,8 @@ function isFromInputTarget(e) {
 //    by default those are skipped, since Windows reports AltGr as Ctrl+Alt
 //    and binding ctrl+alt+X would swallow the character the user typed)
 //  composing (true: also fire during IME composition; skipped by default)
+//  warnOnReserved (false: no reservation warning for this bind; read by
+//    installReservationWarnings from hotkey-router/reservations)
 function normalizeOptions(type, options) {
   const o = options ? { ...options } : {}
   if (type === 'keydown' && o.repeat == null) o.repeat = false
@@ -648,54 +454,59 @@ function isComposingEvent(e) {
   return Boolean(e.isComposing || e.keyCode === 229)
 }
 
+// The bindings an event may fire, after every guard. Looks up under both
+// lookup keys: key-based (`alt+x`) and code-based (`alt+code:KeyX`). Same
+// physical keypress, two valid binding shapes; the priority/recency arbiter
+// picks among them.
+//
 // phase: 'all' (one listener handles every binding), 'capture' (only
 // bindings with options.capture) or 'bubble' (only bindings without it).
+function eligibleBindings(e, type, phase) {
+  const altGraphChar = isAltGraphCharacter(e)
+  const composing = isComposingEvent(e)
+  const fromInput = ignoreEditable && isFromInputTarget(e)
+
+  const seen = new Set()
+  const candidates = []
+  for (const lookupKey of [comboKeyFromEvent(e), codeKeyFromEvent(e)]) {
+    if (!lookupKey || seen.has(lookupKey)) continue
+    seen.add(lookupKey)
+
+    const bindings = registry.get(lookupKey)?.get(type)
+    if (!bindings?.length) continue
+
+    for (const b of bindings) {
+      const o = b.options
+      if (phase === 'capture' && !o.capture) continue
+      if (phase === 'bubble' && o.capture) continue
+      if (altGraphChar && !o.altGraph) continue
+      if (composing && !o.composing) continue
+      if (fromInput && !o.allowIn?.(e)) continue
+      if (type === 'keydown' && o.repeat === false && e.repeat) continue
+      if (o.when && o.when(e) === false) continue
+      candidates.push(b)
+    }
+  }
+  return candidates
+}
+
+function fire(winner, e) {
+  const o = winner.options
+
+  if (o.preventDefault) e.preventDefault()
+  if (o.stopImmediatePropagation) e.stopImmediatePropagation()
+  else if (o.stopPropagation) e.stopPropagation()
+
+  winner.handler(e)
+
+  if (o.once) removeById(winner.id)
+}
+
 function handleEvent(type, phase = 'all') {
   return (e) => {
     if (paused) return
-
-    const altGraphChar = isAltGraphCharacter(e)
-    const composing = isComposingEvent(e)
-    const fromInput = ignoreEditable && isFromInputTarget(e)
-    const comboStr = comboKeyFromEvent(e)
-    const codeStr = codeKeyFromEvent(e)
-
-    // Look up under both lookup keys: key-based (`alt+x`) and code-based
-    // (`alt+code:KeyX`). Same physical keypress, two valid binding shapes.
-    // Merge candidates and let the existing priority/recency arbiter pick.
-    const seen = new Set()
-    const candidates = []
-    for (const lookupKey of [comboStr, codeStr]) {
-      if (!lookupKey || seen.has(lookupKey)) continue
-      seen.add(lookupKey)
-
-      const bindings = registry.get(lookupKey)?.get(type)
-      if (!bindings?.length) continue
-
-      for (const b of bindings) {
-        const o = b.options
-        if (phase === 'capture' && !o.capture) continue
-        if (phase === 'bubble' && o.capture) continue
-        if (altGraphChar && !o.altGraph) continue
-        if (composing && !o.composing) continue
-        if (fromInput && !o.allowIn?.(e)) continue
-        if (type === 'keydown' && o.repeat === false && e.repeat) continue
-        if (o.when && o.when(e) === false) continue
-        candidates.push(b)
-      }
-    }
-    if (!candidates.length) return
-
-    const winner = pickWinner(candidates)
-    const o = winner.options
-
-    if (o.preventDefault) e.preventDefault()
-    if (o.stopImmediatePropagation) e.stopImmediatePropagation()
-    else if (o.stopPropagation) e.stopPropagation()
-
-    winner.handler(e)
-
-    if (o.once) removeById(winner.id)
+    const candidates = eligibleBindings(e, type, phase)
+    if (candidates.length) fire(pickWinner(candidates), e)
   }
 }
 
@@ -774,28 +585,65 @@ const BARE_MOD_TO_KEY = {
   meta: 'Meta',
 }
 
+// `code` <-> `key` for the synthetic event, so trigger('ctrl+k') also fires
+// a `ctrl+code:KeyK` binding and the reverse. US layout, like any
+// automation that has to guess what a physical key types.
+const CODE_TO_KEY = {
+  Period: '.', Comma: ',', Semicolon: ';', Quote: "'", Slash: '/', Backslash: '\\',
+  BracketLeft: '[', BracketRight: ']', Minus: '-', Equal: '=', Backquote: '`',
+  Space: ' ', Enter: 'Enter', NumpadEnter: 'Enter', Tab: 'Tab', Escape: 'Escape',
+  Backspace: 'Backspace', Delete: 'Delete', Insert: 'Insert', Home: 'Home', End: 'End',
+  PageUp: 'PageUp', PageDown: 'PageDown',
+  ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown', ArrowLeft: 'ArrowLeft', ArrowRight: 'ArrowRight',
+}
+const KEY_TO_CODE = {}
+for (const [code, key] of Object.entries(CODE_TO_KEY)) {
+  KEY_TO_CODE[normalizeKey(key)] ??= code
+}
+
+function keyForCode(code) {
+  if (!code) return null
+  const letter = /^Key([A-Z])$/.exec(code)
+  if (letter) return letter[1].toLowerCase()
+  const digit = /^(?:Digit|Numpad)(\d)$/.exec(code)
+  if (digit) return digit[1]
+  if (/^F\d{1,2}$/.test(code)) return code
+  return CODE_TO_KEY[code] ?? null
+}
+
+function codeForKey(key) {
+  if (!key) return null
+  if (/^[a-z]$/.test(key)) return 'Key' + key.toUpperCase()
+  if (/^\d$/.test(key)) return 'Digit' + key
+  if (/^f\d{1,2}$/.test(key)) return key.toUpperCase()
+  return KEY_TO_CODE[key] ?? null
+}
+
 /**
- * Programmatically fire any bindings for `hotkeyStr`. Used by tests and
- * automation; not a typical app-runtime path. Returns `true` if a binding
- * was found and invoked, `false` otherwise.
+ * Programmatically fire the binding a real keypress of `hotkeyStr` would
+ * fire. Used by tests and automation; not a typical app-runtime path. The
+ * synthetic event carries both `key` and `code` (US layout), so key-based
+ * and `code:` bindings both match, and the same guards apply as for a real
+ * event: `when`, `ignoreInput`/`allowIn` (pass `target` to fire "from" an
+ * element), priority, `once`, and `pause()`. Returns `true` if a handler ran.
  *
  * @param {string} hotkeyStr
- * @param {{ type?: 'keydown' | 'keyup' }} [opts]
+ * @param {{ type?: 'keydown' | 'keyup', target?: EventTarget | null }} [opts]
  * @returns {boolean}
  */
-function trigger(hotkeyStr, { type: forcedType } = {}) {
+function trigger(hotkeyStr, { type: forcedType, target = null } = {}) {
   const { combo, type } = parseHotkey(hotkeyStr)
-  const comboStr = comboKeyFromParts(combo)
   const actualType = forcedType || type
-
-  const bindings = registry.get(comboStr)?.get(actualType)
-  if (!bindings?.length) return false
+  if (paused) return false
 
   // Fill `.key` from bareModifier when the binding is bare-modifier-only;
-  // otherwise use combo.key. `.code` is set from combo.code for code-based bindings.
+  // otherwise from combo.key, or the key a `code:` value types.
   const eventKey = combo.bareModifier
     ? BARE_MOD_TO_KEY[combo.bareModifier]
-    : combo.key
+    : combo.key ?? keyForCode(combo.code)
+  const eventCode = combo.bareModifier
+    ? null
+    : combo.code ?? codeForKey(combo.key)
 
   // For bare-modifier keyup, real KeyboardEvents have the corresponding
   // modifier flag FALSE (the modifier just released). Mirror that so
@@ -815,22 +663,20 @@ function trigger(hotkeyStr, { type: forcedType } = {}) {
   const e = {
     type: actualType,
     key: eventKey,
-    code: combo.code || null,
+    code: eventCode,
     ctrlKey, shiftKey, altKey, metaKey,
     repeat: false,
+    isComposing: false,
+    getModifierState() { return false },
     preventDefault() { },
     stopPropagation() { },
     stopImmediatePropagation() { },
-    target: null,
+    target,
   }
 
-  const winner = pickWinner(
-    bindings.filter((b) => (b.options.when ? b.options.when(e) !== false : true))
-  )
-  if (!winner) return false
-
-  winner.handler(e)
-  if (winner.options.once) removeById(winner.id)
+  const candidates = eligibleBindings(e, actualType, 'all')
+  if (!candidates.length) return false
+  fire(pickWinner(candidates), e)
   return true
 }
 
@@ -842,14 +688,16 @@ function trigger(hotkeyStr, { type: forcedType } = {}) {
  * macOS, Ctrl elsewhere) is written as `mod`. Returns null for a bare
  * modifier press (the user hasn't pressed the base key yet).
  *
+ * `platform` (default: this machine) decides which modifier `mod` stands for.
+ *
  * @param {KeyboardEvent} e
- * @param {{ physical?: boolean, useMod?: boolean }} [opts]
+ * @param {{ physical?: boolean, useMod?: boolean, platform?: 'mac' | 'windows' | 'linux' | 'chromeos' | null }} [opts]
  * @returns {string | null}
  */
-function comboFromEvent(e, { physical = true, useMod = false } = {}) {
+function comboFromEvent(e, { physical = true, useMod = false, platform = PLATFORM } = {}) {
   if (!e || MODIFIER_KEY_TOKEN[e.key]) return null
   const parts = []
-  const primaryIsMeta = isMac
+  const primaryIsMeta = platform === 'mac'
   if (useMod && (primaryIsMeta ? e.metaKey : e.ctrlKey)) parts.push('mod')
   if (e.ctrlKey && !(useMod && !primaryIsMeta)) parts.push('ctrl')
   if (e.metaKey && !(useMod && primaryIsMeta)) parts.push('meta')
@@ -893,6 +741,7 @@ export default {
   // helpers
   parseHotkey,
   comboFromEvent,
+  detectPlatform,
 }
 
-export { parseHotkey, comboFromEvent }
+export { parseHotkey, comboFromEvent, detectPlatform }

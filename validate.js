@@ -17,11 +17,10 @@
 
 import { lookupReservation, severityIsHard } from './reservations.js'
 import { parseComboString, listSites } from './sites.js'
+import { modifierLabel, listModifiers, platformLabel, browserLabel } from './format.js'
 
 const ALL_PLATFORMS = ['mac', 'windows', 'linux']
 const ALL_BROWSERS = ['chrome', 'firefox', 'edge', 'safari']
-const PLATFORM_LABEL = { mac: 'macOS', windows: 'Windows', linux: 'Linux' }
-const BROWSER_LABEL = { chrome: 'Chrome', firefox: 'Firefox', edge: 'Edge', safari: 'Safari' }
 // Runtime site rows: [windows, mac, chromeos, action, verified]
 const SITE_COL = { windows: 0, mac: 1, linux: 0 }
 
@@ -69,6 +68,17 @@ export function validateCombo(combo, {
     reasons.push(reason)
   }
 
+  // Messages that cover several platforms name the modifiers once: in the
+  // platform's own words when every platform agrees (all macOS, or none),
+  // otherwise PC words plus Cmd.
+  const allMac = platforms.every((p) => p === 'mac')
+  const noMac = !platforms.includes('mac')
+  const anyModifier = allMac
+    ? listModifiers(['meta', 'alt', 'ctrl', 'shift'], { platform: 'mac' })
+    : noMac
+      ? listModifiers(['ctrl', 'alt', 'shift'], { platform: 'windows' })
+      : `${['ctrl', 'alt', 'shift'].map((m) => modifierLabel(m, { platform: 'windows' })).join(', ')} or ${modifierLabel('meta', { platform: 'mac' })}`
+
   if (typeof combo !== 'string' || !combo.trim()) {
     return { ok: false, reasons: [{ code: 'invalid', severity: 'error', message: 'No keys were recorded.' }], lookupKeys }
   }
@@ -93,14 +103,14 @@ export function validateCombo(combo, {
     lookupKeys[platform] = key
 
     if (mods.length === 0) {
-      add({ code: 'no-modifier', severity: 'error', message: 'Use at least one modifier (Ctrl, Alt, Shift or Cmd), or the key would fire while typing.', platforms: [platform] })
+      add({ code: 'no-modifier', severity: 'error', message: `Use at least one modifier (${anyModifier}), or the key would fire while typing.`, platforms: [platform] })
     }
     if (platform !== 'mac' && mods.length === 1 && parsed.alt) {
-      add({ code: 'alt-only', severity: 'error', message: 'Alt on its own moves focus to the browser menu when released. Add Ctrl or Shift.', platforms: [platform] })
+      add({ code: 'alt-only', severity: 'error', message: `${modifierLabel('alt', { platform })} on its own moves focus to the browser menu when released. Add ${listModifiers(['ctrl', 'shift'], { platform })}.`, platforms: [platform] })
     }
     const primary = platform === 'mac' ? parsed.meta : parsed.ctrl
     if (requirePrimary && !primary) {
-      add({ code: 'needs-primary', severity: 'error', message: `Include ${platform === 'mac' ? 'Cmd' : 'Ctrl'}.`, platforms: [platform] })
+      add({ code: 'needs-primary', severity: 'error', message: `Include ${modifierLabel('mod', { platform })}.`, platforms: [platform] })
     }
     if (mods.length > 0 && mods.length < minModifiers) {
       add({ code: 'too-few-modifiers', severity: 'error', message: `Use at least ${minModifiers} modifiers together.`, platforms: [platform] })
@@ -122,7 +132,7 @@ export function validateCombo(combo, {
       if (platform !== 'mac' && browser === 'safari') continue
       const hit = lookupReservation(shape, { platform, browser })
       if (!hit) continue
-      const where = hit.source === 'system' ? PLATFORM_LABEL[platform] : `${BROWSER_LABEL[browser]} on ${PLATFORM_LABEL[platform]}`
+      const where = hit.source === 'system' ? platformLabel(platform) : `${browserLabel(browser)} on ${platformLabel(platform)}`
       if (severityIsHard(hit.severity)) {
         add({ code: 'reserved', severity: 'error', message: `${where} uses these keys (${hit.action}), so a page never sees them.`, platforms: [platform], details: { browser, action: hit.action } })
       } else {
@@ -131,7 +141,7 @@ export function validateCombo(combo, {
     }
 
     if (platform === 'windows' && parsed.ctrl && parsed.alt && !parsed.meta) {
-      add({ code: 'altgr', severity: 'warning', message: 'On some keyboard layouts Ctrl+Alt acts as AltGr and types characters; those keystrokes are skipped.', platforms: [platform] })
+      add({ code: 'altgr', severity: 'warning', message: `On some keyboard layouts ${modifierLabel('ctrl', { platform })}+${modifierLabel('alt', { platform })} acts as AltGr and types characters; those keystrokes are skipped.`, platforms: [platform] })
     }
 
     if (sites) {

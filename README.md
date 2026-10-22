@@ -17,7 +17,8 @@ A tiny, deterministic keyboard routing engine for modern web apps. Not a key uti
 - Input-safe by default
 - Testable via `trigger()`
 - Optional opt-in browser/OS conflict warnings (tree-shakable)
-- ~3 kB minified + gzipped (core); ~7.5 kB with conflict warnings
+- Display helpers: `Ctrl+Shift+.` / `⇧⌘.` and accessible keycaps (`hotkey-router/format`)
+- ~4 kB minified + gzipped (core); ~8.5 kB with conflict warnings
 - Zero dependencies
 
 ---
@@ -232,12 +233,14 @@ those bound with `{ capture: true }`, which a second, capture-phase listener
 handles (v0.3.0+). `capture: true` here runs every binding in the capture
 phase.
 
-### `parseHotkey(hotkey)` / `comboFromEvent(event, options?)` (v0.3.0+)
+### `parseHotkey(hotkey, options?)` / `comboFromEvent(event, options?)` (v0.3.0+)
 
 Named exports (also on the default object). `comboFromEvent` turns a
 keyboard event into a hotkey string for a "press your keys" recorder:
 physical by default, `{ useMod: true }` writes the platform's primary
 modifier as `mod`, and it returns `null` while only a modifier is held.
+Both take `{ platform }` (v0.3.2+) to resolve `mod` for a platform other
+than the one detected.
 
 ```js
 import { comboFromEvent } from 'hotkey-router'
@@ -247,6 +250,14 @@ input.addEventListener('keydown', (e) => {
   if (combo) save(combo)
 })
 ```
+
+### `detectPlatform(navigator?, { chromeos? })` (v0.3.2+)
+
+The one platform detector the router, reservations, sites, validate and
+format all use: `'mac'`, `'windows'`, `'linux'` or `null`. ChromeOS counts as
+`'linux'` unless you pass `{ chromeos: true }`. Reads
+`navigator.userAgentData.platform`, then `navigator.platform`, then the user
+agent. Also exported from `hotkey-router/reservations`.
 
 ### `destroy()`
 
@@ -258,9 +269,14 @@ Programmatically trigger a hotkey. Useful for testing.
 
 ```js
 hotkeys.trigger('ctrl+k')
+hotkeys.trigger('ctrl+k', { target: inputElement }) // as if typed in the input
 ```
 
-Returns `true` if a handler ran.
+Returns `true` if a handler ran. Since v0.3.2 it fires what a real keypress
+would: the synthetic event has both `key` and `code` (US layout), so
+`trigger('ctrl+k')` also fires a `ctrl+code:KeyK` binding and the reverse,
+and the same guards apply (`when`, `ignoreInput`/`allowIn` with `target`,
+priority, `once`, `pause()`).
 
 ---
 
@@ -312,7 +328,7 @@ The `code:` value is **case-sensitive** (matches the camelCase `KeyboardEvent.co
 
 Some combos are reserved by the browser chrome (find bar, devtools, bookmarks) or the OS (Spotlight, window management). They never reach page-world JavaScript, no matter how early you listen or whether you call `preventDefault`. hotkey-router ships an **opt-in** reservation table that emits a soft warning at bind time, so the silent failure becomes a noisy one.
 
-The feature is opt-in by design: the core router stays ~3 KB gzipped, and the ~5 KB reservation data is tree-shaken out entirely unless you import it.
+The feature is opt-in by design: the core router is ~9 KB minified (~4 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
 
 **Two ways to opt in.** One-line ergonomic, use the `auto` entry. Same default export as `hotkey-router`, with warnings pre-installed:
 
@@ -428,8 +444,8 @@ shortcut runs.
 Also exported: `lookupSiteConflicts(combo, { url, platform, verifiedOnly })`,
 `matchSites(url)`, `siteLookupKey(combo, platform)`, `detectSitePlatform()`
 and `listSites()`. Platforms: `windows` (also used for Linux), `mac`,
-`chromeos`. The runtime table is ~7 KB gzipped and imports nothing from the
-core, so it never creates a second router.
+`chromeos`. The module is ~38 KB minified (~9 KB gzipped, mostly the table)
+and imports nothing from the core, so it never creates a second router.
 
 ### Validating a recorded combo (v0.3.0+)
 
@@ -461,6 +477,56 @@ already in `taken`, or reserved by a browser/OS (never reaches the page).
 Warnings (`ok: true`): reserved only in some situations, Ctrl+Alt acting as
 AltGr on some Windows layouts, and sites that use the same keys.
 
+It loads both data tables: with them, about 62 KB minified (~15 KB
+gzipped). Import it in the settings page that records keys, not in code
+that runs on every page.
+
+### Showing a combo to people (v0.3.2+)
+
+`hotkey-router/format` turns a hotkey string (or a parsed combo) into what
+people read. It loads no data tables (~9 KB minified, ~3.5 KB gzipped).
+
+```js
+import { formatCombo, comboTokens, modifierLabel } from 'hotkey-router/format'
+
+formatCombo('mod+shift+code:Period')                                       // 'Ctrl+Shift+.' (Windows/Linux)
+formatCombo('mod+shift+code:Period', { platform: 'mac' })                  // 'Shift+Cmd+.'
+formatCombo('mod+shift+code:Period', { platform: 'mac', style: 'glyphs' }) // '⇧⌘.'
+
+comboTokens('mod+shift+code:Period', { platform: 'mac' })
+// [{ label: '⇧', name: 'Shift',   modifier: 'shift' },
+//  { label: '⌘', name: 'Command', modifier: 'meta' },
+//  { label: '.', name: 'Period',  key: 'Period' }]
+
+modifierLabel('alt', { platform: 'mac', style: 'both' })                   // '⌥ Option'
+modifierLabel('mod')                                                       // 'Cmd' or 'Ctrl'
+```
+
+- `formatCombo(combo, { platform, style, order, separator })`: one string.
+  `style: 'text'` (default) joins words with `+`; `'glyphs'` uses the macOS
+  symbols (⌃ ⌥ ⇧ ⌘ ↩ ⌫ ⎋ ← …) with no separator.
+- `comboTokens(combo, { platform, style, order })`: one keycap per key,
+  `'glyphs'` by default. `name` is what a screen reader should say; put it in
+  visually hidden text or `aria-label` next to a glyph.
+- `modifierLabel(name, { platform, style })` (`'text'`, `'glyphs'` or
+  `'both'`), `modifierName(name, { platform })` (spoken), `keyLabel(key,
+  { platform, style })`, `listModifiers(names, { platform, conjunction })`
+  (`'Ctrl, Alt or Shift'`), `platformLabel('mac')` (`'macOS'`),
+  `browserLabel('edge')`.
+- `KEY_LABELS`: label and spoken name for `KeyboardEvent.code` values
+  (`Period` → `.` / "Period", `Enter` → Enter, Return on macOS, ↩).
+
+Words per platform: macOS Cmd, Option, Control, Shift; Windows Ctrl, Alt,
+Shift, Win; Linux the same with Super; ChromeOS with Search. `platform`
+defaults to `detectPlatform()`. On Windows, Linux and ChromeOS `'glyphs'`
+gives the same words as `'text'` (they have no modifier symbols).
+
+**Modifier order.** Modifiers come in the platform's own order whatever order
+the string is written in: on macOS Apple's ⌃⌥⇧⌘ (Control, Option, Shift,
+Command), the order every Mac menu shows, so `mod+shift+.` is `⇧⌘.`; on
+Windows, Linux and ChromeOS Win/Super/Search, Ctrl, Alt, Shift. Pass
+`{ order: 'combo' }` to keep the written order (`⌘⇧.`).
+
 ### Supported syntax
 
 **Standard:**
@@ -469,7 +535,8 @@ AltGr on some Windows layouts, and sites that use the same keys.
 - `shift+a`
 - `ctrl+k up`
 - `mod+s` (meta on macOS, ctrl elsewhere)
-- `ctrl++` or `ctrl+plus`
+- `ctrl++` or `ctrl+plus` (the `+` key; reservation and site lookups treat
+  it as `=`, since `+` is Shift+= on most layouts)
 
 **AHK-style prefix modifiers:**
 
@@ -485,7 +552,7 @@ Modifiers must appear before the base key.
 
 - `ctrl`, `control`, `⌃`
 - `shift`, `⇧`, `+`
-- `alt`, `option`, `⌥`, `!`
+- `alt`, `option`, `opt`, `⌥`, `!`
 - `meta`, `cmd`, `command`, `win`, `⌘`, `#`
 - `mod` (meta on macOS, ctrl elsewhere)
 

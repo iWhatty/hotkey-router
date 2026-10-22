@@ -10,6 +10,8 @@
 // `$keyFormat` / `$comment` fields. Severity tiers determine warn vs info.
 
 import HOTKEY_DATA from './data/browser-hotkeys.json' with { type: 'json' }
+import { lookupKey } from './parse.js'
+import { detectPlatform, detectBrowser, platformLabel } from './platform.js'
 
 const SUPPORTED_SCHEMA = '1.0'
 
@@ -21,32 +23,9 @@ const HARD_SEVERITIES = new Set(['hard', 'os', 'menu-activation'])
 const SOFT_SEVERITIES = new Set(['find-bar-only', 'compose', 'system-text', 'devtools-open'])
 
 // --- platform / browser detection ---------------------------------------------
-
-export function detectPlatform(nav = (typeof navigator !== 'undefined' ? navigator : null)) {
-  if (!nav) return null
-  const platform = nav.platform || ''
-  if (/Mac|iPhone|iPad|iPod/.test(platform)) return 'mac'
-  if (/Win/i.test(platform)) return 'windows'
-  if (/Linux|X11/i.test(platform)) return 'linux'
-  // Fall back to userAgent sniffing when navigator.platform is unhelpful
-  // (e.g. some Chromium builds report empty platform).
-  const ua = nav.userAgent || ''
-  if (/Mac OS X/i.test(ua)) return 'mac'
-  if (/Windows/i.test(ua)) return 'windows'
-  if (/Linux|X11/i.test(ua)) return 'linux'
-  return null
-}
-
-export function detectBrowser(nav = (typeof navigator !== 'undefined' ? navigator : null)) {
-  if (!nav) return null
-  const ua = nav.userAgent || ''
-  // Order matters: Edge UA contains 'Chrome', Chrome UA contains 'Safari'.
-  if (/Edg\//.test(ua)) return 'edge'
-  if (/Firefox/.test(ua)) return 'firefox'
-  if (/Chrome/.test(ua)) return 'chrome'
-  if (/Safari/.test(ua)) return 'safari'
-  return null
-}
+// One shared detector (platform.js). Here ChromeOS reports as 'linux': the
+// table has mac/windows/linux sections only.
+export { detectPlatform, detectBrowser }
 
 // --- data normalization -------------------------------------------------------
 
@@ -111,55 +90,19 @@ const INDEX = SCHEMA_OK ? buildIndex(HOTKEY_DATA) : { platforms: {} }
 
 // --- lookup-key construction --------------------------------------------------
 
-// Strip a `KeyboardEvent.code` value down to the bare letter/digit used in the
-// data tables. `KeyA` -> `a`, `Digit1` -> `1`. Other codes (`ArrowLeft`,
-// `Space`, `F5`) are lowercased as a best-effort fallback.
-function codeToKey(code) {
-  if (!code) return null
-  const letter = /^Key([A-Za-z])$/.exec(code)
-  if (letter) return letter[1].toLowerCase()
-  const digit = /^Digit(\d)$/.exec(code)
-  if (digit) return digit[1]
-  return code.toLowerCase()
-}
-
-// Punctuation and space typed as `event.key` (`meta+shift+/`, `meta+space`)
-// map to the same symbolic names the data uses for `code:Slash` and friends,
-// so both spellings of a combo find the same entry. Mirrors sites.js.
-const PUNCT_KEYS = {
-  '.': 'period', ',': 'comma', ';': 'semicolon', "'": 'quote', '/': 'slash',
-  '\\': 'backslash', '[': 'bracketleft', ']': 'bracketright', '-': 'minus',
-  '=': 'equal', '`': 'backquote', ' ': 'space',
-}
-
-function keyToBase(key) {
-  if (key == null) return null
-  return PUNCT_KEYS[key] || key
-}
-
-// Build the canonical lookup key from a hotkey-router parsed combo. Mirrors
-// WebRadar's `lookupKey()` but works against the parsed structure rather than
-// the raw string, so `mod` is already resolved and `code:KeyX` is normalized.
-export function lookupKeyFromCombo(combo) {
-  if (!combo) return null
-  if (combo.bareModifier) return null // bare modifiers aren't tracked in the data
-  const base = combo.code ? codeToKey(combo.code) : keyToBase(combo.key)
-  if (!base) return null
-  const parts = []
-  if (combo.ctrl) parts.push('ctrl')
-  if (combo.meta) parts.push('meta')
-  if (combo.alt) parts.push('alt')
-  if (combo.shift) parts.push('shift')
-  parts.push(base)
-  return parts.join('+')
-}
+// Build the canonical lookup key from a hotkey-router parsed combo
+// (`ctrl+meta+alt+shift+base`), so `mod` is already resolved and
+// `code:KeyX`, `code:Slash` and `/` all reach the data's names. The same
+// function sites.js uses (parse.js).
+export const lookupKeyFromCombo = lookupKey
 
 // --- public lookup ------------------------------------------------------------
 
 /**
  * @typedef {'mac' | 'windows' | 'linux'} Platform
  * @typedef {'chrome' | 'firefox' | 'safari' | 'edge'} Browser
- * @typedef {'hard' | 'hard-fullscreen' | 'soft' | 'soft-warn'} Severity
+ * @typedef {'hard' | 'os' | 'menu-activation' | 'find-bar-only' | 'compose' | 'system-text' | 'devtools-open'} Severity
+ *   hard tiers (never reach the page): hard, os, menu-activation; the rest are soft
  *
  * @typedef {{
  *   source: 'browser' | 'system',
@@ -216,8 +159,6 @@ export function lookupReservation(combo, { platform, browser } = {}) {
 
 // --- warning emission ---------------------------------------------------------
 
-const PLATFORM_LABEL = { mac: 'macOS', windows: 'Windows', linux: 'Linux' }
-
 /** @param {Severity | string} severity @returns {boolean} */
 export function severityIsHard(severity) {
   return HARD_SEVERITIES.has(severity)
@@ -236,10 +177,10 @@ export function severityIsSoft(severity) {
  * @returns {string}
  */
 export function formatReservationWarning(reservation, rawHotkey) {
-  const platformLabel = PLATFORM_LABEL[reservation.platform] || reservation.platform
+  const where = platformLabel(reservation.platform)
   const sourceLabel = reservation.source === 'browser'
-    ? `${reservation.browser} on ${platformLabel}`
-    : `${platformLabel}`
+    ? `${reservation.browser} on ${where}`
+    : where
   const tag = severityIsHard(reservation.severity)
     ? 'will not fire'
     : 'fires in normal browsing'
@@ -265,7 +206,8 @@ export function emitReservationWarning(reservation, rawHotkey, console_ = consol
 //
 // Wire reservation warnings into a hotkey-router instance. Importing this
 // function is the opt-in: bundlers that don't see this import tree-shake the
-// entire ~5 KB data table out of the build.
+// entire data table out of the build (this module minified: ~23 KB,
+// ~5.5 KB gzipped; measured 0.3.2).
 //
 //   import hotkeys from 'hotkey-router'
 //   import { installReservationWarnings } from 'hotkey-router/reservations'

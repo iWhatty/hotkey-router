@@ -1,6 +1,6 @@
 {
   "name": "hotkey-router",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A tiny, deterministic keyboard routing engine for modern web apps.",
   "type": "module",
   "author": "WATT3D <WATT3D@protonmail.com>",
@@ -36,6 +36,10 @@
     "./validate": {
       "types": "./dist/types/validate.d.ts",
       "import": "./dist/validate.js"
+    },
+    "./format": {
+      "types": "./dist/types/format.d.ts",
+      "import": "./dist/format.js"
     },
     "./data/browser-hotkeys.json": "./data/browser-hotkeys.json",
     "./data/site-hotkeys.json": "./data/site-hotkeys.json",

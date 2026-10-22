@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 // scripts/scrape-reservations.mjs
 //
-// Maintenance tool — NOT shipped to library consumers (cheerio lives in
-// devDependencies). Fetches the canonical browser/OS shortcut pages, parses
-// them, diffs the result against the bundled data/browser-hotkeys.json, and
-// prints a unified summary suitable for human review.
+// NOT WORKING YET: every parser in scripts/scrape/ is a TODO stub that
+// returns null, so this script fetches nothing and can't diff or apply
+// anything. It says so and exits 1. Until the parsers exist, edit
+// data/browser-hotkeys.json by hand from the sources named in each parser.
+//
+// Maintenance tool — NOT shipped to library consumers. Meant to fetch the
+// canonical browser/OS shortcut pages, parse them, diff the result against
+// the bundled data/browser-hotkeys.json, and print a unified summary
+// suitable for human review.
 //
 // Usage:
 //   npm run scrape:diff   # fetch + diff (read-only; default)
@@ -98,6 +103,7 @@ async function main() {
   const bundled = loadBundled()
 
   let totalChanges = 0
+  let ran = 0
   const updates = []
 
   for (const { name, run } of SCRAPERS) {
@@ -112,6 +118,7 @@ async function main() {
       console.log(`${name}: skipped (no partials returned)`)
       continue
     }
+    ran++
     const list = Array.isArray(partials) ? partials : [partials]
     for (const partial of list) {
       const located = locate(bundled, partial)
@@ -138,6 +145,12 @@ async function main() {
   }
 
   console.log('')
+  if (ran === 0) {
+    console.error('No scraper is implemented yet (scripts/scrape/*.mjs are stubs), so nothing was checked.')
+    console.error('Edit data/browser-hotkeys.json by hand from the sources listed in each scraper.')
+    process.exitCode = 1
+    return
+  }
   if (totalChanges === 0) {
     console.log('No changes detected — bundled data is up to date.')
     return
