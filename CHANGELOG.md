@@ -7,6 +7,15 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ### Fixed
 
+- **Shortcuts work on non-Latin layouts.** On a Russian layout Ctrl+K
+  reports `key: 'л'`, `code: 'KeyK'`, so a `ctrl+k` binding never fired.
+  When Ctrl or Cmd is held (Shift allowed, Alt not), the key is a letter
+  from a non-Latin script and `code` is `KeyA`..`KeyZ`, the router now also
+  looks up the Latin letter, as browsers do for their own shortcuts. It only
+  does so when no exact key or `code:` binding is eligible, so any keypress
+  that fired a binding before fires the same one now. Typing, Alt/AltGr
+  chords, IME composition, digits and Latin layouts (AZERTY, Dvorak) are
+  unchanged.
 - **Inputs inside a shadow root are ignored like any input.** The router
   checked `e.target`, which a listener on `window` sees as the shadow host,
   so typing in an `<input>` inside a web component fired plain-key bindings.
@@ -33,8 +42,12 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 ### Docs
 
 - README: `when`/`allowIn` receive the event (with a `composedPath()`
-  example), shadow DOM inputs, the shifted-punctuation rule, and what
-  importing the core does.
+  example), shadow DOM inputs, the shifted-punctuation rule, non-Latin
+  layouts, and what importing the core does.
+- README: every `<input>` type is ignored, modifier chords included, and a
+  native `<button>` is not (a plain `space` binding fires there). This is
+  unchanged; it is now documented and pinned by tests, with an `allowIn`
+  example for letting a chord through on a checkbox or slider.
 
 ## 0.3.2 — 2026-10-22
 

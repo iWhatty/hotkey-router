@@ -628,4 +628,161 @@ describe('0.3.3 repairs', () => {
       expect(hotkeys.trigger('alt+1')).toBe(true)
     })
   })
+
+  // Slice C: on a non-Latin layout, Ctrl/Cmd + a letter key falls back to the
+  // Latin letter for that physical key, as browsers do for their own shortcuts.
+  describe('non-Latin layouts', () => {
+    const press = (key, code, opts = {}, type = 'keydown') => {
+      const e = new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true, ...opts })
+      if (opts.altGraph) Object.defineProperty(e, 'getModifierState', { value: (k) => k === 'AltGraph' })
+      window.dispatchEvent(e)
+    }
+
+    it('Russian Ctrl+K fires ctrl+k, and Cmd+K fires meta+k', () => {
+      const cmd = vi.fn()
+      hotkeys.bind('ctrl+k', log)
+      hotkeys.bind('meta+k', cmd)
+      press('л', 'KeyK', { ctrlKey: true })
+      press('л', 'KeyK', { metaKey: true })
+      expect(log).toHaveBeenCalledOnce()
+      expect(cmd).toHaveBeenCalledOnce()
+    })
+
+    it('keeps Shift: Russian Ctrl+Shift+K (key "Л") fires ctrl+shift+k', () => {
+      hotkeys.bind('ctrl+shift+k', log)
+      press('Л', 'KeyK', { ctrlKey: true, shiftKey: true })
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('Greek, Hebrew and Arabic letters fall back too', () => {
+      hotkeys.bind('ctrl+z', log)
+      hotkeys.bind('ctrl+c', log)
+      hotkeys.bind('ctrl+f', log)
+      press('ζ', 'KeyZ', { ctrlKey: true })
+      press('ב', 'KeyC', { ctrlKey: true })
+      press('ب', 'KeyF', { ctrlKey: true })
+      expect(log).toHaveBeenCalledTimes(3)
+    })
+
+    it('fires a keyup binding', () => {
+      hotkeys.bind('ctrl+k up', log)
+      press('л', 'KeyK', { ctrlKey: true }, 'keyup')
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('never affects typing: plain and Shift-only letters do not fall back', () => {
+      hotkeys.bind('k', log)
+      hotkeys.bind('shift+k', log)
+      press('л', 'KeyK')
+      press('Л', 'KeyK', { shiftKey: true })
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('excludes Alt: Alt alone, Ctrl+Alt and AltGr', () => {
+      hotkeys.bind('alt+k', log)
+      hotkeys.bind('ctrl+alt+k', log, null, { altGraph: true })
+      hotkeys.bind('ctrl+k', log, null, { altGraph: true })
+      press('л', 'KeyK', { altKey: true })
+      press('л', 'KeyK', { ctrlKey: true, altKey: true })
+      press('л', 'KeyK', { ctrlKey: true, altGraph: true })
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('excludes IME composition, even for bindings that opt into it', () => {
+      hotkeys.bind('ctrl+k', log, null, { composing: true })
+      press('л', 'KeyK', { ctrlKey: true, isComposing: true })
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('excludes Latin letters, digits and non-letter keys', () => {
+      hotkeys.bind('ctrl+e', log)
+      hotkeys.bind('ctrl+1', log)
+      hotkeys.bind('ctrl+q', log)
+      press('é', 'KeyE', { ctrlKey: true })   // accented Latin letter
+      press('١', 'Digit1', { ctrlKey: true }) // Arabic-Indic digit
+      press('л', 'Digit1', { ctrlKey: true }) // letter, but not on a KeyA..KeyZ key
+      press('/', 'KeyQ', { ctrlKey: true })   // not a letter
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('leaves Latin layouts alone: AZERTY Ctrl+Z (physical W) fires ctrl+z, not ctrl+w', () => {
+      const w = vi.fn()
+      hotkeys.bind('ctrl+z', log)
+      hotkeys.bind('ctrl+w', w)
+      press('z', 'KeyW', { ctrlKey: true })
+      expect(log).toHaveBeenCalledOnce()
+      expect(w).not.toHaveBeenCalled()
+    })
+
+    it('an eligible exact binding wins over the fallback, whatever its priority or age', () => {
+      const exact = vi.fn()
+      const byCode = vi.fn()
+      hotkeys.bind('ctrl+л', exact)
+      hotkeys.bind('ctrl+k', log, null, { priority: 10 })
+      press('л', 'KeyK', { ctrlKey: true })
+      expect(exact).toHaveBeenCalledOnce()
+
+      hotkeys.bind('ctrl+code:KeyJ', byCode)
+      hotkeys.bind('ctrl+j', log, null, { priority: 10 })
+      press('о', 'KeyJ', { ctrlKey: true })
+      expect(byCode).toHaveBeenCalledOnce()
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('falls back when the exact binding is not eligible (its when() says no)', () => {
+      const exact = vi.fn()
+      hotkeys.bind('ctrl+л', exact, null, { when: () => false })
+      hotkeys.bind('ctrl+k', log)
+      press('л', 'KeyK', { ctrlKey: true })
+      expect(exact).not.toHaveBeenCalled()
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('a fallback binding still honours the input guard and when()', () => {
+      const input = document.createElement('input')
+      document.body.appendChild(input)
+      hotkeys.bind('ctrl+k', log)
+      hotkeys.bind('ctrl+j', log, null, { when: (e) => e.key === 'j' })
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'л', code: 'KeyK', ctrlKey: true, bubbles: true }))
+      press('о', 'KeyJ', { ctrlKey: true })
+      expect(log).not.toHaveBeenCalled()
+    })
+  })
+
+  // Slice E (decided: document, do not change). Pins today's behaviour.
+  describe('non-text controls', () => {
+    const pressOn = (el, key, opts = {}) => {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...opts }))
+    }
+
+    it('ignores every <input> type, modifier chords included', () => {
+      hotkeys.bind('ctrl+k', log)
+      hotkeys.bind('space', log)
+      for (const type of ['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'color', 'file', 'date']) {
+        const input = document.createElement('input')
+        input.type = type
+        document.body.appendChild(input)
+        pressOn(input, 'k', { ctrlKey: true })
+        pressOn(input, ' ')
+      }
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('allowIn lets one binding through on a checkbox', () => {
+      const box = document.createElement('input')
+      box.type = 'checkbox'
+      document.body.appendChild(box)
+      hotkeys.bind('ctrl+k', log, null, { allowIn: (e) => e.composedPath()[0].type === 'checkbox' })
+      pressOn(box, 'k', { ctrlKey: true })
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('does not ignore a native <button>: a plain space binding fires there', () => {
+      const button = document.createElement('button')
+      document.body.appendChild(button)
+      hotkeys.bind('space', log)
+      pressOn(button, ' ')
+      expect(log).toHaveBeenCalledOnce()
+    })
+  })
 })

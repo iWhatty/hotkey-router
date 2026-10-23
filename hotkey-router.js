@@ -475,40 +475,75 @@ function isComposingEvent(e) {
   return Boolean(e.isComposing || e.keyCode === 229)
 }
 
+// Latin lookup key for a non-Latin layout: Russian Ctrl+K reports key 'л'
+// with code 'KeyK', so a `ctrl+k` binding would never fire. Browsers fall
+// back to the Latin letter for their own shortcuts; so do we, but only for
+// a letter from a non-Latin script on a KeyA..KeyZ key, with Ctrl or Meta and
+// no Alt (Option and AltGr type characters), outside IME composition.
+// Latin layouts (AZERTY, Dvorak) never get here: their letters are Latin.
+const NON_LATIN_LETTER = /^(?!\p{Script=Latin})\p{L}$/u
+
+function latinKeyFromEvent(e) {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return null
+  if (isComposingEvent(e)) return null
+  if (typeof e.getModifierState === 'function' && e.getModifierState('AltGraph')) return null
+  const letter = /^Key([A-Z])$/.exec(e.code || '')
+  if (!letter || typeof e.key !== 'string' || !NON_LATIN_LETTER.test(e.key)) return null
+  return comboKeyFromParts({
+    ctrl: e.ctrlKey,
+    shift: e.shiftKey,
+    alt: false,
+    meta: e.metaKey,
+    key: letter[1].toLowerCase(),
+  })
+}
+
 // The bindings an event may fire, after every guard. Looks up under both
 // lookup keys: key-based (`alt+x`) and code-based (`alt+code:KeyX`). Same
 // physical keypress, two valid binding shapes; the priority/recency arbiter
-// picks among them.
+// picks among them. Only when neither yields an eligible binding does the
+// Latin fallback (`latinKeyFromEvent`) get a turn, so an exact `ctrl+л` or
+// `ctrl+code:KeyK` always beats a fallback `ctrl+k`.
 //
 // phase: 'all' (one listener handles every binding), 'capture' (only
 // bindings with options.capture) or 'bubble' (only bindings without it).
 function eligibleBindings(e, type, phase) {
-  const altGraphChar = isAltGraphCharacter(e)
-  const composing = isComposingEvent(e)
-  const fromInput = ignoreEditable && isFromInputTarget(e)
+  const guards = {
+    altGraphChar: isAltGraphCharacter(e),
+    composing: isComposingEvent(e),
+    fromInput: ignoreEditable && isFromInputTarget(e),
+  }
 
-  const seen = new Set()
   const candidates = []
+  const seen = new Set()
   for (const lookupKey of [comboKeyFromEvent(e), codeKeyFromEvent(e)]) {
     if (!lookupKey || seen.has(lookupKey)) continue
     seen.add(lookupKey)
+    collectEligible(candidates, lookupKey, e, type, phase, guards)
+  }
 
-    const bindings = registry.get(lookupKey)?.get(type)
-    if (!bindings?.length) continue
-
-    for (const b of bindings) {
-      const o = b.options
-      if (phase === 'capture' && !o.capture) continue
-      if (phase === 'bubble' && o.capture) continue
-      if (altGraphChar && !o.altGraph) continue
-      if (composing && !o.composing) continue
-      if (fromInput && !o.allowIn?.(e)) continue
-      if (type === 'keydown' && o.repeat === false && e.repeat) continue
-      if (o.when && o.when(e) === false) continue
-      candidates.push(b)
-    }
+  if (!candidates.length) {
+    const latinKey = latinKeyFromEvent(e)
+    if (latinKey && !seen.has(latinKey)) collectEligible(candidates, latinKey, e, type, phase, guards)
   }
   return candidates
+}
+
+function collectEligible(candidates, lookupKey, e, type, phase, { altGraphChar, composing, fromInput }) {
+  const bindings = registry.get(lookupKey)?.get(type)
+  if (!bindings?.length) return
+
+  for (const b of bindings) {
+    const o = b.options
+    if (phase === 'capture' && !o.capture) continue
+    if (phase === 'bubble' && o.capture) continue
+    if (altGraphChar && !o.altGraph) continue
+    if (composing && !o.composing) continue
+    if (fromInput && !o.allowIn?.(e)) continue
+    if (type === 'keydown' && o.repeat === false && e.repeat) continue
+    if (o.when && o.when(e) === false) continue
+    candidates.push(b)
+  }
 }
 
 function fire(winner, e) {
