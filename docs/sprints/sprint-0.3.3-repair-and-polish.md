@@ -1,9 +1,11 @@
 # Sprint 0.3.3: repair and polish
 
-Date: 2026-10-22. Status: **in progress.** Slices A, B, D and F are done;
-C and E wait for the owner decisions below. In B,
-`validateCombo` reports shifted punctuation as an error (`ok: false`), since
-the combo never fires on US layouts. Source: a review of
+Date: 2026-10-22. Status: **all slices done; release pending.** A, B, D and
+F merged on 2026-10-22 (PR #1); C and E done on 2026-10-23 after the owner
+decisions below. In B, `validateCombo` reports shifted punctuation as an error
+(`ok: false`), since the combo never fires on US layouts. Left before release:
+version bump, CHANGELOG date, a manual check of Russian and one CJK IME in
+Chrome and Firefox, and the SpellBolt upgrade. Source: a review of
 0.3.2 from SpellBolt (core `hotkey-router.js` and `parse.js` read in full; all
 169 tests pass), plus simulated key events against the 0.3.2 source.
 
@@ -25,7 +27,7 @@ Each row was reproduced with fake `KeyboardEvent`s dispatched through
 | 4 | `ctrl+k` bound, Russian layout (`e.key` is `л`, `code` is `KeyK`) | **Never fires** | Fires, as browser shortcuts do |
 | 5 | `once` binding whose handler throws | Runs again on the next press | Removed after the first run |
 | 6 | `registerPlugin` where one key string fails to parse | Earlier bindings stay bound; the plugin is not recorded, so `unregisterPlugin` cannot remove them | All or nothing |
-| 7 | Any binding with focus on a checkbox, radio, button or range `<input>` | Ignored (treated as a text field) | Decide (slice E) |
+| 7 | Any binding with focus on a checkbox, radio, button or range `<input>` | Ignored (treated as a text field) | Decided: keep, and document (slice E) |
 | 8 | `package.json` `"sideEffects": false` | The core attaches listeners at import, and `auto` installs warnings at import | List the files that have side effects |
 
 Controls that behave correctly: `ctrl+shift+code:Comma` fires; `ctrl+k` with
@@ -62,16 +64,29 @@ KeyboardEvent)`, but the README examples should show it, together with
 - Tests: the warning fires once per combo; `code:` bindings and unshifted
   punctuation do not warn.
 
-### C. Non-Latin layouts (case 4)
+### C. Non-Latin layouts (case 4), done as decided
 
-- In `eligibleBindings`, when `e.key` is a single character that is not
-  `a`-`z` and `e.code` is `KeyA`..`KeyZ` (or `Digit0`..`9`), also look up the
-  combo with the Latin letter for that code, as browsers do for their own
-  shortcuts. Only when a modifier other than Shift is held, so typing is never
-  affected.
-- Latin layouts are unchanged (AZERTY `ctrl+z` stays on the key that types z).
-- Tests: Russian `ctrl+k` fires; Russian plain `л` does not fire `k`; AZERTY
-  unchanged; Greek and Hebrew samples.
+The proposal (any character outside `a`-`z`, digits included, any modifier
+but Shift) was narrowed in review. As built (`latinKeyFromEvent` in
+`hotkey-router.js`):
+
+- Ctrl or Meta held, Shift allowed, **no Alt** (Option and AltGr type
+  characters).
+- `e.key` is one letter from a **non-Latin script**; `e.code` is
+  `KeyA`..`KeyZ`. No digits: that would bring back the shifted-character
+  matching that B leaves out.
+- Never during IME composition (`isComposing` or keyCode 229) or with
+  AltGraph reported, even for bindings that opt into those.
+- A **fallback tier**: tried only when the key-based and `code:` lookups give
+  no eligible binding in that phase. All guards apply to it.
+- No opt-out option; `when: (e) => e.key === 'k'` requires the exact
+  character.
+- Tests: Russian Ctrl/Cmd+K and Ctrl+Shift+K; Greek, Hebrew, Arabic; keyup;
+  plain and Shift-only letters; Alt, Ctrl+Alt, AltGr; composition; accented
+  Latin, Arabic-Indic digit, letter on a Digit key, non-letter; AZERTY; an
+  exact `ctrl+л` and a `ctrl+code:KeyJ` beat a higher-priority fallback; an
+  ineligible exact binding lets the fallback fire; the input guard and
+  `when` still apply.
 
 ### D. Small correctness fixes (cases 5, 6)
 
@@ -81,14 +96,23 @@ KeyboardEvent)`, but the README examples should show it, together with
   otherwise throw without binding anything.
 - Tests for both.
 
-### E. Non-text inputs (case 7), decide first
+### E. Non-text inputs (case 7), decided: document only
 
 Plain keys (Space, Enter, arrows) on a checkbox, button or slider belong to
 that control, so ignoring them is right. Modifier chords (`ctrl+k`) on those
-controls are not typing and could fire. Proposal: treat `type` checkbox,
-radio, button, submit, reset, range, color, file as **not** text fields for
-combos with Ctrl, Alt or Meta held; keep ignoring plain keys there. Owner
-decides; if declined, document the current behaviour instead.
+controls are not typing and could fire. The proposal was to let Ctrl, Alt or
+Meta chords through on checkbox, radio, button, submit, reset, range, color
+and file inputs. **Declined**; behaviour is unchanged:
+
+- With `ignoreInput(true)`, every `<input>` type is ignored, modifiers or
+  not, as are `<textarea>`, `<select>`, contenteditable and `role="textbox"`.
+  `allowIn(e)` lets one binding through; `ignoreInput(false)` turns the check
+  off.
+- A native `<button>` is not ignored, so a plain `space` binding fires on a
+  focused button. Documented as a known hazard (gate with `when`).
+- README documents both, with an `allowIn` example for a checkbox or slider;
+  tests pin every input type, `allowIn` on a checkbox, and the `<button>`
+  case.
 
 ### F. Packaging and docs (case 8)
 
@@ -109,14 +133,37 @@ decides; if declined, document the current behaviour instead.
   default export as a router created at import.
 - **No work at import**: an opt-out (`hotkey-router/core` without auto-init).
 - Optional layout-aware matching for shifted punctuation.
+- One focus policy for controls: whether modifier chords may fire on
+  checkboxes, sliders and the like, and whether a native `<button>` should
+  block plain Space and Enter (slice E left both as they are).
 
 ## Owner decisions
 
-1. Slice E: change non-text inputs for modifier chords, or only document.
-2. Slice C changes behaviour for non-Latin users (bindings that never fired
-   start firing). It matches browsers; confirm it is a patch, not a minor.
+Decided 2026-10-23, after a two-round review by four models through the Codex
+CLI (gpt-6-luna and gpt-5.6-terra at high effort, gpt-6.1-sol and gpt-6-astra
+at medium). The owner accepted the result.
+
+1. **Slice E: document only, in 0.3.3.** Unanimous after round 2 (Luna and
+   Terra switched). A modifier chord on a control is not necessarily free for
+   the app to take, `allowIn` already lets one binding through, and the README
+   promised that every `<input>` is ignored. A single policy for controls,
+   `<button>` included, goes to 0.4.
+2. **Slice C: ship in 0.3.3 as a patch, no opt-out.** All four agreed on the
+   rule above. Version split 2-2: Luna and Terra for a patch, Sol and Astra
+   for 0.4.0 with a `layoutFallback: false` option. Decided for the patch
+   because the fallback tier means any keypress that fired a binding before
+   fires the same one now; only keypresses that fired nothing change. `when`
+   covers the rare app that wants the exact character. Use cases that decided
+   it:
+   - Russian SpellBolt user presses Ctrl+K: missed before, fires now.
+   - App binds both `ctrl+л` and `ctrl+k`: `ctrl+л` still wins.
+   - Mac user types `˚` with Option+K: `alt+k` still does not fire.
+   - AZERTY user presses Ctrl+Z: unchanged.
+   Synthetic events cannot show how every browser reports layouts and IMEs;
+   check Russian and one CJK IME by hand in Chrome and Firefox before release.
 3. License: AGPL-3.0 with additional terms keeps outside web apps from adopting
-   the library. Fine for WATT3D products; revisit only if wider adoption is a goal.
+   the library. Fine for WATT3D products; revisit only if wider adoption is a
+   goal. Not reviewed by the panel.
 
 ## Done when
 

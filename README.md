@@ -137,6 +137,17 @@ reports as `<`, and never fires. Bind the physical key instead:
 Shift with `` , . / ; ' [ ] \ - = ` ``, and `validateCombo` rejects it with the
 reason `shifted-punctuation`.
 
+**Non-Latin layouts (v0.3.3+).** On a Russian layout Ctrl+K reports
+`event.key === 'л'` with `event.code === 'KeyK'`. Like the browser's own
+shortcuts, a key-based `ctrl+k` binding still fires there: when Ctrl or Cmd is
+held (Shift allowed, Alt not), the key types a letter from a non-Latin script
+(Cyrillic, Greek, Hebrew, Arabic, ...), and `code` is `KeyA`..`KeyZ`, the
+router also looks up the Latin letter for that key. It does this only when no
+exact binding is eligible, so a `ctrl+л` or `ctrl+code:KeyK` binding always
+wins over it. Plain and Shift-only letters (typing), Alt and AltGr chords, IME
+composition, digits and Latin layouts such as AZERTY are never affected. To
+require the exact character, gate the binding: `when: (e) => e.key === 'k'`.
+
 **Examples**
 
 Ignore repeat keydown (default behavior):
@@ -235,7 +246,20 @@ This includes those elements inside an open shadow root (v0.3.3+; the router
 reads `event.composedPath()[0]`). A closed shadow root hides its inside from
 the page, so only its host element is checked there.
 
-Override per-binding with `allowIn()`.
+Every `<input>` counts, whatever its `type` and whatever modifiers are held:
+a checkbox, radio, range slider, color or file input blocks `ctrl+k` as well
+as Space. A native `<button>` is **not** on the list, so a plain `space` or
+`enter` binding fires while a button has focus; gate such bindings with
+`when` if that matters.
+
+Override per-binding with `allowIn()`:
+
+```js
+// Let the palette open from a focused checkbox or slider, but not from text fields
+hotkeys.bind('mod+k', openPalette, null, {
+  allowIn: (e) => ['checkbox', 'radio', 'range'].includes(e.composedPath()[0].type),
+})
+```
 
 ### `init(options?)`
 
