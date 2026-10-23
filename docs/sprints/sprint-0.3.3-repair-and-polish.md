@@ -1,11 +1,13 @@
 # Sprint 0.3.3: repair and polish
 
-Date: 2026-10-22. Status: **all slices done; release pending.** A, B, D and
-F merged on 2026-10-22 (PR #1); C and E done on 2026-10-23 after the owner
-decisions below. In B, `validateCombo` reports shifted punctuation as an error
-(`ok: false`), since the combo never fires on US layouts. Left before release:
-version bump, CHANGELOG date, a manual check of Russian and one CJK IME in
-Chrome and Firefox, and the SpellBolt upgrade. Source: a review of
+Date: 2026-10-22. Status: **released as 0.3.3 on 2026-10-23.** A, B, D and
+F merged on 2026-10-22 (PR #1); C and E on 2026-10-23 (PR #2) after the owner
+decisions below. Found during release prep and fixed in it: `dist/auto.js`
+inlined its own copy of the router (see CHANGELOG). In B, `validateCombo`
+reports shifted punctuation as an error (`ok: false`), since the combo never
+fires on US layouts. Still open: a manual check of Russian and one CJK IME in
+Chrome and Firefox (not done before release), and the SpellBolt upgrade.
+Source: a review of
 0.3.2 from SpellBolt (core `hotkey-router.js` and `parse.js` read in full; all
 169 tests pass), plus simulated key events against the 0.3.2 source.
 
