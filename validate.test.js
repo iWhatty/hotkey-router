@@ -128,3 +128,17 @@ describe('validateCombo messages and platforms', () => {
     expect(reason(validateCombo('mod+shift+code:KeyK', { minModifiers: 3, sites: false }), 'too-few-modifiers').message).toBe('Use at least 3 modifiers together.')
   })
 })
+
+describe('validateCombo shifted punctuation', () => {
+  it('rejects a key-based shift+punctuation combo and names the code: form', () => {
+    const r = validateCombo('ctrl+shift+,', { sites: false })
+    expect(r.ok).toBe(false)
+    const reason = r.reasons.find((x) => x.code === 'shifted-punctuation')
+    expect(reason.message).toContain('ctrl+shift+code:Comma')
+  })
+
+  it('accepts the code: form and unshifted punctuation', () => {
+    expect(codes(validateCombo('ctrl+shift+code:Comma', { sites: false }))).not.toContain('shifted-punctuation')
+    expect(codes(validateCombo('ctrl+alt+,', { sites: false }))).not.toContain('shifted-punctuation')
+  })
+})

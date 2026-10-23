@@ -226,6 +226,43 @@ export function parseHotkey(hotkeyStr, opts) {
   return { combo, type, raw }
 }
 
+// --- shifted punctuation -----------------------------------------------------
+
+// Punctuation whose Shift character differs on a US layout. With Shift held,
+// `event.key` is the shifted character, so a key-based `ctrl+shift+,` waits
+// for a ',' that never arrives (the event says '<').
+const SHIFTED_PUNCT = {
+  ',': ['<', 'Comma'], '.': ['>', 'Period'], '/': ['?', 'Slash'],
+  ';': [':', 'Semicolon'], "'": ['"', 'Quote'], '[': ['{', 'BracketLeft'],
+  ']': ['}', 'BracketRight'], '\\': ['|', 'Backslash'], '-': ['_', 'Minus'],
+  '=': ['+', 'Equal'], '`': ['~', 'Backquote'],
+}
+
+/**
+ * For a key-based combo with Shift and one of `, . / ; ' [ ] \ - = \``, the
+ * message explaining it never fires on US layouts and the `code:` spelling
+ * to bind instead (written the way the input was). Null for anything else,
+ * including strings that do not parse.
+ *
+ * @param {string} hotkeyStr
+ * @returns {{ message: string, suggestion: string } | null}
+ */
+export function shiftedPunctuationHint(hotkeyStr) {
+  const { combo, type, error } = readHotkey(hotkeyStr)
+  if (error || !combo.shift || combo.code) return null
+  const shifted = SHIFTED_PUNCT[combo.key]
+  if (!shifted) return null
+  const [typed, code] = shifted
+
+  // The base key is the last character before any ' up'; swap just that.
+  const base = String(hotkeyStr).trim().replace(/\s+up$/i, '')
+  const suggestion = base.slice(0, -1) + 'code:' + code + (type === 'keyup' ? ' up' : '')
+  return {
+    message: `"${hotkeyStr}" never fires on US layouts: Shift turns "${combo.key}" into "${typed}". Bind "${suggestion}" instead.`,
+    suggestion,
+  }
+}
+
 // --- canonical lookup names (reservation + site tables) ----------------------
 
 // Punctuation typed as `event.key` maps to the names the data tables use for

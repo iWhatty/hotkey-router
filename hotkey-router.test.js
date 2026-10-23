@@ -531,3 +531,101 @@ describe('hotkey-router', () => {
     })
   })
 })
+// 0.3.3: cases where 0.3.2 did the wrong thing without saying so.
+describe('0.3.3 repairs', () => {
+  let log
+
+  beforeEach(() => {
+    log = vi.fn()
+    hotkeys.destroy()
+    hotkeys.init({ target: window })
+    hotkeys.resume()
+    hotkeys.ignoreInput(true)
+  })
+
+  afterEach(() => {
+    hotkeys.destroy()
+    document.body.innerHTML = ''
+    vi.restoreAllMocks()
+  })
+
+  const shadowInput = (mode) => {
+    const host = document.createElement('my-editor')
+    document.body.appendChild(host)
+    const root = host.attachShadow({ mode })
+    const input = document.createElement('input')
+    root.appendChild(input)
+    return input
+  }
+  const typeIn = (el, key) => {
+    el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, composed: true }))
+  }
+
+  describe('shadow DOM inputs', () => {
+    it('ignores typing in an input inside an open shadow root', () => {
+      hotkeys.bind('k', log)
+      typeIn(shadowInput('open'), 'k')
+      expect(log).not.toHaveBeenCalled()
+    })
+
+    it('allowIn receives the event, and composedPath()[0] is the inner input', () => {
+      const input = shadowInput('open')
+      const allowIn = vi.fn((e) => e.composedPath()[0] === input)
+      hotkeys.bind('k', log, null, { allowIn })
+      typeIn(input, 'k')
+      expect(allowIn.mock.calls[0][0]).toBeInstanceOf(KeyboardEvent)
+      expect(log).toHaveBeenCalledOnce()
+    })
+
+    it('a closed shadow root still hides its input (only the host is visible)', () => {
+      hotkeys.bind('k', log)
+      typeIn(shadowInput('closed'), 'k')
+      expect(log).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('shifted punctuation', () => {
+    it('warns once at bind that a key-based shift+punctuation combo never fires on US layouts', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      hotkeys.bind('ctrl+shift+,', log)
+      hotkeys.bind('ctrl+shift+,', log)
+      expect(warn).toHaveBeenCalledOnce()
+      expect(warn.mock.calls[0][0]).toContain('ctrl+shift+code:Comma')
+    })
+
+    it('keeps the way the combo was written in the suggestion', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      hotkeys.bind('mod+shift+/ up', log)
+      hotkeys.bind('^+.', log)
+      expect(warn.mock.calls[0][0]).toContain('"mod+shift+code:Slash up"')
+      expect(warn.mock.calls[1][0]).toContain('"^+code:Period"')
+    })
+
+    it('does not warn for code: bindings, unshifted punctuation, or shifted letters', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      hotkeys.bind('ctrl+shift+code:Comma', log)
+      hotkeys.bind('ctrl+,', log)
+      hotkeys.bind('ctrl+shift+k', log)
+      hotkeys.bind('shift+?', log)
+      expect(warn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('once and plugins', () => {
+    it('removes a once binding even when its handler throws', () => {
+      const boom = vi.fn(() => { throw new Error('boom') })
+      hotkeys.bind('ctrl+q', boom, null, { once: true })
+      expect(() => hotkeys.trigger('ctrl+q')).toThrow('boom')
+      expect(hotkeys.trigger('ctrl+q')).toBe(false)
+      expect(boom).toHaveBeenCalledOnce()
+    })
+
+    it('registerPlugin binds nothing when one key string does not parse', () => {
+      expect(() => hotkeys.registerPlugin('half', { 'alt+1': log, 'k+ctrl': log })).toThrow()
+      expect(hotkeys.trigger('alt+1')).toBe(false)
+      // The name was not taken, so the plugin can be registered once fixed.
+      expect(() => hotkeys.registerPlugin('half', { 'alt+1': log })).not.toThrow()
+      expect(hotkeys.trigger('alt+1')).toBe(true)
+    })
+  })
+})

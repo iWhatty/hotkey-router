@@ -126,6 +126,17 @@ a character (Windows reports AltGr as Ctrl+Alt, so `ctrl+alt+code:Comma`
 would otherwise swallow the `<` a Polish or Czech user typed) and while an
 IME is composing.
 
+`when` and `allowIn` receive the `KeyboardEvent`, not an element. To check
+where the key was typed, read `event.composedPath()[0]` (the element inside an
+open shadow root) or `event.target`.
+
+**Shifted punctuation.** With Shift held, `event.key` is the shifted
+character, so a key-based `ctrl+shift+,` waits for a `,` that a US keyboard
+reports as `<`, and never fires. Bind the physical key instead:
+`ctrl+shift+code:Comma`. Since v0.3.3, `bind()` warns once in the console for
+Shift with `` , . / ; ' [ ] \ - = ` ``, and `validateCombo` rejects it with the
+reason `shifted-punctuation`.
+
 **Examples**
 
 Ignore repeat keydown (default behavior):
@@ -140,6 +151,11 @@ Allow inside inputs:
 hotkeys.bind('mod+k', openPalette, null, {
   allowIn: () => true,
   preventDefault: true,
+})
+
+// Only in one field (the event, not the element, is passed in)
+hotkeys.bind('enter', submitFollowUp, null, {
+  allowIn: (e) => e.composedPath()[0] === followUpInput,
 })
 ```
 
@@ -181,6 +197,8 @@ unregister()
 ```
 
 Plugin cleanup is isolated. Removing one plugin never affects other bindings.
+If any key string fails to parse, `registerPlugin` throws and binds nothing
+(v0.3.3+).
 
 ### `unregisterPlugin(name)`
 
@@ -213,6 +231,10 @@ By default, hotkeys do **not** fire inside:
 - `[contenteditable]`
 - `role="textbox"`
 
+This includes those elements inside an open shadow root (v0.3.3+; the router
+reads `event.composedPath()[0]`). A closed shadow root hides its inside from
+the page, so only its host element is checked there.
+
 Override per-binding with `allowIn()`.
 
 ### `init(options?)`
@@ -226,7 +248,12 @@ hotkeys.init({
 })
 ```
 
-Auto-initializes on `window` by default (browser environments).
+Auto-initializes on `window` by default (browser environments): importing
+`hotkey-router` attaches `keydown` and `keyup` listeners to `window` straight
+away, and `hotkey-router/auto` also installs the reservation warnings. The
+package's `sideEffects` list names those files so bundlers keep that work;
+`/reservations`, `/sites`, `/validate` and `/format` do nothing at import and
+tree-shake away when unused.
 
 With `capture: false` (the default), bindings run in the bubble phase except
 those bound with `{ capture: true }`, which a second, capture-phase listener

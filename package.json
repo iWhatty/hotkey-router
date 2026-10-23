@@ -45,7 +45,13 @@
     "./data/site-hotkeys.json": "./data/site-hotkeys.json",
     "./data/site-hotkeys.runtime.json": "./data/site-hotkeys.runtime.json"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/hotkey-router.js",
+    "./dist/hotkey-router.cjs",
+    "./dist/hotkey-router.min.js",
+    "./dist/auto.js",
+    "./dist/auto.min.js"
+  ],
   "files": [
     "dist",
     "data",

@@ -3,6 +3,39 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
+## 0.3.3 — unreleased
+
+### Fixed
+
+- **Inputs inside a shadow root are ignored like any input.** The router
+  checked `e.target`, which a listener on `window` sees as the shadow host,
+  so typing in an `<input>` inside a web component fired plain-key bindings.
+  It now reads `e.composedPath()[0]`. A closed shadow root still hides its
+  inside; only the host is checked there.
+- **Shifted punctuation warns at bind.** A key-based `ctrl+shift+,` or
+  `mod+shift+/` never fires on US layouts (`e.key` is `<` or `?`). `bind()`
+  now logs a one-time `console.warn` naming the `code:` form to use
+  (`ctrl+shift+code:Comma`), and `validateCombo` rejects it with the new
+  reason `shifted-punctuation` (`details.suggestion` holds the `code:` form).
+  Matching is unchanged.
+- **A `once` binding whose handler throws is still removed**; it used to run
+  again on the next press.
+- **`registerPlugin` is all or nothing.** If one key string fails to parse
+  it now throws before binding anything. It used to leave the earlier
+  bindings in place without recording the plugin, so `unregisterPlugin`
+  could not remove them.
+- **`sideEffects` in `package.json` lists the files that have them**
+  (`dist/hotkey-router.*`, `dist/auto*.js`) instead of `false`, which let a
+  bundler drop `import 'hotkey-router'` and the router's listeners with it.
+  `build.js` now bundles a bare import of each entry and fails if the core
+  or `auto` is dropped, or if another entry keeps code.
+
+### Docs
+
+- README: `when`/`allowIn` receive the event (with a `composedPath()`
+  example), shadow DOM inputs, the shifted-punctuation rule, and what
+  importing the core does.
+
 ## 0.3.2 — 2026-10-22
 
 ### Added

@@ -144,6 +144,28 @@ await build({
   banner,
 })
 
+// --- Tree-shaking check ---
+// Bundle a bare import of each entry through package.json, as an app's
+// bundler would. The core and `auto` attach listeners (and `auto` installs
+// warnings) at import, so they must survive; the others have no side
+// effects and must drop out. Guards the `sideEffects` list.
+const bareImport = async (spec) => {
+  const out = await build({
+    stdin: { contents: `import '${spec}'`, resolveDir: '.' },
+    bundle: true,
+    write: false,
+    format: 'esm',
+    logLevel: 'silent',
+  })
+  return out.outputFiles[0].text.trim().length
+}
+for (const spec of ['hotkey-router', 'hotkey-router/auto']) {
+  if (!(await bareImport(spec))) throw new Error(`build: \`import '${spec}'\` was tree-shaken away; check "sideEffects" in package.json`)
+}
+for (const spec of ['hotkey-router/reservations', 'hotkey-router/sites', 'hotkey-router/format', 'hotkey-router/validate']) {
+  if (await bareImport(spec)) throw new Error(`build: \`import '${spec}'\` kept code; it should have no side effects`)
+}
+
 // --- Bundle size report ---
 const report = (file) => {
   const raw = readFileSync(file)
