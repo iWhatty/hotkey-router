@@ -3,9 +3,17 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## 0.3.3 — unreleased
+## 0.3.3 — 2026-10-23
 
 ### Fixed
+
+- **`hotkey-router/auto` is the same router as `hotkey-router`.**
+  `dist/auto.js` inlined its own copy of the core, so an app that imported
+  both got two routers: two registries, two sets of `window` listeners, and
+  no reservation warnings for bindings made through the plain import.
+  `dist/auto.js` now imports `./hotkey-router.js` and `./reservations.js`
+  (304 B instead of 48 KB), and `build.js` fails if the two entries give
+  different objects. The CDN file `dist/auto.min.js` stays standalone.
 
 - **Shortcuts work on non-Latin layouts.** On a Russian layout Ctrl+K
   reports `key: 'л'`, `code: 'KeyK'`, so a `ctrl+k` binding never fired.
@@ -38,6 +46,11 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   bundler drop `import 'hotkey-router'` and the router's listeners with it.
   `build.js` now bundles a bare import of each entry and fails if the core
   or `auto` is dropped, or if another entry keeps code.
+
+### Size
+
+- The core is now ~10 KB minified (~4.5 KB gzipped), up from ~9 KB, for
+  the non-Latin fallback and the shifted-punctuation hint.
 
 ### Docs
 

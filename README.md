@@ -379,9 +379,9 @@ The `code:` value is **case-sensitive** (matches the camelCase `KeyboardEvent.co
 
 Some combos are reserved by the browser chrome (find bar, devtools, bookmarks) or the OS (Spotlight, window management). They never reach page-world JavaScript, no matter how early you listen or whether you call `preventDefault`. hotkey-router ships an **opt-in** reservation table that emits a soft warning at bind time, so the silent failure becomes a noisy one.
 
-The feature is opt-in by design: the core router is ~9 KB minified (~4 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
+The feature is opt-in by design: the core router is ~10 KB minified (~4.5 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
 
-**Two ways to opt in.** One-line ergonomic, use the `auto` entry. Same default export as `hotkey-router`, with warnings pre-installed:
+**Two ways to opt in.** One-line ergonomic, use the `auto` entry. Same default export as `hotkey-router`, with warnings pre-installed. It is the same router object, so other files can keep importing `hotkey-router` and their bindings are warned about too (v0.3.3+; earlier versions shipped a second copy of the router in `auto`). The CDN file `dist/auto.min.js` is a standalone build with its own router; don't mix it with other hotkey-router imports.
 
 ```js
 import hotkeys from 'hotkey-router/auto'

@@ -125,16 +125,23 @@ await build({
 
 // --- Auto entry (ESM) ---
 // One-import: same default export as core, with warnings pre-installed.
+// Imports dist/hotkey-router.js and dist/reservations.js instead of inlining
+// them, so an app that imports both `hotkey-router` and `hotkey-router/auto`
+// gets one router (one registry, one set of listeners), and the warnings
+// cover bindings made through either import.
 await build({
   ...common,
   entryPoints: ['auto.js'],
   outfile: 'dist/auto.js',
   format: 'esm',
   sourcemap: true,
+  external: ['./hotkey-router.js', './reservations.js'],
   banner,
 })
 
 // --- Auto entry (minified, for CDN) ---
+// Standalone: inlines the core and the table for a single <script> tag.
+// It is its own router, so don't mix it with other hotkey-router imports.
 await build({
   ...common,
   entryPoints: ['auto.js'],
@@ -165,6 +172,14 @@ for (const spec of ['hotkey-router', 'hotkey-router/auto']) {
 for (const spec of ['hotkey-router/reservations', 'hotkey-router/sites', 'hotkey-router/format', 'hotkey-router/validate']) {
   if (await bareImport(spec)) throw new Error(`build: \`import '${spec}'\` kept code; it should have no side effects`)
 }
+
+// --- One router check ---
+// `hotkey-router` and `hotkey-router/auto` must give the same router, or an
+// app importing both gets two registries, two sets of window listeners, and
+// no reservation warnings for bindings made through the plain import.
+const core = (await import('./dist/hotkey-router.js')).default
+const auto = (await import('./dist/auto.js')).default
+if (core !== auto) throw new Error('build: dist/auto.js has its own copy of the router; it must import ./hotkey-router.js')
 
 // --- Bundle size report ---
 const report = (file) => {
