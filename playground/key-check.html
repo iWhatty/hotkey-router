@@ -360,6 +360,7 @@
     // --- event log --------------------------------------------------------------
     const logBody = document.getElementById('log')
     const events = []
+    const raw = []
 
     function mods(e) {
       const m = []
@@ -422,6 +423,9 @@
         void finishAll()
         return
       }
+      // Every keydown, modifiers included, goes into the note's raw list; a
+      // key that arrives outside any check points at a lost marker.
+      raw.push({ check: active ? active.id : '-', key: JSON.stringify(e.key), code: e.code, mods: mods(e), composing: e.isComposing })
       if (['Control', 'Shift', 'Alt', 'Meta', 'AltGraph', 'OS'].includes(e.key)) return
 
       currentRecord = addRow({
@@ -497,6 +501,14 @@
         '| --- | --- | --- | --- | --- | --- | --- | --- |',
         ...CHECKS.flatMap((c) => c.events.map((r) =>
           `| ${[c.id, r.key, r.code, r.mods, r.composing, r.keyCode, r.target, r.fired.join(', ') || '—'].map(cell).join(' | ')} |`)),
+        '',
+        '## Every keydown, modifiers included',
+        '',
+        'In order. Check `-` means no check was running (a key the markers missed).',
+        '',
+        '| Check | key | code | Modifiers | Composing |',
+        '| --- | --- | --- | --- | --- |',
+        ...raw.slice(-300).map((r) => `| ${[r.check, r.key, r.code, r.mods, r.composing].map(cell).join(' | ')} |`),
       ]
       return lines.join('\n') + '\n'
     }
