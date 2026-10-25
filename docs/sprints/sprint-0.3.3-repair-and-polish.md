@@ -6,7 +6,8 @@ decisions below. Found during release prep and fixed in it: `dist/auto.js`
 inlined its own copy of the router (see CHANGELOG). In B, `validateCombo`
 reports shifted punctuation as an error (`ok: false`), since the combo never
 fires on US layouts. Still open: a manual check of Russian and one CJK IME in
-Chrome and Firefox (not done before release), and the SpellBolt upgrade.
+Chrome and Firefox (not done before release; `playground/key-check.html` lists
+the checks and copies the results as a note), and the SpellBolt upgrade.
 Source: a review of
 0.3.2 from SpellBolt (core `hotkey-router.js` and `parse.js` read in full; all
 169 tests pass), plus simulated key events against the 0.3.2 source.
