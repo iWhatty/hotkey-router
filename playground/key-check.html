@@ -9,7 +9,7 @@
     body {
       font-family: sans-serif;
       padding: 2em;
-      max-width: 72em;
+      max-width: 76em;
     }
 
     code,
@@ -35,13 +35,32 @@
       background: #f3f3f3;
     }
 
-    .fired {
+    tr.active td {
+      background: #fff7d6;
+    }
+
+    .pass {
       color: #0a6b2d;
       font-weight: bold;
     }
 
+    .fail {
+      color: #b00020;
+      font-weight: bold;
+    }
+
+    .inconclusive,
     .none {
+      color: #8a6d00;
+    }
+
+    .muted {
       color: #888;
+    }
+
+    .fired {
+      color: #0a6b2d;
+      font-weight: bold;
     }
 
     .field {
@@ -60,14 +79,30 @@
       overflow-y: auto;
     }
 
-    select,
     button,
     input[type="text"] {
       padding: 4px;
     }
 
-    .note {
-      width: 14em;
+    /* Automatic mode: covers the page so the script's click lands on a plain
+       element (focus goes to the body), and shows progress in large type. */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: #fff;
+      padding: 2em;
+      font-size: 1.2em;
+      overflow-y: auto;
+    }
+
+    .auto #overlay {
+      display: block;
+    }
+
+    #overlay h1 {
+      margin-top: 0;
     }
   </style>
 </head>
@@ -76,22 +111,48 @@
 
   <h1>Key check</h1>
   <p>
-    A manual check of how real browsers report keys on other keyboard layouts and
-    with an IME, for the cases simulated events cannot prove. Serve the repo root
-    over HTTP (module scripts do not load from <code>file://</code>), for example
-    <code>python -m http.server 8080</code>, and open
-    <code>http://localhost:8080/playground/key-check.html</code>. The page uses the
-    source files, so no build is needed.
+    Checks how real browsers report keys on other keyboard layouts and with an IME,
+    which simulated events cannot prove. No special keyboard is needed: Windows (or
+    macOS) decides what each physical key types, so switching the OS layout turns
+    any keyboard into a Russian or Greek one.
   </p>
   <p>
-    For each row: switch the OS keyboard layout or IME, click the page outside the
-    text field (unless the row says otherwise), press the keys, and compare the
-    <strong>Fired</strong> column of the event log with the expectation. Then set
-    the result. Do it in Chrome and Firefox, and use <strong>Copy results</strong>
-    to paste a note into <code>docs/notes/</code>.
+    <strong>Automatic (Windows):</strong> run <code>scripts/key-check.ahk</code> with
+    AutoHotkey 1.1. It starts the local server, opens this page in Chrome, Firefox
+    and Edge, switches layouts for the session only, presses the keys, and writes
+    one note per browser to <code>docs/notes/</code>. Don't touch the keyboard
+    while it runs; press Pause to stop it.
+  </p>
+  <p>
+    <strong>By hand:</strong> <code>npm run key-check</code>, open
+    <code>http://127.0.0.1:8080/playground/key-check.html</code>, switch the OS
+    layout (Win+Space on Windows), click <strong>Run</strong> on a row, and press
+    its keys. The row grades itself. <strong>Copy results</strong> gives a Markdown
+    note.
   </p>
 
   <div class="env mono" id="env"></div>
+
+  <h2>Checks</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Layout or input</th>
+        <th>Press</th>
+        <th>Expect</th>
+        <th>Result</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="checks"></tbody>
+  </table>
+
+  <p>
+    <label>Text field (the IME rows type here; bindings with Ctrl, Cmd or Alt are allowed in it):<br>
+      <input class="field" id="field" type="text" placeholder="IME rows type here">
+    </label>
+  </p>
 
   <h2>Bindings on this page</h2>
   <p>
@@ -109,34 +170,14 @@
     <tbody id="bindings"></tbody>
   </table>
 
-  <h2>Checks</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Layout or input</th>
-        <th>Press</th>
-        <th>Expect</th>
-        <th>Result</th>
-        <th>Note</th>
-      </tr>
-    </thead>
-    <tbody id="checks"></tbody>
-  </table>
-
-  <p>
-    <label>Text field (bindings with Ctrl, Cmd or Alt are allowed here):<br>
-      <input class="field" id="field" type="text" placeholder="Type here for the IME rows">
-    </label>
-  </p>
-
   <h2>Event log <button id="clear" type="button">Clear</button> <button id="copy" type="button">Copy results</button>
-    <span id="copied" class="none"></span>
+    <span id="copied" class="muted"></span>
   </h2>
   <div class="log-wrap">
     <table>
       <thead>
         <tr>
+          <th>Check</th>
           <th>Event</th>
           <th>key</th>
           <th>code</th>
@@ -151,11 +192,22 @@
     </table>
   </div>
 
+  <div id="overlay">
+    <h1>Automatic key check</h1>
+    <p>Don't touch the keyboard or mouse. Press Pause to stop the script.</p>
+    <p id="overlay-status" class="mono"></p>
+    <ul id="overlay-results"></ul>
+  </div>
+
   <script type="module">
     import hotkeys, { detectPlatform } from '../hotkey-router.js'
+    import { detectBrowser } from '../platform.js'
 
+    const AUTO = new URLSearchParams(location.search).has('auto')
     const platform = detectPlatform()
+    const browser = detectBrowser() || 'unknown'
     const field = document.getElementById('field')
+    const mod = platform === 'mac' ? 'Cmd' : 'Ctrl'
 
     // --- bindings ---------------------------------------------------------------
     const BINDINGS = [
@@ -168,14 +220,14 @@
       ['ctrl+shift+,', 'Shifted punctuation, bound by key: never fires on US (bind warns)'],
     ]
 
-    let currentRow = null
     const modifierChord = (combo) => /\b(mod|ctrl|meta|alt)\+/.test(combo)
+    let currentRecord = null
 
     const bindingsBody = document.getElementById('bindings')
     for (const [combo, why] of BINDINGS) {
       hotkeys.bind(combo, () => markFired(combo), null, {
         preventDefault: modifierChord(combo),
-        // Let the chords through in the text field, so the IME rows test the
+        // Chords are let through in the text field, so the IME rows test the
         // composition guard rather than the input guard. Plain keys stay out.
         allowIn: modifierChord(combo) ? (e) => e.composedPath()[0] === field : undefined,
       })
@@ -185,32 +237,125 @@
     }
 
     // --- checks -----------------------------------------------------------------
-    const mod = platform === 'mac' ? 'Cmd' : 'Ctrl'
+    // `id` is the number scripts/key-check.ahk types after F9 to start a check;
+    // keep the two lists in step. `expectKey` is the character the layout must
+    // produce: when no keydown carries it, the layout was not active and the
+    // check is inconclusive instead of failed.
     const CHECKS = [
-      ['Russian', `${mod}+I (types ш)`, 'mod+i fires'],
-      ['Russian', `${mod}+Shift+X (types Ч)`, 'mod+shift+x fires'],
-      ['Russian', 'I alone (types ш)', 'nothing fires'],
-      ['Greek or Hebrew', `${mod}+I`, 'mod+i fires'],
-      ['Japanese or Chinese IME, in the text field', `start a word, then ${mod}+I before committing it`, 'nothing fires while Composing is true'],
-      ['Japanese or Chinese IME, in the text field', `commit the word, then ${mod}+I`, 'mod+i fires'],
-      ['macOS, any layout', 'Option+K (types ˚)', 'nothing fires'],
-      ['Polish (Programmer) on Windows', 'AltGr+A (types ą)', 'nothing fires'],
-      ['US', 'Ctrl+Shift+, (key <)', 'ctrl+shift+code:Comma fires, ctrl+shift+, does not'],
-      ['US (control)', `${mod}+I`, 'mod+i fires'],
+      { id: 1, layout: 'Russian', press: `${mod}+I (types ш)`, expectKey: 'ш', fire: ['mod+i'] },
+      { id: 2, layout: 'Russian', press: `${mod}+Shift+X (types Ч)`, expectKey: 'ч', fire: ['mod+shift+x'] },
+      { id: 3, layout: 'Russian', press: 'I alone (types ш)', expectKey: 'ш', fire: [] },
+      { id: 4, layout: 'Greek', press: `${mod}+I (types ι)`, expectKey: 'ι', fire: ['mod+i'] },
+      { id: 5, layout: 'Hebrew', press: `${mod}+I (types ן)`, expectKey: 'ן', fire: ['mod+i'] },
+      { id: 6, layout: 'Japanese IME, in the text field', press: `type "ka", then ${mod}+I before committing`, composing: true, fire: [], where: 'field', needs: 'the Japanese IME installed' },
+      { id: 7, layout: 'Japanese IME, in the text field', press: `type "ka", commit with Enter, then ${mod}+I`, fire: ['mod+i'], where: 'field', needs: 'the Japanese IME installed' },
+      { id: 8, layout: 'macOS, any layout', press: 'Option+K (types ˚)', expectKey: '˚', fire: [], platforms: ['mac'] },
+      { id: 9, layout: 'Polish (Programmers)', press: 'AltGr+A (types ą)', expectKey: 'ą', fire: [], platforms: ['windows', 'linux'] },
+      { id: 10, layout: 'US', press: 'Ctrl+Shift+, (types <)', expectKey: '<', fire: ['ctrl+shift+code:Comma'], notFire: ['ctrl+shift+,'] },
+      { id: 11, layout: 'US (control)', press: `${mod}+I`, expectKey: 'i', fire: ['mod+i'] },
     ]
 
-    const checksBody = document.getElementById('checks')
-    CHECKS.forEach(([layout, press, expect], i) => {
-      const tr = checksBody.insertRow()
-      tr.insertCell().textContent = String(i + 1)
-      tr.insertCell().textContent = layout
-      tr.insertCell().textContent = press
-      tr.insertCell().textContent = expect
-      tr.insertCell().innerHTML = `<select data-result="${i}">
-        <option value="">not run</option><option>pass</option><option>fail</option><option>skipped</option>
-      </select>`
-      tr.insertCell().innerHTML = `<input type="text" class="note" data-note="${i}">`
+    const expectText = (c) => {
+      if (!c.fire.length) return c.composing ? 'nothing fires while composing' : 'nothing fires'
+      const yes = `${c.fire.join(', ')} fires`
+      return c.notFire ? `${yes}, ${c.notFire.join(', ')} does not` : yes
+    }
+
+    for (const c of CHECKS) {
+      c.events = []
+      c.result = null
+      c.applies = !c.platforms || c.platforms.includes(platform)
+    }
+
+    function grade(c) {
+      const ev = c.events
+      if (!ev.length) return { status: 'inconclusive', detail: 'No key reached the page.' }
+      if (c.composing && !ev.some((r) => r.composing)) {
+        return { status: 'inconclusive', detail: 'No keydown had isComposing: the IME was not composing.' }
+      }
+      if (c.expectKey && !ev.some((r) => r.rawKey.toLowerCase() === c.expectKey)) {
+        const seen = [...new Set(ev.map((r) => r.rawKey))].join(' ')
+        return { status: 'inconclusive', detail: `Layout not active: no "${c.expectKey}" (keys seen: ${seen}).` }
+      }
+      const fired = new Set(ev.flatMap((r) => r.fired))
+      const missing = c.fire.filter((f) => !fired.has(f))
+      const unexpected = c.fire.length ? (c.notFire || []).filter((f) => fired.has(f)) : [...fired]
+      const firedText = fired.size ? `Fired: ${[...fired].join(', ')}.` : 'Nothing fired.'
+      if (missing.length || unexpected.length) {
+        const parts = []
+        if (missing.length) parts.push(`missing ${missing.join(', ')}`)
+        if (unexpected.length) parts.push(`unexpected ${unexpected.join(', ')}`)
+        return { status: 'fail', detail: `${firedText} (${parts.join('; ')})` }
+      }
+      return { status: 'pass', detail: firedText }
+    }
+
+    // A check that never ran: why.
+    const notRun = (c) => ({
+      status: 'not run',
+      detail: !c.applies ? `Only on ${c.platforms.join(', ')}.` : c.needs ? `Needs ${c.needs}.` : '',
     })
+
+    const checksBody = document.getElementById('checks')
+    const rowOf = new Map()
+    for (const c of CHECKS) {
+      const tr = checksBody.insertRow()
+      for (const v of [c.id, c.layout, c.press, expectText(c)]) tr.insertCell().textContent = String(v)
+      c.resultCell = tr.insertCell()
+      const run = document.createElement('button')
+      run.type = 'button'
+      run.textContent = 'Run'
+      run.disabled = !c.applies
+      run.addEventListener('click', () => {
+        startCheck(c.id)
+        run.blur()
+      })
+      tr.insertCell().appendChild(run)
+      rowOf.set(c.id, tr)
+      showResult(c, c.applies ? { status: 'not run', detail: '' } : notRun(c))
+    }
+
+    function showResult(c, r) {
+      c.resultCell.className = r.status === 'not run' ? 'muted' : r.status
+      c.resultCell.textContent = r.detail ? `${r.status}: ${r.detail}` : r.status
+    }
+
+    // --- running checks ---------------------------------------------------------
+    let active = null
+    let phase = 'idle' // 'id' while the script types a check number after F9
+    let idBuf = ''
+
+    function startCheck(id) {
+      finishActive()
+      const c = CHECKS.find((x) => x.id === id)
+      if (!c) return
+      c.events = []
+      active = c
+      rowOf.get(id).classList.add('active')
+      if (c.where === 'field') field.focus()
+      else document.activeElement?.blur?.()
+      showResult(c, { status: 'running', detail: 'press the keys' })
+      status(`Check ${c.id}: ${c.layout}, ${c.press}`)
+    }
+
+    function finishActive() {
+      if (!active) return
+      const c = active
+      active = null
+      rowOf.get(c.id).classList.remove('active')
+      c.result = grade(c)
+      showResult(c, c.result)
+      if (AUTO) {
+        const li = document.createElement('li')
+        li.className = c.result.status
+        li.textContent = `${c.id}. ${c.layout}, ${c.press}: ${c.result.status}. ${c.result.detail}`
+        document.getElementById('overlay-results').appendChild(li)
+      }
+    }
+
+    function status(text) {
+      document.getElementById('overlay-status').textContent = text
+    }
 
     // --- event log --------------------------------------------------------------
     const logBody = document.getElementById('log')
@@ -226,103 +371,178 @@
       return m.join('+')
     }
 
+    const describe = (el) => (el?.id ? `${el.tagName.toLowerCase()}#${el.id}` : el?.tagName?.toLowerCase() ?? '')
+
     function addRow(record) {
       events.unshift(record)
-      if (events.length > 50) events.pop()
+      if (events.length > 200) events.pop()
       const tr = logBody.insertRow(0)
-      for (const v of [record.type, record.key, record.code, record.mods, record.composing, record.keyCode, record.target]) {
+      for (const v of [record.check, record.type, record.key, record.code, record.mods, record.composing, record.keyCode, record.target]) {
         tr.insertCell().textContent = v
       }
-      const fired = tr.insertCell()
-      fired.className = 'none'
-      fired.textContent = '—'
-      record.cell = fired
-      while (logBody.rows.length > 50) logBody.deleteRow(-1)
+      record.cell = tr.insertCell()
+      record.cell.className = 'muted'
+      record.cell.textContent = '—'
+      while (logBody.rows.length > 200) logBody.deleteRow(-1)
       return record
     }
 
     function markFired(combo) {
-      if (!currentRow) return
-      currentRow.fired.push(combo)
-      currentRow.cell.className = 'fired'
-      currentRow.cell.textContent = currentRow.fired.join(', ')
+      if (!currentRecord) return
+      currentRecord.fired.push(combo)
+      currentRecord.cell.className = 'fired'
+      currentRecord.cell.textContent = currentRecord.fired.join(', ')
     }
 
-    const describe = (el) => (el?.id ? `${el.tagName.toLowerCase()}#${el.id}` : el?.tagName?.toLowerCase() ?? '')
-
-    // Capture phase, so the row exists before the router's bubble listener fires.
+    // Capture phase on window: real keys target an element, so this runs before
+    // the router's bubble listener and the record exists when a binding fires.
     window.addEventListener('keydown', (e) => {
+      // Markers from the script: F9, the check number, Enter; F10 to finish.
+      if (e.key === 'F9') {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        finishActive()
+        phase = 'id'
+        idBuf = ''
+        return
+      }
+      if (phase === 'id') {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        if (/^\d$/.test(e.key)) idBuf += e.key
+        else if (e.key === 'Enter') {
+          phase = 'idle'
+          startCheck(Number(idBuf))
+        }
+        return
+      }
+      if (e.key === 'F10') {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        void finishAll()
+        return
+      }
       if (['Control', 'Shift', 'Alt', 'Meta', 'AltGraph', 'OS'].includes(e.key)) return
-      currentRow = addRow({
+
+      currentRecord = addRow({
+        check: active ? String(active.id) : '',
         type: 'keydown',
         key: JSON.stringify(e.key),
+        rawKey: e.key,
         code: e.code,
         mods: mods(e),
-        composing: String(e.isComposing),
+        composing: e.isComposing,
         keyCode: String(e.keyCode),
         target: describe(e.composedPath()[0]),
         fired: [],
       })
+      if (active) {
+        active.events.push(currentRecord)
+        // Regrade after the router's listener has run, so the row shows the
+        // result as the keys go in.
+        const c = active
+        setTimeout(() => { if (active === c) showResult(c, { ...grade(c), status: `running (${grade(c).status})` }) }, 0)
+      }
     }, true)
 
     for (const type of ['compositionstart', 'compositionend']) {
       field.addEventListener(type, (e) => {
-        currentRow = null
-        addRow({ type, key: JSON.stringify(e.data ?? ''), code: '', mods: '', composing: '', keyCode: '', target: describe(e.target), fired: [] })
+        currentRecord = null
+        const record = addRow({ check: active ? String(active.id) : '', type, key: JSON.stringify(e.data ?? ''), rawKey: '', code: '', mods: '', composing: '', keyCode: '', target: describe(e.target), fired: [] })
+        record.cell.textContent = ''
       })
     }
 
     document.getElementById('clear').addEventListener('click', () => {
       events.length = 0
       logBody.innerHTML = ''
-      currentRow = null
+      currentRecord = null
     })
 
-    // --- environment and copy ---------------------------------------------------
+    // --- results ----------------------------------------------------------------
     const env = {
       date: new Date().toISOString().slice(0, 10),
       platform,
+      browser,
       userAgent: navigator.userAgent,
       languages: (navigator.languages || []).join(', '),
+      mode: AUTO ? 'automatic (scripts/key-check.ahk)' : 'by hand',
     }
     document.getElementById('env').innerHTML =
-      `Platform: <b>${env.platform}</b> · Languages: ${env.languages}<br>${env.userAgent}`
+      `Platform: <b>${env.platform}</b> · Browser: <b>${env.browser}</b> · Languages: ${env.languages}<br>${env.userAgent}`
 
-    document.getElementById('copy').addEventListener('click', async () => {
-      const cell = (s) => String(s).replace(/\|/g, '\\|')
+    function markdown() {
+      const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ')
+      const resultOf = (c) => c.result || notRun(c)
+      const counts = {}
+      for (const c of CHECKS) counts[resultOf(c).status] = (counts[resultOf(c).status] || 0) + 1
       const lines = [
-        `# Key check — ${env.date}`,
+        `# Key check — ${env.date}, ${env.browser} on ${env.platform}`,
         '',
-        `- Platform: ${env.platform}`,
+        `- Mode: ${env.mode}`,
         `- Browser: ${env.userAgent}`,
         `- Languages: ${env.languages}`,
+        `- Summary: ${Object.entries(counts).map(([s, n]) => `${n} ${s}`).join(', ')}`,
         '',
-        '| # | Layout or input | Press | Expect | Result | Note |',
+        '| # | Layout or input | Press | Expect | Result | Detail |',
         '| --- | --- | --- | --- | --- | --- |',
-        ...CHECKS.map(([layout, press, expect], i) => {
-          const result = document.querySelector(`[data-result="${i}"]`).value || 'not run'
-          const note = document.querySelector(`[data-note="${i}"]`).value
-          return `| ${i + 1} | ${cell(layout)} | ${cell(press)} | ${cell(expect)} | ${result} | ${cell(note)} |`
+        ...CHECKS.map((c) => {
+          const r = resultOf(c)
+          return `| ${c.id} | ${cell(c.layout)} | ${cell(c.press)} | ${cell(expectText(c))} | ${r.status} | ${cell(r.detail)} |`
         }),
         '',
-        '## Last events (newest first)',
+        '## Keys per check',
         '',
-        '| Event | key | code | Modifiers | Composing | keyCode | Target | Fired |',
+        '| Check | key | code | Modifiers | Composing | keyCode | Target | Fired |',
         '| --- | --- | --- | --- | --- | --- | --- | --- |',
-        ...events.slice(0, 30).map((r) =>
-          `| ${[r.type, r.key, r.code, r.mods, r.composing, r.keyCode, r.target, r.fired.join(', ') || '—'].map(cell).join(' | ')} |`),
+        ...CHECKS.flatMap((c) => c.events.map((r) =>
+          `| ${[c.id, r.key, r.code, r.mods, r.composing, r.keyCode, r.target, r.fired.join(', ') || '—'].map(cell).join(' | ')} |`)),
       ]
-      const text = lines.join('\n') + '\n'
-      const status = document.getElementById('copied')
+      return lines.join('\n') + '\n'
+    }
+
+    async function finishAll() {
+      finishActive()
+      phase = 'idle'
+      if (!AUTO) return
+      status('Saving results...')
+      let saved = false
+      try {
+        const res = await fetch('/results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: env.date, browser: env.browser, markdown: markdown() }),
+        })
+        const out = await res.json()
+        saved = res.ok
+        status(saved ? `Done. Saved ${out.file}.` : `Done, but not saved: ${out.error}`)
+      } catch (err) {
+        status(`Done, but not saved (is the server from npm run key-check running?): ${err.message}`)
+      }
+      // The script waits for this title before closing the window.
+      document.title = saved ? 'Key check: done' : 'Key check: done, not saved'
+    }
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      finishActive()
+      const text = markdown()
+      const note = document.getElementById('copied')
       try {
         await navigator.clipboard.writeText(text)
-        status.textContent = 'Copied.'
+        note.textContent = 'Copied.'
       } catch {
         // Clipboard can be blocked; fall back to a prompt the user can copy from.
         window.prompt('Copy the results:', text)
-        status.textContent = ''
+        note.textContent = ''
       }
     })
+
+    if (AUTO) {
+      document.body.classList.add('auto')
+      status('Ready. Waiting for the script.')
+      // The script waits for this title before it starts pressing keys.
+      document.title = 'Key check: ready'
+    }
   </script>
 </body>
 
