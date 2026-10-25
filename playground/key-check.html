@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hotkey Router Key Check</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      max-width: 72em;
+    }
+
+    code,
+    .mono {
+      font-family: monospace;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0.5em 0 1.5em;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f3f3;
+    }
+
+    .fired {
+      color: #0a6b2d;
+      font-weight: bold;
+    }
+
+    .none {
+      color: #888;
+    }
+
+    .field {
+      width: 24em;
+      padding: 6px;
+      font-size: 1.1em;
+    }
+
+    .env {
+      background: #f3f3f3;
+      padding: 0.75em 1em;
+    }
+
+    .log-wrap {
+      max-height: 22em;
+      overflow-y: auto;
+    }
+
+    select,
+    button,
+    input[type="text"] {
+      padding: 4px;
+    }
+
+    .note {
+      width: 14em;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Key check</h1>
+  <p>
+    A manual check of how real browsers report keys on other keyboard layouts and
+    with an IME, for the cases simulated events cannot prove. Serve the repo root
+    over HTTP (module scripts do not load from <code>file://</code>), for example
+    <code>python -m http.server 8080</code>, and open
+    <code>http://localhost:8080/playground/key-check.html</code>. The page uses the
+    source files, so no build is needed.
+  </p>
+  <p>
+    For each row: switch the OS keyboard layout or IME, click the page outside the
+    text field (unless the row says otherwise), press the keys, and compare the
+    <strong>Fired</strong> column of the event log with the expectation. Then set
+    the result. Do it in Chrome and Firefox, and use <strong>Copy results</strong>
+    to paste a note into <code>docs/notes/</code>.
+  </p>
+
+  <div class="env mono" id="env"></div>
+
+  <h2>Bindings on this page</h2>
+  <p>
+    Only chords that no browser takes for itself (from the reservation table), so a
+    miss means the router missed it, not the browser. <code>mod</code> is Cmd on
+    macOS, Ctrl elsewhere.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Binding</th>
+        <th>Why it is here</th>
+      </tr>
+    </thead>
+    <tbody id="bindings"></tbody>
+  </table>
+
+  <h2>Checks</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Layout or input</th>
+        <th>Press</th>
+        <th>Expect</th>
+        <th>Result</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody id="checks"></tbody>
+  </table>
+
+  <p>
+    <label>Text field (bindings with Ctrl, Cmd or Alt are allowed here):<br>
+      <input class="field" id="field" type="text" placeholder="Type here for the IME rows">
+    </label>
+  </p>
+
+  <h2>Event log <button id="clear" type="button">Clear</button> <button id="copy" type="button">Copy results</button>
+    <span id="copied" class="none"></span>
+  </h2>
+  <div class="log-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>key</th>
+          <th>code</th>
+          <th>Modifiers</th>
+          <th>Composing</th>
+          <th>keyCode</th>
+          <th>Target</th>
+          <th>Fired</th>
+        </tr>
+      </thead>
+      <tbody id="log"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import hotkeys, { detectPlatform } from '../hotkey-router.js'
+
+    const platform = detectPlatform()
+    const field = document.getElementById('field')
+
+    // --- bindings ---------------------------------------------------------------
+    const BINDINGS = [
+      ['mod+i', 'Non-Latin fallback: Russian ш, Greek ι, Hebrew ן are on the I key'],
+      ['mod+shift+x', 'Non-Latin fallback with Shift: Russian Ч'],
+      ['i', 'Plain letter: a non-Latin letter on the I key must not fire it'],
+      ['alt+k', 'Alt is never part of the fallback; macOS Option+K types ˚'],
+      ['ctrl+alt+a', 'AltGr typing a character (Polish ą) must not fire it'],
+      ['ctrl+shift+code:Comma', 'Shifted punctuation, bound by physical key: fires'],
+      ['ctrl+shift+,', 'Shifted punctuation, bound by key: never fires on US (bind warns)'],
+    ]
+
+    let currentRow = null
+    const modifierChord = (combo) => /\b(mod|ctrl|meta|alt)\+/.test(combo)
+
+    const bindingsBody = document.getElementById('bindings')
+    for (const [combo, why] of BINDINGS) {
+      hotkeys.bind(combo, () => markFired(combo), null, {
+        preventDefault: modifierChord(combo),
+        // Let the chords through in the text field, so the IME rows test the
+        // composition guard rather than the input guard. Plain keys stay out.
+        allowIn: modifierChord(combo) ? (e) => e.composedPath()[0] === field : undefined,
+      })
+      const tr = bindingsBody.insertRow()
+      tr.insertCell().innerHTML = `<code>${combo}</code>`
+      tr.insertCell().textContent = why
+    }
+
+    // --- checks -----------------------------------------------------------------
+    const mod = platform === 'mac' ? 'Cmd' : 'Ctrl'
+    const CHECKS = [
+      ['Russian', `${mod}+I (types ш)`, 'mod+i fires'],
+      ['Russian', `${mod}+Shift+X (types Ч)`, 'mod+shift+x fires'],
+      ['Russian', 'I alone (types ш)', 'nothing fires'],
+      ['Greek or Hebrew', `${mod}+I`, 'mod+i fires'],
+      ['Japanese or Chinese IME, in the text field', `start a word, then ${mod}+I before committing it`, 'nothing fires while Composing is true'],
+      ['Japanese or Chinese IME, in the text field', `commit the word, then ${mod}+I`, 'mod+i fires'],
+      ['macOS, any layout', 'Option+K (types ˚)', 'nothing fires'],
+      ['Polish (Programmer) on Windows', 'AltGr+A (types ą)', 'nothing fires'],
+      ['US', 'Ctrl+Shift+, (key <)', 'ctrl+shift+code:Comma fires, ctrl+shift+, does not'],
+      ['US (control)', `${mod}+I`, 'mod+i fires'],
+    ]
+
+    const checksBody = document.getElementById('checks')
+    CHECKS.forEach(([layout, press, expect], i) => {
+      const tr = checksBody.insertRow()
+      tr.insertCell().textContent = String(i + 1)
+      tr.insertCell().textContent = layout
+      tr.insertCell().textContent = press
+      tr.insertCell().textContent = expect
+      tr.insertCell().innerHTML = `<select data-result="${i}">
+        <option value="">not run</option><option>pass</option><option>fail</option><option>skipped</option>
+      </select>`
+      tr.insertCell().innerHTML = `<input type="text" class="note" data-note="${i}">`
+    })
+
+    // --- event log --------------------------------------------------------------
+    const logBody = document.getElementById('log')
+    const events = []
+
+    function mods(e) {
+      const m = []
+      if (e.ctrlKey) m.push('Ctrl')
+      if (e.metaKey) m.push(platform === 'mac' ? 'Cmd' : 'Meta')
+      if (e.altKey) m.push(platform === 'mac' ? 'Option' : 'Alt')
+      if (e.shiftKey) m.push('Shift')
+      if (e.getModifierState?.('AltGraph')) m.push('AltGraph')
+      return m.join('+')
+    }
+
+    function addRow(record) {
+      events.unshift(record)
+      if (events.length > 50) events.pop()
+      const tr = logBody.insertRow(0)
+      for (const v of [record.type, record.key, record.code, record.mods, record.composing, record.keyCode, record.target]) {
+        tr.insertCell().textContent = v
+      }
+      const fired = tr.insertCell()
+      fired.className = 'none'
+      fired.textContent = '—'
+      record.cell = fired
+      while (logBody.rows.length > 50) logBody.deleteRow(-1)
+      return record
+    }
+
+    function markFired(combo) {
+      if (!currentRow) return
+      currentRow.fired.push(combo)
+      currentRow.cell.className = 'fired'
+      currentRow.cell.textContent = currentRow.fired.join(', ')
+    }
+
+    const describe = (el) => (el?.id ? `${el.tagName.toLowerCase()}#${el.id}` : el?.tagName?.toLowerCase() ?? '')
+
+    // Capture phase, so the row exists before the router's bubble listener fires.
+    window.addEventListener('keydown', (e) => {
+      if (['Control', 'Shift', 'Alt', 'Meta', 'AltGraph', 'OS'].includes(e.key)) return
+      currentRow = addRow({
+        type: 'keydown',
+        key: JSON.stringify(e.key),
+        code: e.code,
+        mods: mods(e),
+        composing: String(e.isComposing),
+        keyCode: String(e.keyCode),
+        target: describe(e.composedPath()[0]),
+        fired: [],
+      })
+    }, true)
+
+    for (const type of ['compositionstart', 'compositionend']) {
+      field.addEventListener(type, (e) => {
+        currentRow = null
+        addRow({ type, key: JSON.stringify(e.data ?? ''), code: '', mods: '', composing: '', keyCode: '', target: describe(e.target), fired: [] })
+      })
+    }
+
+    document.getElementById('clear').addEventListener('click', () => {
+      events.length = 0
+      logBody.innerHTML = ''
+      currentRow = null
+    })
+
+    // --- environment and copy ---------------------------------------------------
+    const env = {
+      date: new Date().toISOString().slice(0, 10),
+      platform,
+      userAgent: navigator.userAgent,
+      languages: (navigator.languages || []).join(', '),
+    }
+    document.getElementById('env').innerHTML =
+      `Platform: <b>${env.platform}</b> · Languages: ${env.languages}<br>${env.userAgent}`
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      const cell = (s) => String(s).replace(/\|/g, '\\|')
+      const lines = [
+        `# Key check — ${env.date}`,
+        '',
+        `- Platform: ${env.platform}`,
+        `- Browser: ${env.userAgent}`,
+        `- Languages: ${env.languages}`,
+        '',
+        '| # | Layout or input | Press | Expect | Result | Note |',
+        '| --- | --- | --- | --- | --- | --- |',
+        ...CHECKS.map(([layout, press, expect], i) => {
+          const result = document.querySelector(`[data-result="${i}"]`).value || 'not run'
+          const note = document.querySelector(`[data-note="${i}"]`).value
+          return `| ${i + 1} | ${cell(layout)} | ${cell(press)} | ${cell(expect)} | ${result} | ${cell(note)} |`
+        }),
+        '',
+        '## Last events (newest first)',
+        '',
+        '| Event | key | code | Modifiers | Composing | keyCode | Target | Fired |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- |',
+        ...events.slice(0, 30).map((r) =>
+          `| ${[r.type, r.key, r.code, r.mods, r.composing, r.keyCode, r.target, r.fired.join(', ') || '—'].map(cell).join(' | ')} |`),
+      ]
+      const text = lines.join('\n') + '\n'
+      const status = document.getElementById('copied')
+      try {
+        await navigator.clipboard.writeText(text)
+        status.textContent = 'Copied.'
+      } catch {
+        // Clipboard can be blocked; fall back to a prompt the user can copy from.
+        window.prompt('Copy the results:', text)
+        status.textContent = ''
+      }
+    })
+  </script>
+</body>
+
+</html>
