@@ -1,7 +1,8 @@
 # Sprint 0.4.0: separate routers, a core entry, and focus on controls
 
-Date: 2026-10-26. Status: **decisions 1-3 settled by the panel review
-(2026-10-26, below); not started.** Builds on 0.3.3 (on npm).
+Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
+review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); B to F
+not started. Builds on 0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
 
@@ -22,7 +23,11 @@ changes no default. Run all checks locally; hosted CI stays off.
 
 ## Slices
 
-### A. `createRouter()` (problems 1 and 2)
+### A. `createRouter()` (problems 1 and 2), done
+
+Done in PR #7 as specified below: 17 tests in `create-router.test.js`
+(all failing before the change), every existing test unchanged, core 10.4 KB
+minified. README "Multiple routers" and the CHANGELOG 0.4.0 entry are in.
 
 - **Change:** move the router's state into `createRouter({ target, capture, ignoreInput })`. It returns an object with today's full API: `bind`, `unbind`, `registerPlugin`, `unregisterPlugin`, `onBind`, `pause`, `resume`, `ignoreInput`, `init`, `destroy`, `setTarget`, `trigger`, plus the helpers. `target` can be an element, a `ShadowRoot` or an iframe's window.
 - **No auto-init (decided):** `createRouter` attaches nothing; the caller runs `init()`.
