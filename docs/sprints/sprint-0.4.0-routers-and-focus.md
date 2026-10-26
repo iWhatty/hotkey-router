@@ -1,8 +1,8 @@
 # Sprint 0.4.0: separate routers, a core entry, and focus on controls
 
 Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
-review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); B to F
-not started. Builds on 0.3.3 (on npm).
+review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
+done 2026-10-26; C to F not started. Builds on 0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
 
@@ -49,7 +49,17 @@ minified. README "Multiple routers" and the CHANGELOG 0.4.0 entry are in.
   - Both routers fire when both bind the same key.
   - Reservation warnings installed on one router don't fire for the other's binds.
 
-### B. `hotkey-router/core` (problem 3)
+### B. `hotkey-router/core` (problem 3), done
+
+Done as specified below. The router code moved to `core.js` unchanged apart
+from its header and the default router; `hotkey-router.js` is now that
+default router on top. Git records `core.js` as a new file, so use
+`git blame -C core.js` or `git log -C --follow core.js` to see each line's
+history from before the move.
+`core.test.js` (3 tests) and the new `build.js` checks failed before the
+change. The one-copy and budget checks were also seen to fail when broken on
+purpose. Installed from the packed tarball: `/core` attaches nothing, and
+`hotkey-router`, `/auto` and CommonJS `require` behave as before.
 
 - **Change:** new entry `core.js`, which exports `createRouter`, `parseHotkey`, `comboFromEvent` and `detectPlatform`. It does nothing at import.
 - **One implementation:** `hotkey-router.js` imports from it. `dist/hotkey-router.js` imports `./core.js` instead of inlining it, as `auto` does since 0.3.3, so an app that imports both gets one copy. The CommonJS and CDN files stay single files.

@@ -47,6 +47,16 @@ CDN (ESM):
 import hotkeys from 'https://cdn.jsdelivr.net/npm/hotkey-router/dist/hotkey-router.min.js'
 ```
 
+Nothing at import (v0.4.0+): `hotkey-router/core` has `createRouter` and the
+helpers, but no ready router and no listeners until you start one.
+
+```js
+import { createRouter } from 'hotkey-router/core'
+
+const keys = createRouter()
+keys.init() // when your app is ready
+```
+
 ---
 
 ## Quick start
@@ -300,8 +310,9 @@ Auto-initializes on `window` by default (browser environments): importing
 `hotkey-router` attaches `keydown` and `keyup` listeners to `window` straight
 away, and `hotkey-router/auto` also installs the reservation warnings. The
 package's `sideEffects` list names those files so bundlers keep that work;
-`/reservations`, `/sites`, `/validate` and `/format` do nothing at import and
-tree-shake away when unused.
+`/core` (v0.4.0+), `/reservations`, `/sites`, `/validate` and `/format` do
+nothing at import and tree-shake away when unused. `hotkey-router` is built
+on `hotkey-router/core`, so an app that imports both bundles one copy.
 
 With `capture: false` (the default), bindings run in the bubble phase except
 those bound with `{ capture: true }`, which a second, capture-phase listener

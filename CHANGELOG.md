@@ -15,6 +15,15 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   that `init()` can override for one call; `ignoreInput` sets the input
   check. Exported by name, with a `Router` type. If two routers bind the same
   key, both fire. See "Multiple routers" in the README. Sprint 0.4.0 slice A.
+- **`hotkey-router/core`**: `createRouter`, `parseHotkey`, `comboFromEvent`
+  and `detectPlatform`, with no default export: nothing is created or
+  attached at import, and a bundler drops an unused import of it.
+  `hotkey-router` is now built on it (`dist/hotkey-router.js` imports
+  `./core.js`), so an app that imports both bundles one copy. The CDN file
+  and the CommonJS build stay single files. Sprint 0.4.0 slice B.
+- `build.js` checks that the main entry imports the core rather than
+  copying it, that `/core` has no default export, and that the minified core
+  stays within a **12 KB budget** (10.4 KB now).
 
 ### Changed
 

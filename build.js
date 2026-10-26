@@ -3,9 +3,11 @@
 // Production build script for hotkey-router.
 //
 // Outputs:
-//  - dist/hotkey-router.js       (ESM, readable, sourcemap)
-//  - dist/hotkey-router.min.js   (ESM, minified for CDN)
-//  - dist/hotkey-router.cjs      (CommonJS for require() consumers)
+//  - dist/core.js                (ESM, readable, sourcemap; does nothing at import)
+//  - dist/hotkey-router.js       (ESM, readable, sourcemap; imports ./core.js)
+//  - dist/hotkey-router.min.js   (ESM, minified for CDN; one file, core inlined)
+//  - dist/hotkey-router.cjs      (CommonJS for require() consumers; one file)
+//  - the other entries: reservations, sites, format, validate, auto
 //
 // Notes:
 //  - We bundle (bundle: true) so local modules (parse.js, platform.js) and
@@ -39,19 +41,33 @@ const common = {
   loader: { '.json': 'json' },
 }
 
-// --- Core router: ESM (readable + sourcemap) ---
-// Tiny mode. No reservation data. esbuild tree-shakes the data file out
-// because hotkey-router.js never imports it.
+// --- Core (ESM, readable + sourcemap) ---
+// `import { createRouter } from 'hotkey-router/core'`. No router, no
+// listeners, no reservation data.
+await build({
+  ...common,
+  entryPoints: ['core.js'],
+  outfile: 'dist/core.js',
+  format: 'esm',
+  sourcemap: true,
+  banner,
+})
+
+// --- Main entry: ESM (readable + sourcemap) ---
+// The core plus a default router started on window. Imports dist/core.js
+// instead of inlining it, so an app that also imports hotkey-router/core
+// bundles one copy (checked below).
 await build({
   ...common,
   entryPoints: ['hotkey-router.js'],
   outfile: 'dist/hotkey-router.js',
   format: 'esm',
   sourcemap: true,
+  external: ['./core.js'],
   banner,
 })
 
-// --- Core router: ESM (minified) ---
+// --- Main entry: ESM (minified, one file for CDN) ---
 await build({
   ...common,
   entryPoints: ['hotkey-router.js'],
@@ -61,7 +77,7 @@ await build({
   banner,
 })
 
-// --- Core router: CommonJS ---
+// --- Main entry: CommonJS (one file) ---
 await build({
   ...common,
   entryPoints: ['hotkey-router.js'],
@@ -169,7 +185,7 @@ const bareImport = async (spec) => {
 for (const spec of ['hotkey-router', 'hotkey-router/auto']) {
   if (!(await bareImport(spec))) throw new Error(`build: \`import '${spec}'\` was tree-shaken away; check "sideEffects" in package.json`)
 }
-for (const spec of ['hotkey-router/reservations', 'hotkey-router/sites', 'hotkey-router/format', 'hotkey-router/validate']) {
+for (const spec of ['hotkey-router/core', 'hotkey-router/reservations', 'hotkey-router/sites', 'hotkey-router/format', 'hotkey-router/validate']) {
   if (await bareImport(spec)) throw new Error(`build: \`import '${spec}'\` kept code; it should have no side effects`)
 }
 
@@ -177,9 +193,27 @@ for (const spec of ['hotkey-router/reservations', 'hotkey-router/sites', 'hotkey
 // `hotkey-router` and `hotkey-router/auto` must give the same router, or an
 // app importing both gets two registries, two sets of window listeners, and
 // no reservation warnings for bindings made through the plain import.
-const core = (await import('./dist/hotkey-router.js')).default
+const main = await import('./dist/hotkey-router.js')
 const auto = (await import('./dist/auto.js')).default
-if (core !== auto) throw new Error('build: dist/auto.js has its own copy of the router; it must import ./hotkey-router.js')
+if (main.default !== auto) throw new Error('build: dist/auto.js has its own copy of the router; it must import ./hotkey-router.js')
+
+// --- One implementation check ---
+// dist/hotkey-router.js must import dist/core.js, not inline it, so an app
+// that imports both `hotkey-router` and `hotkey-router/core` bundles one copy.
+const coreEntry = await import('./dist/core.js')
+if (main.createRouter !== coreEntry.createRouter) {
+  throw new Error('build: dist/hotkey-router.js has its own copy of the core; it must import ./core.js')
+}
+if ('default' in coreEntry) throw new Error('build: dist/core.js must not have a default export (no ready router)')
+
+// --- Size budget ---
+// The minified core (dist/hotkey-router.min.js: the core plus the default
+// router) must stay at or under 12 KB. Raise it only on purpose.
+const SIZE_BUDGET = 12 * 1024
+const coreSize = statSync('dist/hotkey-router.min.js').size
+if (coreSize > SIZE_BUDGET) {
+  throw new Error(`build: dist/hotkey-router.min.js is ${coreSize} B, over the ${SIZE_BUDGET} B budget`)
+}
 
 // --- Bundle size report ---
 const report = (file) => {
@@ -189,6 +223,7 @@ const report = (file) => {
 }
 
 console.log('✓ Built dist/')
+console.log('  ' + report('dist/core.js'))
 console.log('  ' + report('dist/hotkey-router.js'))
 console.log('  ' + report('dist/hotkey-router.min.js'))
 console.log('  ' + report('dist/hotkey-router.cjs'))
