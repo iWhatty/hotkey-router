@@ -6,6 +6,8 @@
 // - Deterministic routing: highest priority wins; ties -> most recently bound wins
 // - Safe plugin cleanup (never deletes other plugins’ bindings)
 // - Modern browser target (KeyboardEvent.key + addEventListener)
+// - Separate routers (createRouter) for scopes and for libraries sharing a
+//   page; the default export is one, started on window at load
 //
 // This core ships ZERO reservation data — opt in via `hotkey-router/auto`
 // or by calling `installReservationWarnings(hotkeys)` from the separate
@@ -96,27 +98,8 @@ const MODIFIER_KEY_TOKEN = Object.freeze({
   OS: 'meta',
 })
 
-// --- config ---
-let ignoreEditable = true
-let defaultTarget = typeof window !== 'undefined' ? window : null
-
-// Bind hooks: subscribers called after each successful bind. Used by the
-// optional reservations module to emit conflict warnings without coupling
-// the core router to the reservation table (~23 KB minified, ~5.5 KB gzipped).
-let bindHooks = []
-
-// --- state ---
-// comboStr -> Map<type, Array<Binding>>
-const registry = new Map()
-// pluginName -> Array<bindingId>
-const plugins = new Map()
-// bindingId -> { comboStr, type }
-const bindingIndex = new Map()
-
-let paused = false
-let nextId = 1
-
-// Combo strings already warned about (shifted punctuation), so each warns once.
+// Combo strings already warned about (shifted punctuation), so each warns
+// once per loaded copy of this module, whichever router binds it.
 const warnedShifted = new Set()
 
 // --- helpers ---
@@ -208,245 +191,6 @@ function normalizeOptions(type, options) {
   return o
 }
 
-
-function ensureSlot(comboStr, type) {
-  let typeMap = registry.get(comboStr)
-  if (!typeMap) {
-    typeMap = new Map()
-    registry.set(comboStr, typeMap)
-  }
-  let arr = typeMap.get(type)
-  if (!arr) {
-    arr = []
-    typeMap.set(type, arr)
-  }
-  return arr
-}
-
-
-function removeById(id) {
-  const idx = bindingIndex.get(id)
-  if (!idx) return false
-
-  const { comboStr, type } = idx
-  const typeMap = registry.get(comboStr)
-  const arr = typeMap?.get(type)
-  if (!arr?.length) {
-    bindingIndex.delete(id)
-    return false
-  }
-
-  const next = arr.filter((b) => b.id !== id)
-  if (next.length) typeMap.set(type, next)
-  else typeMap.delete(type)
-
-  if (!typeMap.size) registry.delete(comboStr)
-  bindingIndex.delete(id)
-  return true
-}
-
-
-// --- public API: bind / unbind ---
-// bind returns an off() function; off.id is exposed for plugin bookkeeping.
-
-/**
- * Bind a hotkey combo string to a handler.
- *
- * @param {string} hotkeyStr      e.g. `'ctrl+shift+k'`, `'meta+slash'`, `'alt+code:KeyX'`
- * @param {HotkeyHandler} handler
- * @param {string | null} [plugin]  optional plugin/namespace tag for bulk cleanup
- * @param {BindOptions} [options]
- * @returns {BindOff} unbind function with `id` + `hotkey` props
- */
-function bind(hotkeyStr, handler, plugin = null, options = {}) {
-  const { combo, type, raw } = parseHotkey(hotkeyStr)
-  const comboStr = comboKeyFromParts(combo)
-  const opts = normalizeOptions(type, options)
-
-  const binding = {
-    id: nextId++,
-    comboStr,
-    type,
-    combo,
-    handler,
-    plugin,
-    raw,
-    options: opts,
-  }
-
-  ensureSlot(comboStr, type).push(binding)
-  bindingIndex.set(binding.id, { comboStr, type })
-
-  const warnKey = `${comboStr} ${type}`
-  if (!warnedShifted.has(warnKey)) {
-    const hint = shiftedPunctuationHint(hotkeyStr)
-    if (hint) {
-      warnedShifted.add(warnKey)
-      // eslint-disable-next-line no-console
-      console.warn(`[hotkey-router] ${hint.message}`)
-    }
-  }
-
-  // Notify bind subscribers. Hook errors must never break the bind itself.
-  if (bindHooks.length) {
-    for (const hook of bindHooks) {
-      try {
-        hook({ combo, raw, options: opts, plugin, id: binding.id })
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('[hotkey-router] onBind hook threw:', err)
-      }
-    }
-  }
-
-  const off = () => removeById(binding.id)
-  off.id = binding.id
-  off.hotkey = raw
-  return off
-}
-
-// Subscribe to bind events. The hook receives
-//   { combo, raw, options, plugin, id }
-// after the binding is registered. Returns an unsubscribe function. Used by
-// extensions like `installReservationWarnings` from `hotkey-router/reservations`.
-
-/**
- * Subscribe to {@link bind} events. The hook is called after each successful
- * bind with a {@link BindEvent} payload.
- *
- * @param {(info: BindEvent) => void} hook
- * @returns {() => void} unsubscribe
- */
-function onBind(hook) {
-  if (typeof hook !== 'function') {
-    throw new TypeError('hotkeys.onBind(hook) expects a function')
-  }
-  bindHooks.push(hook)
-  return () => {
-    bindHooks = bindHooks.filter((h) => h !== hook)
-  }
-}
-
-
-/**
- * Remove bindings for a combo string. Omit `handler` to remove all bindings
- * for the combo/type; pass a specific handler to remove just that one.
- *
- * @param {string} hotkeyStr
- * @param {HotkeyHandler} [handler]
- * @returns {void}
- */
-function unbind(hotkeyStr, handler) {
-  const { combo, type } = parseHotkey(hotkeyStr)
-  const comboStr = comboKeyFromParts(combo)
-  const typeMap = registry.get(comboStr)
-  if (!typeMap) return
-
-  const arr = typeMap.get(type)
-  if (!arr?.length) return
-
-  if (!handler) {
-    for (const b of arr) bindingIndex.delete(b.id)
-    typeMap.delete(type)
-  } else {
-    const keep = []
-    for (const b of arr) {
-      if (b.handler === handler) bindingIndex.delete(b.id)
-      else keep.push(b)
-    }
-    if (keep.length) typeMap.set(type, keep)
-    else typeMap.delete(type)
-  }
-
-  if (!typeMap.size) registry.delete(comboStr)
-}
-
-
-// --- plugin system ---
-// registerPlugin returns unregister function.
-
-/**
- * Register a named plugin that bulk-binds a {@link HotkeyMap}. All bindings
- * are tagged with the plugin name so {@link unregisterPlugin} can clean them
- * up together without touching other plugins' bindings.
- *
- * @param {string} name        plugin name (must be unique)
- * @param {HotkeyMap} hotkeyMap
- * @returns {() => void} unregister fn for this plugin
- */
-function registerPlugin(name, hotkeyMap) {
-  if (plugins.has(name)) throw new Error(`Plugin "${name}" already registered`)
-
-  // Parse every key string before binding any, so a bad one leaves nothing
-  // bound that unregisterPlugin could not reach.
-  const entries = Object.entries(hotkeyMap)
-  for (const [hotkeyStr] of entries) parseHotkey(hotkeyStr)
-
-  const ids = []
-  for (const [hotkeyStr, fnOrTuple] of entries) {
-    const [fn, options] = Array.isArray(fnOrTuple) ? fnOrTuple : [fnOrTuple, {}]
-    const off = bind(hotkeyStr, fn, name, options)
-    ids.push(off.id)
-  }
-
-  plugins.set(name, ids)
-  return () => unregisterPlugin(name)
-}
-
-/**
- * Remove all bindings owned by the named plugin. Silent no-op if no such
- * plugin is registered.
- *
- * @param {string} name
- * @returns {void}
- */
-function unregisterPlugin(name) {
-  const ids = plugins.get(name)
-  if (!ids) return
-  for (const id of ids) removeById(id)
-  plugins.delete(name)
-}
-
-// --- control ---
-
-/** Pause dispatch — bindings stay registered but no handlers fire. @returns {void} */
-function pause() {
-  paused = true
-}
-
-/** Resume dispatch after a {@link pause}. @returns {void} */
-function resume() {
-  paused = false
-}
-
-/**
- * Toggle whether handlers fire when the event target is an editable element
- * (input/textarea/contenteditable). Default `true`. Override per-binding via
- * `options.allowIn`.
- *
- * @param {boolean} [value]
- * @returns {void}
- */
-function ignoreInput(value = true) {
-  ignoreEditable = !!value
-}
-
-// allow changing the default target (iframes/tests).
-// we intentionally do not auto-rebind to keep the core tiny.
-
-/**
- * Replace the default target (used by {@link init} when no `target` is
- * provided). Useful for iframes and tests. Does NOT auto-rebind existing
- * listeners — call {@link destroy} + {@link init} to re-attach.
- *
- * @param {EventTarget | null} target
- * @returns {void}
- */
-function setTarget(target) {
-  defaultTarget = target
-}
-
-
 // --- dispatch (O(1) lookup) ---
 function pickWinner(bindings) {
   // Highest priority wins; ties -> newest wins (largest id).
@@ -498,140 +242,6 @@ function latinKeyFromEvent(e) {
   })
 }
 
-// The bindings an event may fire, after every guard. Looks up under both
-// lookup keys: key-based (`alt+x`) and code-based (`alt+code:KeyX`). Same
-// physical keypress, two valid binding shapes; the priority/recency arbiter
-// picks among them. Only when neither yields an eligible binding does the
-// Latin fallback (`latinKeyFromEvent`) get a turn, so an exact `ctrl+л` or
-// `ctrl+code:KeyK` always beats a fallback `ctrl+k`.
-//
-// phase: 'all' (one listener handles every binding), 'capture' (only
-// bindings with options.capture) or 'bubble' (only bindings without it).
-function eligibleBindings(e, type, phase) {
-  const guards = {
-    altGraphChar: isAltGraphCharacter(e),
-    composing: isComposingEvent(e),
-    fromInput: ignoreEditable && isFromInputTarget(e),
-  }
-
-  const candidates = []
-  const seen = new Set()
-  for (const lookupKey of [comboKeyFromEvent(e), codeKeyFromEvent(e)]) {
-    if (!lookupKey || seen.has(lookupKey)) continue
-    seen.add(lookupKey)
-    collectEligible(candidates, lookupKey, e, type, phase, guards)
-  }
-
-  if (!candidates.length) {
-    const latinKey = latinKeyFromEvent(e)
-    if (latinKey && !seen.has(latinKey)) collectEligible(candidates, latinKey, e, type, phase, guards)
-  }
-  return candidates
-}
-
-function collectEligible(candidates, lookupKey, e, type, phase, { altGraphChar, composing, fromInput }) {
-  const bindings = registry.get(lookupKey)?.get(type)
-  if (!bindings?.length) return
-
-  for (const b of bindings) {
-    const o = b.options
-    if (phase === 'capture' && !o.capture) continue
-    if (phase === 'bubble' && o.capture) continue
-    if (altGraphChar && !o.altGraph) continue
-    if (composing && !o.composing) continue
-    if (fromInput && !o.allowIn?.(e)) continue
-    if (type === 'keydown' && o.repeat === false && e.repeat) continue
-    if (o.when && o.when(e) === false) continue
-    candidates.push(b)
-  }
-}
-
-function fire(winner, e) {
-  const o = winner.options
-
-  if (o.preventDefault) e.preventDefault()
-  if (o.stopImmediatePropagation) e.stopImmediatePropagation()
-  else if (o.stopPropagation) e.stopPropagation()
-
-  // A handler that throws has still had its one run.
-  try {
-    winner.handler(e)
-  } finally {
-    if (o.once) removeById(winner.id)
-  }
-}
-
-function handleEvent(type, phase = 'all') {
-  return (e) => {
-    if (paused) return
-    const candidates = eligibleBindings(e, type, phase)
-    if (candidates.length) fire(pickWinner(candidates), e)
-  }
-}
-
-
-// --- listeners ---
-let stopDown = null
-let stopUp = null
-
-let stopCaptureDown = null
-let stopCaptureUp = null
-
-/**
- * Initialize the router by attaching `keydown`/`keyup` listeners to a target.
- * Re-initializes cleanly if already running (calls {@link destroy} first).
- * Auto-runs on `window` at module-load time in browser environments.
- *
- * `capture: true` handles every binding in the capture phase. With the
- * default (`false`), bindings run in the bubble phase except those bound
- * with `{ capture: true }`, which a second, capture-phase listener handles:
- * they see the key before the page's own listeners and can stop it.
- *
- * @param {{ target?: EventTarget, capture?: boolean }} [opts]
- * @returns {void}
- */
-function init({ target = defaultTarget, capture = false } = {}) {
-  if (!target) throw new Error('hotkeys.init() requires a target (e.g. window)')
-  if (stopDown || stopUp) destroy()
-
-  if (capture) {
-    stopDown = on(target, 'keydown', handleEvent('keydown'), { capture: true })
-    stopUp = on(target, 'keyup', handleEvent('keyup'), { capture: true })
-    return
-  }
-  stopDown = on(target, 'keydown', handleEvent('keydown', 'bubble'), { capture: false })
-  stopUp = on(target, 'keyup', handleEvent('keyup', 'bubble'), { capture: false })
-  stopCaptureDown = on(target, 'keydown', handleEvent('keydown', 'capture'), { capture: true })
-  stopCaptureUp = on(target, 'keyup', handleEvent('keyup', 'capture'), { capture: true })
-}
-
-
-/**
- * Tear down listeners and clear all bindings + plugins. Bind-hook
- * subscribers ({@link onBind}) deliberately survive — consumer
- * extensions should install once and live across `init`/`destroy` cycles.
- *
- * @returns {void}
- */
-function destroy() {
-  stopDown?.()
-  stopUp?.()
-  stopCaptureDown?.()
-  stopCaptureUp?.()
-  stopDown = null
-  stopUp = null
-  stopCaptureDown = null
-  stopCaptureUp = null
-  registry.clear()
-  plugins.clear()
-  bindingIndex.clear()
-  // Note: bindHooks deliberately survive destroy(). Consumer extensions
-  // (reservations, future telemetry, etc.) install once at startup and
-  // shouldn't have to re-attach when the router restarts. Tests that need
-  // a clean slate should use the uninstall fn returned by their installer.
-}
-
-
 // --- programmatic trigger (tests / automation) ---
 //
 // Reverse map: 'alt' -> 'Alt' (the KeyboardEvent.key value for that bare modifier).
@@ -678,67 +288,6 @@ function codeForKey(key) {
   return KEY_TO_CODE[key] ?? null
 }
 
-/**
- * Programmatically fire the binding a real keypress of `hotkeyStr` would
- * fire. Used by tests and automation; not a typical app-runtime path. The
- * synthetic event carries both `key` and `code` (US layout), so key-based
- * and `code:` bindings both match, and the same guards apply as for a real
- * event: `when`, `ignoreInput`/`allowIn` (pass `target` to fire "from" an
- * element), priority, `once`, and `pause()`. Returns `true` if a handler ran.
- *
- * @param {string} hotkeyStr
- * @param {{ type?: 'keydown' | 'keyup', target?: EventTarget | null }} [opts]
- * @returns {boolean}
- */
-function trigger(hotkeyStr, { type: forcedType, target = null } = {}) {
-  const { combo, type } = parseHotkey(hotkeyStr)
-  const actualType = forcedType || type
-  if (paused) return false
-
-  // Fill `.key` from bareModifier when the binding is bare-modifier-only;
-  // otherwise from combo.key, or the key a `code:` value types.
-  const eventKey = combo.bareModifier
-    ? BARE_MOD_TO_KEY[combo.bareModifier]
-    : combo.key ?? keyForCode(combo.code)
-  const eventCode = combo.bareModifier
-    ? null
-    : combo.code ?? codeForKey(combo.key)
-
-  // For bare-modifier keyup, real KeyboardEvents have the corresponding
-  // modifier flag FALSE (the modifier just released). Mirror that so
-  // automation handlers that inspect e.altKey / e.ctrlKey / etc. see the
-  // same value they'd see from a real event.
-  let altKey = !!combo.alt
-  let ctrlKey = !!combo.ctrl
-  let shiftKey = !!combo.shift
-  let metaKey = !!combo.meta
-  if (combo.bareModifier && actualType === 'keyup') {
-    if (combo.bareModifier === 'alt') altKey = false
-    else if (combo.bareModifier === 'ctrl') ctrlKey = false
-    else if (combo.bareModifier === 'shift') shiftKey = false
-    else if (combo.bareModifier === 'meta') metaKey = false
-  }
-
-  const e = {
-    type: actualType,
-    key: eventKey,
-    code: eventCode,
-    ctrlKey, shiftKey, altKey, metaKey,
-    repeat: false,
-    isComposing: false,
-    getModifierState() { return false },
-    preventDefault() { },
-    stopPropagation() { },
-    stopImmediatePropagation() { },
-    target,
-  }
-
-  const candidates = eligibleBindings(e, actualType, 'all')
-  if (!candidates.length) return false
-  fire(pickWinner(candidates), e)
-  return true
-}
-
 
 /**
  * The hotkey string for a keyboard event, for a "press your keys" recorder.
@@ -771,36 +320,523 @@ function comboFromEvent(e, { physical = true, useMod = false, platform = PLATFOR
   return parts.join('+')
 }
 
-// Auto-init on window by default (browser only)
-if (defaultTarget) init()
+// --- the router ---
 
-export default {
-  // lifecycle
-  init,
-  destroy,
-  setTarget,
+/**
+ * Create a router with its own bindings, plugins, pause state, input setting,
+ * `onBind` hooks and listeners. Attaches nothing: call `init()` to start it.
+ * The package's default export is one of these, started on `window`.
+ *
+ * `target` (default: `window` when there is one, else none) and `capture`
+ * are defaults for `init()`; `init({ target, capture })` overrides them for
+ * that call only. An element, a `ShadowRoot` or an iframe's window scopes
+ * the router to keys from inside it. Two routers that both bind a key both
+ * fire when the event reaches both; priority only arbitrates within one.
+ *
+ * @param {{ target?: EventTarget | null, capture?: boolean, ignoreInput?: boolean }} [options]
+ */
+export function createRouter({
+  target = typeof window !== 'undefined' ? window : null,
+  capture = false,
+  ignoreInput: ignoreInputOption = true,
+} = {}) {
+  // --- config ---
+  let ignoreEditable = !!ignoreInputOption
+  let defaultTarget = target
+  const defaultCapture = capture
 
-  // bindings
-  bind,
-  unbind,
-  registerPlugin,
-  unregisterPlugin,
+  // Bind hooks: subscribers called after each successful bind. Used by the
+  // optional reservations module to emit conflict warnings without coupling
+  // the core router to the reservation table (~23 KB minified, ~5.5 KB gzipped).
+  let bindHooks = []
 
-  // extension hooks
-  onBind,
+  // --- state ---
+  // comboStr -> Map<type, Array<Binding>>
+  const registry = new Map()
+  // pluginName -> Array<bindingId>
+  const plugins = new Map()
+  // bindingId -> { comboStr, type }
+  const bindingIndex = new Map()
 
-  // control
-  pause,
-  resume,
-  ignoreInput,
+  let paused = false
+  let nextId = 1
 
-  // testing / automation
-  trigger,
 
-  // helpers
-  parseHotkey,
-  comboFromEvent,
-  detectPlatform,
+  function ensureSlot(comboStr, type) {
+    let typeMap = registry.get(comboStr)
+    if (!typeMap) {
+      typeMap = new Map()
+      registry.set(comboStr, typeMap)
+    }
+    let arr = typeMap.get(type)
+    if (!arr) {
+      arr = []
+      typeMap.set(type, arr)
+    }
+    return arr
+  }
+
+
+  function removeById(id) {
+    const idx = bindingIndex.get(id)
+    if (!idx) return false
+
+    const { comboStr, type } = idx
+    const typeMap = registry.get(comboStr)
+    const arr = typeMap?.get(type)
+    if (!arr?.length) {
+      bindingIndex.delete(id)
+      return false
+    }
+
+    const next = arr.filter((b) => b.id !== id)
+    if (next.length) typeMap.set(type, next)
+    else typeMap.delete(type)
+
+    if (!typeMap.size) registry.delete(comboStr)
+    bindingIndex.delete(id)
+    return true
+  }
+
+
+  // --- public API: bind / unbind ---
+  // bind returns an off() function; off.id is exposed for plugin bookkeeping.
+
+  /**
+   * Bind a hotkey combo string to a handler.
+   *
+   * @param {string} hotkeyStr      e.g. `'ctrl+shift+k'`, `'meta+slash'`, `'alt+code:KeyX'`
+   * @param {HotkeyHandler} handler
+   * @param {string | null} [plugin]  optional plugin/namespace tag for bulk cleanup
+   * @param {BindOptions} [options]
+   * @returns {BindOff} unbind function with `id` + `hotkey` props
+   */
+  function bind(hotkeyStr, handler, plugin = null, options = {}) {
+    const { combo, type, raw } = parseHotkey(hotkeyStr)
+    const comboStr = comboKeyFromParts(combo)
+    const opts = normalizeOptions(type, options)
+
+    const binding = {
+      id: nextId++,
+      comboStr,
+      type,
+      combo,
+      handler,
+      plugin,
+      raw,
+      options: opts,
+    }
+
+    ensureSlot(comboStr, type).push(binding)
+    bindingIndex.set(binding.id, { comboStr, type })
+
+    const warnKey = `${comboStr} ${type}`
+    if (!warnedShifted.has(warnKey)) {
+      const hint = shiftedPunctuationHint(hotkeyStr)
+      if (hint) {
+        warnedShifted.add(warnKey)
+        // eslint-disable-next-line no-console
+        console.warn(`[hotkey-router] ${hint.message}`)
+      }
+    }
+
+    // Notify bind subscribers. Hook errors must never break the bind itself.
+    if (bindHooks.length) {
+      for (const hook of bindHooks) {
+        try {
+          hook({ combo, raw, options: opts, plugin, id: binding.id })
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('[hotkey-router] onBind hook threw:', err)
+        }
+      }
+    }
+
+    const off = () => removeById(binding.id)
+    off.id = binding.id
+    off.hotkey = raw
+    return off
+  }
+
+  // Subscribe to bind events. The hook receives
+  //   { combo, raw, options, plugin, id }
+  // after the binding is registered. Returns an unsubscribe function. Used by
+  // extensions like `installReservationWarnings` from `hotkey-router/reservations`.
+
+  /**
+   * Subscribe to {@link bind} events. The hook is called after each successful
+   * bind with a {@link BindEvent} payload.
+   *
+   * @param {(info: BindEvent) => void} hook
+   * @returns {() => void} unsubscribe
+   */
+  function onBind(hook) {
+    if (typeof hook !== 'function') {
+      throw new TypeError('hotkeys.onBind(hook) expects a function')
+    }
+    bindHooks.push(hook)
+    return () => {
+      bindHooks = bindHooks.filter((h) => h !== hook)
+    }
+  }
+
+
+  /**
+   * Remove bindings for a combo string. Omit `handler` to remove all bindings
+   * for the combo/type; pass a specific handler to remove just that one.
+   *
+   * @param {string} hotkeyStr
+   * @param {HotkeyHandler} [handler]
+   * @returns {void}
+   */
+  function unbind(hotkeyStr, handler) {
+    const { combo, type } = parseHotkey(hotkeyStr)
+    const comboStr = comboKeyFromParts(combo)
+    const typeMap = registry.get(comboStr)
+    if (!typeMap) return
+
+    const arr = typeMap.get(type)
+    if (!arr?.length) return
+
+    if (!handler) {
+      for (const b of arr) bindingIndex.delete(b.id)
+      typeMap.delete(type)
+    } else {
+      const keep = []
+      for (const b of arr) {
+        if (b.handler === handler) bindingIndex.delete(b.id)
+        else keep.push(b)
+      }
+      if (keep.length) typeMap.set(type, keep)
+      else typeMap.delete(type)
+    }
+
+    if (!typeMap.size) registry.delete(comboStr)
+  }
+
+
+  // --- plugin system ---
+  // registerPlugin returns unregister function.
+
+  /**
+   * Register a named plugin that bulk-binds a {@link HotkeyMap}. All bindings
+   * are tagged with the plugin name so {@link unregisterPlugin} can clean them
+   * up together without touching other plugins' bindings.
+   *
+   * @param {string} name        plugin name (must be unique)
+   * @param {HotkeyMap} hotkeyMap
+   * @returns {() => void} unregister fn for this plugin
+   */
+  function registerPlugin(name, hotkeyMap) {
+    if (plugins.has(name)) throw new Error(`Plugin "${name}" already registered`)
+
+    // Parse every key string before binding any, so a bad one leaves nothing
+    // bound that unregisterPlugin could not reach.
+    const entries = Object.entries(hotkeyMap)
+    for (const [hotkeyStr] of entries) parseHotkey(hotkeyStr)
+
+    const ids = []
+    for (const [hotkeyStr, fnOrTuple] of entries) {
+      const [fn, options] = Array.isArray(fnOrTuple) ? fnOrTuple : [fnOrTuple, {}]
+      const off = bind(hotkeyStr, fn, name, options)
+      ids.push(off.id)
+    }
+
+    plugins.set(name, ids)
+    return () => unregisterPlugin(name)
+  }
+
+  /**
+   * Remove all bindings owned by the named plugin. Silent no-op if no such
+   * plugin is registered.
+   *
+   * @param {string} name
+   * @returns {void}
+   */
+  function unregisterPlugin(name) {
+    const ids = plugins.get(name)
+    if (!ids) return
+    for (const id of ids) removeById(id)
+    plugins.delete(name)
+  }
+
+  // --- control ---
+
+  /** Pause dispatch — bindings stay registered but no handlers fire. @returns {void} */
+  function pause() {
+    paused = true
+  }
+
+  /** Resume dispatch after a {@link pause}. @returns {void} */
+  function resume() {
+    paused = false
+  }
+
+  /**
+   * Toggle whether handlers fire when the event target is an editable element
+   * (input/textarea/contenteditable). Default `true`. Override per-binding via
+   * `options.allowIn`.
+   *
+   * @param {boolean} [value]
+   * @returns {void}
+   */
+  function ignoreInput(value = true) {
+    ignoreEditable = !!value
+  }
+
+  // allow changing the default target (iframes/tests).
+  // we intentionally do not auto-rebind to keep the core tiny.
+
+  /**
+   * Replace this router's default target (used by {@link init} when no
+   * `target` is provided), keeping the router object that other code and
+   * `onBind` hooks hold on to. Does NOT auto-rebind existing listeners —
+   * call {@link destroy} + {@link init} to re-attach. For a second, separate
+   * router, use `createRouter({ target })` instead.
+   *
+   * @param {EventTarget | null} target
+   * @returns {void}
+   */
+  function setTarget(target) {
+    defaultTarget = target
+  }
+
+
+  // The bindings an event may fire, after every guard. Looks up under both
+  // lookup keys: key-based (`alt+x`) and code-based (`alt+code:KeyX`). Same
+  // physical keypress, two valid binding shapes; the priority/recency arbiter
+  // picks among them. Only when neither yields an eligible binding does the
+  // Latin fallback (`latinKeyFromEvent`) get a turn, so an exact `ctrl+л` or
+  // `ctrl+code:KeyK` always beats a fallback `ctrl+k`.
+  //
+  // phase: 'all' (one listener handles every binding), 'capture' (only
+  // bindings with options.capture) or 'bubble' (only bindings without it).
+  function eligibleBindings(e, type, phase) {
+    const guards = {
+      altGraphChar: isAltGraphCharacter(e),
+      composing: isComposingEvent(e),
+      fromInput: ignoreEditable && isFromInputTarget(e),
+    }
+
+    const candidates = []
+    const seen = new Set()
+    for (const lookupKey of [comboKeyFromEvent(e), codeKeyFromEvent(e)]) {
+      if (!lookupKey || seen.has(lookupKey)) continue
+      seen.add(lookupKey)
+      collectEligible(candidates, lookupKey, e, type, phase, guards)
+    }
+
+    if (!candidates.length) {
+      const latinKey = latinKeyFromEvent(e)
+      if (latinKey && !seen.has(latinKey)) collectEligible(candidates, latinKey, e, type, phase, guards)
+    }
+    return candidates
+  }
+
+  function collectEligible(candidates, lookupKey, e, type, phase, { altGraphChar, composing, fromInput }) {
+    const bindings = registry.get(lookupKey)?.get(type)
+    if (!bindings?.length) return
+
+    for (const b of bindings) {
+      const o = b.options
+      if (phase === 'capture' && !o.capture) continue
+      if (phase === 'bubble' && o.capture) continue
+      if (altGraphChar && !o.altGraph) continue
+      if (composing && !o.composing) continue
+      if (fromInput && !o.allowIn?.(e)) continue
+      if (type === 'keydown' && o.repeat === false && e.repeat) continue
+      if (o.when && o.when(e) === false) continue
+      candidates.push(b)
+    }
+  }
+
+  function fire(winner, e) {
+    const o = winner.options
+
+    if (o.preventDefault) e.preventDefault()
+    if (o.stopImmediatePropagation) e.stopImmediatePropagation()
+    else if (o.stopPropagation) e.stopPropagation()
+
+    // A handler that throws has still had its one run.
+    try {
+      winner.handler(e)
+    } finally {
+      if (o.once) removeById(winner.id)
+    }
+  }
+
+  function handleEvent(type, phase = 'all') {
+    return (e) => {
+      if (paused) return
+      const candidates = eligibleBindings(e, type, phase)
+      if (candidates.length) fire(pickWinner(candidates), e)
+    }
+  }
+
+
+  // --- listeners ---
+  let stopDown = null
+  let stopUp = null
+
+  let stopCaptureDown = null
+  let stopCaptureUp = null
+
+  /**
+   * Initialize the router by attaching `keydown`/`keyup` listeners to a target.
+   * Re-initializes cleanly if already running (calls {@link destroy} first).
+   * The default router runs this on `window` at load in browsers; a router
+   * from `createRouter()` waits for you to call it. `target` and `capture`
+   * default to the ones given to `createRouter()`; passing them here
+   * overrides them for this call only.
+   *
+   * `capture: true` handles every binding in the capture phase. With
+   * `false`, bindings run in the bubble phase except those bound
+   * with `{ capture: true }`, which a second, capture-phase listener handles:
+   * they see the key before the page's own listeners and can stop it.
+   *
+   * @param {{ target?: EventTarget, capture?: boolean }} [opts]
+   * @returns {void}
+   */
+  function init({ target = defaultTarget, capture = defaultCapture } = {}) {
+    if (!target) throw new Error('hotkeys.init() requires a target (e.g. window)')
+    if (stopDown || stopUp) destroy()
+
+    if (capture) {
+      stopDown = on(target, 'keydown', handleEvent('keydown'), { capture: true })
+      stopUp = on(target, 'keyup', handleEvent('keyup'), { capture: true })
+      return
+    }
+    stopDown = on(target, 'keydown', handleEvent('keydown', 'bubble'), { capture: false })
+    stopUp = on(target, 'keyup', handleEvent('keyup', 'bubble'), { capture: false })
+    stopCaptureDown = on(target, 'keydown', handleEvent('keydown', 'capture'), { capture: true })
+    stopCaptureUp = on(target, 'keyup', handleEvent('keyup', 'capture'), { capture: true })
+  }
+
+
+  /**
+   * Tear down listeners and clear all bindings + plugins. Bind-hook
+   * subscribers ({@link onBind}) deliberately survive — consumer
+   * extensions should install once and live across `init`/`destroy` cycles.
+   *
+   * @returns {void}
+   */
+  function destroy() {
+    stopDown?.()
+    stopUp?.()
+    stopCaptureDown?.()
+    stopCaptureUp?.()
+    stopDown = null
+    stopUp = null
+    stopCaptureDown = null
+    stopCaptureUp = null
+    registry.clear()
+    plugins.clear()
+    bindingIndex.clear()
+    // Note: bindHooks deliberately survive destroy(). Consumer extensions
+    // (reservations, future telemetry, etc.) install once at startup and
+    // shouldn't have to re-attach when the router restarts. Tests that need
+    // a clean slate should use the uninstall fn returned by their installer.
+  }
+
+
+  /**
+   * Programmatically fire the binding a real keypress of `hotkeyStr` would
+   * fire. Used by tests and automation; not a typical app-runtime path. The
+   * synthetic event carries both `key` and `code` (US layout), so key-based
+   * and `code:` bindings both match, and the same guards apply as for a real
+   * event: `when`, `ignoreInput`/`allowIn` (pass `target` to fire "from" an
+   * element), priority, `once`, and `pause()`. Returns `true` if a handler ran.
+   *
+   * @param {string} hotkeyStr
+   * @param {{ type?: 'keydown' | 'keyup', target?: EventTarget | null }} [opts]
+   * @returns {boolean}
+   */
+  function trigger(hotkeyStr, { type: forcedType, target = null } = {}) {
+    const { combo, type } = parseHotkey(hotkeyStr)
+    const actualType = forcedType || type
+    if (paused) return false
+
+    // Fill `.key` from bareModifier when the binding is bare-modifier-only;
+    // otherwise from combo.key, or the key a `code:` value types.
+    const eventKey = combo.bareModifier
+      ? BARE_MOD_TO_KEY[combo.bareModifier]
+      : combo.key ?? keyForCode(combo.code)
+    const eventCode = combo.bareModifier
+      ? null
+      : combo.code ?? codeForKey(combo.key)
+
+    // For bare-modifier keyup, real KeyboardEvents have the corresponding
+    // modifier flag FALSE (the modifier just released). Mirror that so
+    // automation handlers that inspect e.altKey / e.ctrlKey / etc. see the
+    // same value they'd see from a real event.
+    let altKey = !!combo.alt
+    let ctrlKey = !!combo.ctrl
+    let shiftKey = !!combo.shift
+    let metaKey = !!combo.meta
+    if (combo.bareModifier && actualType === 'keyup') {
+      if (combo.bareModifier === 'alt') altKey = false
+      else if (combo.bareModifier === 'ctrl') ctrlKey = false
+      else if (combo.bareModifier === 'shift') shiftKey = false
+      else if (combo.bareModifier === 'meta') metaKey = false
+    }
+
+    const e = {
+      type: actualType,
+      key: eventKey,
+      code: eventCode,
+      ctrlKey, shiftKey, altKey, metaKey,
+      repeat: false,
+      isComposing: false,
+      getModifierState() { return false },
+      preventDefault() { },
+      stopPropagation() { },
+      stopImmediatePropagation() { },
+      target,
+    }
+
+    const candidates = eligibleBindings(e, actualType, 'all')
+    if (!candidates.length) return false
+    fire(pickWinner(candidates), e)
+    return true
+  }
+
+  return {
+    // lifecycle
+    init,
+    destroy,
+    setTarget,
+
+    // bindings
+    bind,
+    unbind,
+    registerPlugin,
+    unregisterPlugin,
+
+    // extension hooks
+    onBind,
+
+    // control
+    pause,
+    resume,
+    ignoreInput,
+
+    // testing / automation
+    trigger,
+
+    // helpers
+    parseHotkey,
+    comboFromEvent,
+    detectPlatform,
+  }
 }
+
+/** @typedef {ReturnType<typeof createRouter>} Router */
+
+// The default router: created at load, listening on window in browsers.
+/** @type {Router} */
+const hotkeys = createRouter()
+if (typeof window !== 'undefined') hotkeys.init()
+
+export default hotkeys
 
 export { parseHotkey, comboFromEvent, detectPlatform }
