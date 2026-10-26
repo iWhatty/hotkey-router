@@ -261,6 +261,30 @@ hotkeys.bind('mod+k', openPalette, null, {
 })
 ```
 
+### `createRouter(options?)` (v0.4.0+)
+
+A separate router: its own bindings, plugins, `pause()`, `ignoreInput()`,
+`onBind` hooks and listeners, with the same methods as the default export.
+It attaches nothing until you call `init()`.
+
+```js
+import { createRouter } from 'hotkey-router'
+
+const dialogKeys = createRouter({ target: dialogEl })
+dialogKeys.init()
+dialogKeys.bind('escape', closeDialog)
+// Later
+dialogKeys.destroy() // the page's other routers keep working
+```
+
+Options: `target` (default `window` when there is one; an element, a
+`ShadowRoot` or an iframe's window scopes the router to keys from inside
+it), `capture` (default `false`) and `ignoreInput` (default `true`).
+`target` and `capture` are defaults: `init({ target, capture })` overrides
+them for that call only. `setTarget(target)` changes the default target of an
+existing router, which is useful when other code holds on to it; it doesn't
+move listeners until the next `init()`. See [Multiple routers](#multiple-routers-v040).
+
 ### `init(options?)`
 
 Manually attach listeners.
@@ -348,6 +372,31 @@ hotkeys.bind('escape', closeModal, null, {
   preventDefault: true,
 })
 ```
+
+### Multiple routers (v0.4.0+)
+
+The default export is one router, started on `window` at import. Each
+`createRouter()` call makes another. Use one when:
+
+- **two libraries share a page.** Each gets its own registry, so one's
+  `pause()` or `destroy()` no longer stops the other's keys. A browser
+  extension that injects UI into other people's pages should use its own router.
+- **keys belong to a scope.** A router on a dialog element, a `ShadowRoot` or
+  an iframe's window only sees keys from inside it, while page-wide keys stay
+  on the default router.
+
+Routers don't arbitrate between each other. If two routers bind the same key
+and the event reaches both, both fire: priority and recency only pick a
+winner within one router. To let one take the key, gate the other with `when`,
+or keep their scopes apart. `stopPropagation` doesn't stop another router
+listening on the same target. `stopImmediatePropagation` does, but only for
+routers whose listeners were added later.
+
+Shared by every router: the parser, `comboFromEvent`, `detectPlatform`, and
+the one-time console warning for shifted punctuation (once per combo per
+loaded copy of the module). Reservation warnings are per router:
+`installReservationWarnings(router)` covers that router's binds only, and
+`hotkey-router/auto` covers the default router.
 
 ### Bare-modifier bindings (v0.1.0+)
 

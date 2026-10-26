@@ -3,6 +3,26 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
+## 0.4.0 — unreleased
+
+### Added
+
+- **`createRouter(options?)`**: separate routers, each with its own
+  bindings, plugins, pause state, input setting, `onBind` hooks and
+  listeners. Use one for two libraries on one page, or to scope keys to a
+  dialog, a `ShadowRoot` or an iframe. It attaches nothing until `init()`.
+  `target` (default `window` when there is one) and `capture` are defaults
+  that `init()` can override for one call; `ignoreInput` sets the input
+  check. Exported by name, with a `Router` type. If two routers bind the same
+  key, both fire. See "Multiple routers" in the README. Sprint 0.4.0 slice A.
+
+### Changed
+
+- The default export is now `createRouter()` started on `window` at import.
+  Same object, same methods, same behaviour; `hotkey-router/auto` is still
+  the same object. `setTarget` stays, not deprecated: it reconfigures an
+  existing router, which `createRouter` doesn't replace.
+
 ## 0.3.3 — 2026-10-23
 
 ### Fixed
