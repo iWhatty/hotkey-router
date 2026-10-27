@@ -11,6 +11,22 @@
     "skipLibCheck": true,
     "rootDir": "."
   },
-  "include": ["hotkey-router.js", "auto.js", "reservations.js", "sites.js", "validate.js", "format.js", "parse.js", "platform.js"],
-  "exclude": ["*.test.js", "dist", "node_modules", "scripts", "playground"]
+  "include": [
+    "core.js",
+    "hotkey-router.js",
+    "auto.js",
+    "reservations.js",
+    "sites.js",
+    "validate.js",
+    "format.js",
+    "parse.js",
+    "platform.js"
+  ],
+  "exclude": [
+    "*.test.js",
+    "dist",
+    "node_modules",
+    "scripts",
+    "playground"
+  ]
 }

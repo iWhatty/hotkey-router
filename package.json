@@ -21,6 +21,10 @@
       "import": "./dist/hotkey-router.js",
       "require": "./dist/hotkey-router.cjs"
     },
+    "./core": {
+      "types": "./dist/types/core.d.ts",
+      "import": "./dist/core.js"
+    },
     "./auto": {
       "types": "./dist/types/auto.d.ts",
       "import": "./dist/auto.js"
