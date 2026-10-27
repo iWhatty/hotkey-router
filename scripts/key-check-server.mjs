@@ -1,6 +1,7 @@
 // scripts/key-check-server.mjs
 //
-// Local server for playground/key-check.html (npm run key-check). Serves the
+// Local server for playground/key-check.html (npm run key-check) and the
+// browser tests (npm run test:browser, via startServer). Serves the
 // repo read-only on 127.0.0.1 so the page can load the source modules, and
 // takes the page's results (POST /results) as a note in docs/notes/:
 //   docs/notes/key-check-<date>-<browser>.md
@@ -10,7 +11,7 @@
 
 import { createServer } from 'node:http'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { extname, join, normalize, sep } from 'node:path'
+import { extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
@@ -82,17 +83,31 @@ async function saveResults(req, res) {
   json(res, 200, { file: `docs/notes/${name}` })
 }
 
-const server = createServer((req, res) => {
-  const handle = req.method === 'POST' && req.url === '/results' ? saveResults
-    : req.method === 'GET' || req.method === 'HEAD' ? serveFile
-      : async (_, r) => send(r, 405, 'Method not allowed')
-  handle(req, res).catch((err) => {
-    console.error(err)
-    if (!res.headersSent) send(res, 500, 'Server error')
+/**
+ * Start the server. Port 0 picks a free one (the browser tests do that).
+ *
+ * @param {{ port?: number }} [opts]
+ * @returns {Promise<{ server: import('node:http').Server, origin: string }>}
+ */
+export function startServer({ port = PORT } = {}) {
+  const server = createServer((req, res) => {
+    const handle = req.method === 'POST' && req.url === '/results' ? saveResults
+      : req.method === 'GET' || req.method === 'HEAD' ? serveFile
+        : async (_, r) => send(r, 405, 'Method not allowed')
+    handle(req, res).catch((err) => {
+      console.error(err)
+      if (!res.headersSent) send(res, 500, 'Server error')
+    })
   })
-})
+  return new Promise((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(port, HOST, () => resolve({ server, origin: `http://${HOST}:${server.address().port}` }))
+  })
+}
 
-server.listen(PORT, HOST, () => {
-  console.log(`key check: http://${HOST}:${PORT}${PAGE}`)
+// Run as a script (npm run key-check), not when imported.
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  const { origin } = await startServer()
+  console.log(`key check: ${origin}${PAGE}`)
   console.log('results go to docs/notes/; Ctrl+C to stop')
-})
+}

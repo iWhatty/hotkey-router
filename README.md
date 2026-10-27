@@ -729,6 +729,22 @@ Modern browsers supporting:
 
 Chrome, Firefox, Safari, Edge.
 
+### Testing
+
+Everything runs locally; there is no hosted CI.
+
+- `npm test`: unit tests in jsdom.
+- `npm run test:browser` (v0.4.0+): builds, then runs `browser-tests/` in the
+  Chrome and Edge installed on this machine through `playwright-core`. That
+  covers real key events through shadow roots, routers scoped to a dialog, a
+  shadow root and an iframe, capture against a page that stops keys, the
+  `'text'` mode on real controls, and the built entries as an app bundles
+  them. Nothing is downloaded; a browser that isn't installed is skipped.
+  `BROWSERS=chrome` runs one. Needs Node 22 or later.
+- `scripts/key-check.ahk` (Windows, AutoHotkey 1.1): real keyboard layouts
+  (Russian, Greek, Hebrew, Polish AltGr) in Chrome, Firefox and Edge, with
+  results written to `docs/notes/`. See `playground/key-check.html`.
+
 ---
 
 ## License

@@ -71,6 +71,7 @@
     "prepublishOnly": "npm test",
     "test": "vitest run --environment jsdom",
     "test:watch": "vitest --environment jsdom",
+    "test:browser": "node build.js && node --test browser-tests/*.browser.mjs",
     "scrape:diff": "node scripts/scrape-reservations.mjs",
     "scrape:apply": "node scripts/scrape-reservations.mjs --apply",
     "sites:build": "node scripts/build-site-hotkeys.cjs",
@@ -79,6 +80,7 @@
   "devDependencies": {
     "esbuild": "^0.28.1",
     "jsdom": "^24.0.0",
+    "playwright-core": "^1.64.1",
     "typescript": "^5.9.3",
     "vitest": "^3.1.2"
   },
