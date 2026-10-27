@@ -2,7 +2,8 @@
 
 Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
 review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
-done 2026-10-26; slice C done 2026-10-26; D to F not started. Builds on
+done 2026-10-26; slice C done 2026-10-26; slice D done 2026-10-26; E and F
+not started. Builds on
 0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
@@ -89,9 +90,20 @@ other strings. Native pickers in real browsers are still for slice D.
 - **Fixes the `<button>` hazard** for apps that opt in: a plain `space` binding no longer fires on a focused button.
 - **Not a default change in 0.4.** The README promises today's behaviour. Whether `'text'` becomes the default is a 1.0 question.
 - **Tests:** every listed type in both modes; `<button>`, `role="button"` and an element inside each; bare-modifier bindings on controls; an unknown input type; shadow DOM targets; `allowIn` overrides; AltGr and IME guards unchanged.
-- **Unverified:** which modified chords native pickers (color, file, date) take for themselves in each browser. Test representative cases in slice D before documenting any guarantee.
+- **Native pickers, checked in slice D (Chrome and Edge, 2026-10-26):** Ctrl+I on a focused color input reaches the page and fires in `'text'` mode; on a date input it's blocked, since date inputs are text entry. File inputs and Firefox aren't covered. Ctrl+I is the only chord tested, so treat others on pickers as unverified.
 
-### D. Local browser tests (supports A to C)
+### D. Local browser tests (supports A to C), done
+
+Done as decided below. `npm run test:browser` builds, then runs `node --test`
+on `browser-tests/*.browser.mjs` (Node's own test runner, so no extra test
+framework). It uses `playwright-core` on the installed Chrome and Edge.
+- **Result:** 10 tests per browser, 20 in all, passing in about 12 seconds.
+- **The tests catch real regressions:** breaking the core on purpose (reading
+  `e.target` instead of the event path; treating nothing as a chord) failed
+  the shadow-root test and the two `'text'`-mode tests.
+- **Missing browsers:** one that isn't installed is reported and skipped.
+- **Server:** the tests reuse `scripts/key-check-server.mjs` through its new
+  `startServer({ port: 0 })`.
 
 - **Change:** `npm run test:browser`, run locally, never in hosted CI. Real Chrome and Edge, with trusted key events, for what jsdom can't show:
   - shadow DOM targets;

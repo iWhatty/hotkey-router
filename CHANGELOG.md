@@ -33,7 +33,7 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   any other string. The default is unchanged. Sprint 0.4.0 slice C.
 - `build.js` checks that the main entry imports the core rather than
   copying it, that `/core` has no default export, and that the minified core
-  stays within a **12 KB budget** (10.4 KB now).
+  stays within a **12 KB budget** (11.2 KB with the `'text'` mode).
 
 ### Changed
 
@@ -41,6 +41,22 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   Same object, same methods, same behaviour; `hotkey-router/auto` is still
   the same object. `setTarget` stays, not deprecated: it reconfigures an
   existing router, which `createRouter` doesn't replace.
+
+### Development
+
+- **`npm run test:browser`**: local browser tests in the installed Chrome and
+  Edge through `playwright-core` (a devDependency; no browser downloads, no
+  hosted CI). 10 tests per browser cover the following:
+  - shadow-root inputs and `allowIn`;
+  - routers scoped to a dialog, a shadow root and an iframe;
+  - capture bindings against a page that stops keys;
+  - two routers on one target;
+  - the `'text'` mode on real controls and native pickers;
+  - the built entries as an app bundles them.
+
+  A browser that isn't installed is skipped. Sprint 0.4.0 slice D.
+- `scripts/key-check-server.mjs` exports `startServer({ port })`, which the
+  browser tests use; `npm run key-check` works as before.
 
 ## 0.3.3 — 2026-10-23
 
