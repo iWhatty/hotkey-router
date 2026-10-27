@@ -21,6 +21,16 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   `hotkey-router` is now built on it (`dist/hotkey-router.js` imports
   `./core.js`), so an app that imports both bundles one copy. The CDN file
   and the CommonJS build stay single files. Sprint 0.4.0 slice B.
+- **`ignoreInput('text')`**, an opt-in input mode (also `createRouter({
+  ignoreInput: 'text' })`): text entry stays fully blocked, while checkboxes,
+  radios, sliders, color and file inputs, button-type inputs, `<button>`,
+  `role="button"` and elements inside a button block plain and Shift-only
+  keys but let chords with Ctrl, Alt or Meta through. Fixes the native
+  `<button>` hazard for apps that opt in: a plain `space` binding no longer
+  fires on a focused button. Bare-modifier bindings stay blocked on
+  controls; text entry wins where both apply; unknown input types count as
+  text. `ignoreInput` now also takes `'all'` (same as `true`) and throws on
+  any other string. The default is unchanged. Sprint 0.4.0 slice C.
 - `build.js` checks that the main entry imports the core rather than
   copying it, that `/core` has no default export, and that the minified core
   stays within a **12 KB budget** (10.4 KB now).

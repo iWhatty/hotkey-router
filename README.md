@@ -242,9 +242,10 @@ Hook errors are caught and logged via `console.error`. A buggy hook can't break 
 
 Temporarily disable or re-enable all routing.
 
-### `ignoreInput(boolean = true)`
+### `ignoreInput(value = true)`
 
-By default, hotkeys do **not** fire inside:
+`value` is `true` / `'all'` (the default, below), `'text'` (v0.4.0+, below)
+or `false` (no check). By default, hotkeys do **not** fire inside:
 
 - `<input>`
 - `<textarea>`
@@ -271,6 +272,21 @@ hotkeys.bind('mod+k', openPalette, null, {
 })
 ```
 
+**The `'text'` mode (v0.4.0+, opt-in).** For apps with forms and settings
+panels, `hotkeys.ignoreInput('text')` (or `createRouter({ ignoreInput:
+'text' })`) blocks typing but not shortcuts:
+
+| Where the key was typed | Plain and Shift-only keys | Chords with Ctrl, Alt or Meta |
+| --- | --- | --- |
+| Text entry: text-like and date/time `<input>` types (and any type not listed below), `<textarea>`, `<select>`, contenteditable, `role="textbox"` | blocked | blocked |
+| Other controls: checkbox, radio, range, color, file, button, submit, reset and image inputs; `<button>`; `role="button"`; any element inside a button | blocked (Space, Enter and arrows belong to the control) | **fire** |
+
+A chord needs a non-modifier key, so bare-modifier bindings (`alt`,
+`alt up`) stay blocked on controls. Where an element is both (an editable
+element inside a button), text entry wins. `allowIn` still overrides the
+input check, but not the AltGr, IME, repeat or `when` checks. The default
+stays `'all'`, so nothing changes unless you opt in.
+
 ### `createRouter(options?)` (v0.4.0+)
 
 A separate router: its own bindings, plugins, `pause()`, `ignoreInput()`,
@@ -289,7 +305,8 @@ dialogKeys.destroy() // the page's other routers keep working
 
 Options: `target` (default `window` when there is one; an element, a
 `ShadowRoot` or an iframe's window scopes the router to keys from inside
-it), `capture` (default `false`) and `ignoreInput` (default `true`).
+it), `capture` (default `false`) and `ignoreInput` (default `true`; also
+`'text'` or `false`, as for `ignoreInput()`).
 `target` and `capture` are defaults: `init({ target, capture })` overrides
 them for that call only. `setTarget(target)` changes the default target of an
 existing router, which is useful when other code holds on to it; it doesn't

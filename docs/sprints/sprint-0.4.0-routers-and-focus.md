@@ -2,7 +2,8 @@
 
 Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
 review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
-done 2026-10-26; C to F not started. Builds on 0.3.3 (on npm).
+done 2026-10-26; slice C done 2026-10-26; D to F not started. Builds on
+0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
 
@@ -66,7 +67,14 @@ purpose. Installed from the packed tarball: `/core` attaches nothing, and
 - **Packaging:** `core` is not added to `sideEffects`. `build.js` checks that a bare `import 'hotkey-router/core'` drops out of a bundle, and that `hotkey-router` and `/auto` still keep their listeners.
 - **Size budget:** `build.js` fails if the minified core goes over 12 KB. It's 10.3 KB today, so the budget catches drift without blocking this sprint.
 
-### C. Focus on controls, opt-in (problem 4), decided: add it
+### C. Focus on controls, opt-in (problem 4), done
+
+Done as decided below, test-first: `focus-mode.test.js` has 43 tests. The 18
+that check the new behaviour failed before the change. The 25 that guard text
+entry, the default mode and the other checks passed before and after.
+Implemented in `core.js` as `focusKind` (text, control or neither, along the
+event path) and `isChordEvent`. `ignoreInput` also takes `'all'` and rejects
+other strings. Native pickers in real browsers are still for slice D.
 
 - **Change:** a second input mode, `ignoreInput('text')` (also `createRouter({ ignoreInput: 'text' })`). `true`/`'all'` stays the default and works exactly as today; `false` turns the check off.
 - **In `'text'` mode:**
