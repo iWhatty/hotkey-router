@@ -2,8 +2,8 @@
 
 Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
 review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
-done 2026-10-26; slice C done 2026-10-26; slice D done 2026-10-26; E and F
-not started. Builds on
+done 2026-10-26; slice C done 2026-10-26; slice D done 2026-10-26; slice E
+done 2026-10-27; F (release) not started. Builds on
 0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
@@ -121,7 +121,16 @@ framework). It uses `playwright-core` on the installed Chrome and Edge.
 - **Don't cover:** keyboard layouts, AltGr and IME (the AHK key check drives the real OS for those), browser-reserved shortcuts, or automating third-party pages. Keep the full matrix of input types in jsdom; the browser suite checks representative cases.
 - **Done when:** the suite runs in under a minute on this machine and covers each item above.
 
-### E. Data freshness
+### E. Data freshness, done
+
+Done as planned below, test-first:
+- **Tests:** `data-age.test.js` (6 tests) failed before the script existed.
+- **Script:** `scripts/data-age.mjs` exports `tableAges` and `staleWarnings`.
+  A table is stale after 183 days, or when its date is missing or unreadable.
+- **Added beyond the plan:** a warning when `site-hotkeys.runtime.json`
+  wasn't rebuilt after `site-hotkeys.json` changed.
+- **Checklist:** `docs/data-review.md`.
+- **Today:** the tables are 12 and 24 days old, so nothing warns.
 
 - **Change:** `npm run data:age` prints each table's date (`browser-hotkeys.json` `version.generated`, `site-hotkeys.json` `version.researched`) and warns when one is older than six months. `build.js` prints the same warning without failing.
 - **Docs:** a short review checklist in `docs/`: which vendor pages to re-read, and how to update a row and its date. Building real scrapers stays out of scope.

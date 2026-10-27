@@ -19,6 +19,7 @@
 import { build } from 'esbuild'
 import { rmSync, mkdirSync, readFileSync, statSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
+import { staleWarnings } from './scripts/data-age.mjs'
 
 // --- Read package metadata (robust across Node versions) ---
 const pkg = JSON.parse(
@@ -233,3 +234,8 @@ console.log('  ' + report('dist/format.js'))
 console.log('  ' + report('dist/validate.js'))
 console.log('  ' + report('dist/auto.js'))
 console.log('  ' + report('dist/auto.min.js'))
+
+// --- Data age ---
+// The shortcut tables are checked by hand and age silently. Warn when one is
+// over six months old (npm run data:age for the details); never fail the build.
+for (const warning of staleWarnings()) console.warn(`  warning: ${warning}`)

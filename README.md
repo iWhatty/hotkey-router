@@ -741,6 +741,9 @@ Everything runs locally; there is no hosted CI.
   `'text'` mode on real controls, and the built entries as an app bundles
   them. Nothing is downloaded; a browser that isn't installed is skipped.
   `BROWSERS=chrome` runs one. Needs Node 22 or later.
+- `npm run data:age` (v0.4.0+): how old the browser/OS and website shortcut
+  tables are; warns past six months (the build prints the same warning).
+  [docs/data-review.md](docs/data-review.md) says how to review them.
 - `scripts/key-check.ahk` (Windows, AutoHotkey 1.1): real keyboard layouts
   (Russian, Greek, Hebrew, Polish AltGr) in Chrome, Firefox and Edge, with
   results written to `docs/notes/`. See `playground/key-check.html`.

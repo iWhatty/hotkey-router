@@ -55,6 +55,11 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   - the built entries as an app bundles them.
 
   A browser that isn't installed is skipped. Sprint 0.4.0 slice D.
+- **`npm run data:age`**: prints the date of the browser/OS and website
+  shortcut tables, and warns when one is over six months old or when
+  `data/site-hotkeys.runtime.json` wasn't rebuilt after its source changed.
+  `node build.js` prints the same warnings without failing. How to review the
+  tables: `docs/data-review.md`. Sprint 0.4.0 slice E.
 - `scripts/key-check-server.mjs` exports `startServer({ port })`, which the
   browser tests use; `npm run key-check` works as before.
 
