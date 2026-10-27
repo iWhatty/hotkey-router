@@ -3,7 +3,7 @@
 Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
 review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
 done 2026-10-26; slice C done 2026-10-26; slice D done 2026-10-26; slice E
-done 2026-10-27; F (release) not started. Builds on
+done 2026-10-27; F (release) prepared 2026-10-27: version 0.4.0, every check run, release PR open; publish pending. Builds on
 0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
@@ -18,7 +18,7 @@ changes no default. Run all checks locally; hosted CI stays off.
 
 | # | Problem today | Who hits it |
 | --- | --- | --- |
-| 1 | One router per page. All state (`registry`, `plugins`, `paused`, `ignoreInput`, `onBind` hooks, listeners) is module-wide, so two libraries that use hotkey-router share one registry, and one's `pause()` or `destroy()` stops the other's keys. | Any page with two consumers, such as SpellBolt injected into a site that uses hotkey-router too |
+| 1 | One router per page. All state (`registry`, `plugins`, `paused`, `ignoreInput`, `onBind` hooks, listeners) is module-wide, so two libraries that use hotkey-router share one registry, and one's `pause()` or `destroy()` stops the other's keys. | Two libraries in one bundle that both use hotkey-router. (Correction at release: an extension's content scripts, SpellBolt's included, run in an isolated world with their own copy of the module, so they never shared a router with the page.) |
 | 2 | A router can't be scoped. `setTarget` + `init` move the one router; there's no way to have page-wide keys and dialog-only keys at once. | Dialogs, iframes, web components |
 | 3 | Importing `hotkey-router` attaches `keydown`/`keyup` listeners to `window` straight away. | Libraries that want to start the router themselves, server-side rendering, tests |
 | 4 | Every `<input>` blocks every binding, modifier chords included, while a native `<button>` blocks none, so a plain `space` binding fires on a focused button (slice E, 0.3.3: kept and documented). | Apps with forms and settings panels |
@@ -139,7 +139,7 @@ Done as planned below, test-first:
 
 - **README:** "Multiple routers" (scoped routers, iframes, shadow roots, two libraries on one page), `hotkey-router/core`, the `'text'` input mode, and what importing each entry does.
 - **Release:** CHANGELOG 0.4.0, type build, `npm pack` check, and a version bump.
-- **SpellBolt upgrade note,** like 0.3.3's. SpellBolt runs inside other people's pages, so it's the first consumer that should move to its own router.
+- **SpellBolt upgrade note,** like 0.3.3's. (Written: `docs/notes/2026-10-27-spellbolt-upgrade-0.4.0.md`. The draft here said SpellBolt should be the first to move to its own router; it shouldn't need to. Its content scripts run in an isolated world, so the page's scripts never shared its router.)
 
 ## Order
 

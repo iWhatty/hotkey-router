@@ -406,9 +406,13 @@ hotkeys.bind('escape', closeModal, null, {
 The default export is one router, started on `window` at import. Each
 `createRouter()` call makes another. Use one when:
 
-- **two libraries share a page.** Each gets its own registry, so one's
-  `pause()` or `destroy()` no longer stops the other's keys. A browser
-  extension that injects UI into other people's pages should use its own router.
+- **two libraries in one bundle both use hotkey-router.** They'd otherwise share
+  the default router (one copy of the module, one registry), so one's
+  `pause()` or `destroy()` would stop the other's keys. With its own router
+  each is independent. A browser extension's content scripts don't share a
+  router with the page's own scripts anyway: they run in a separate,
+  isolated JavaScript world with their own copy of the module. Key events
+  still reach both.
 - **keys belong to a scope.** A router on a dialog element, a `ShadowRoot` or
   an iframe's window only sees keys from inside it, while page-wide keys stay
   on the default router.

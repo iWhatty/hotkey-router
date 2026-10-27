@@ -3,14 +3,19 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## 0.4.0 — unreleased
+## 0.4.0 — 2026-10-27
+
+Upgrading from 0.3.3 needs no code changes: every 0.3.3 import, binding and
+default works as before. The new API is opt-in (`createRouter`,
+`hotkey-router/core`, `ignoreInput('text')`). The minified core is 11.2 KB
+(4.9 KB gzipped), up from 10.3 KB.
 
 ### Added
 
 - **`createRouter(options?)`**: separate routers, each with its own
   bindings, plugins, pause state, input setting, `onBind` hooks and
-  listeners. Use one for two libraries on one page, or to scope keys to a
-  dialog, a `ShadowRoot` or an iframe. It attaches nothing until `init()`.
+  listeners. Use one when two libraries in one bundle both use
+  hotkey-router, or to scope keys to a dialog, a `ShadowRoot` or an iframe. It attaches nothing until `init()`.
   `target` (default `window` when there is one) and `capture` are defaults
   that `init()` can override for one call; `ignoreInput` sets the input
   check. Exported by name, with a `Router` type. If two routers bind the same
