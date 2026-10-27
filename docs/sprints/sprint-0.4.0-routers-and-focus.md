@@ -2,7 +2,9 @@
 
 Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
 review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
-done 2026-10-26; C to F not started. Builds on 0.3.3 (on npm).
+done 2026-10-26; slice C done 2026-10-26; slice D done 2026-10-26; E and F
+not started. Builds on
+0.3.3 (on npm).
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
 
@@ -66,7 +68,14 @@ purpose. Installed from the packed tarball: `/core` attaches nothing, and
 - **Packaging:** `core` is not added to `sideEffects`. `build.js` checks that a bare `import 'hotkey-router/core'` drops out of a bundle, and that `hotkey-router` and `/auto` still keep their listeners.
 - **Size budget:** `build.js` fails if the minified core goes over 12 KB. It's 10.3 KB today, so the budget catches drift without blocking this sprint.
 
-### C. Focus on controls, opt-in (problem 4), decided: add it
+### C. Focus on controls, opt-in (problem 4), done
+
+Done as decided below, test-first: `focus-mode.test.js` has 43 tests. The 18
+that check the new behaviour failed before the change. The 25 that guard text
+entry, the default mode and the other checks passed before and after.
+Implemented in `core.js` as `focusKind` (text, control or neither, along the
+event path) and `isChordEvent`. `ignoreInput` also takes `'all'` and rejects
+other strings. Native pickers in real browsers are still for slice D.
 
 - **Change:** a second input mode, `ignoreInput('text')` (also `createRouter({ ignoreInput: 'text' })`). `true`/`'all'` stays the default and works exactly as today; `false` turns the check off.
 - **In `'text'` mode:**
@@ -81,9 +90,20 @@ purpose. Installed from the packed tarball: `/core` attaches nothing, and
 - **Fixes the `<button>` hazard** for apps that opt in: a plain `space` binding no longer fires on a focused button.
 - **Not a default change in 0.4.** The README promises today's behaviour. Whether `'text'` becomes the default is a 1.0 question.
 - **Tests:** every listed type in both modes; `<button>`, `role="button"` and an element inside each; bare-modifier bindings on controls; an unknown input type; shadow DOM targets; `allowIn` overrides; AltGr and IME guards unchanged.
-- **Unverified:** which modified chords native pickers (color, file, date) take for themselves in each browser. Test representative cases in slice D before documenting any guarantee.
+- **Native pickers, checked in slice D (Chrome and Edge, 2026-10-26):** Ctrl+I on a focused color input reaches the page and fires in `'text'` mode; on a date input it's blocked, since date inputs are text entry. File inputs and Firefox aren't covered. Ctrl+I is the only chord tested, so treat others on pickers as unverified.
 
-### D. Local browser tests (supports A to C)
+### D. Local browser tests (supports A to C), done
+
+Done as decided below. `npm run test:browser` builds, then runs `node --test`
+on `browser-tests/*.browser.mjs` (Node's own test runner, so no extra test
+framework). It uses `playwright-core` on the installed Chrome and Edge.
+- **Result:** 10 tests per browser, 20 in all, passing in about 12 seconds.
+- **The tests catch real regressions:** breaking the core on purpose (reading
+  `e.target` instead of the event path; treating nothing as a chord) failed
+  the shadow-root test and the two `'text'`-mode tests.
+- **Missing browsers:** one that isn't installed is reported and skipped.
+- **Server:** the tests reuse `scripts/key-check-server.mjs` through its new
+  `startServer({ port: 0 })`.
 
 - **Change:** `npm run test:browser`, run locally, never in hosted CI. Real Chrome and Edge, with trusted key events, for what jsdom can't show:
   - shadow DOM targets;

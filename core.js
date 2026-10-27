@@ -154,20 +154,66 @@ function codeKeyFromEvent(e) {
 }
 
 
-// The element the key was typed in. A listener on window sees a shadow root's
-// host as `e.target`; `composedPath()[0]` is the input inside an open root.
-// A closed root keeps its inside hidden, so the host is all we get there.
-function isFromInputTarget(e) {
-  const t = e?.composedPath?.()[0] ?? e?.target
-  if (!t) return false
+// <input> types that are controls rather than text entry. In the 'text' input
+// mode they let Ctrl/Alt/Meta chords through; every other type, including
+// ones this list doesn't know, counts as text entry.
+const CONTROL_INPUT_TYPES = new Set([
+  'checkbox', 'radio', 'range', 'color', 'file', 'button', 'submit', 'reset', 'image',
+])
+
+// The element the key was typed in, then its ancestors. A listener on window
+// sees a shadow root's host as `e.target`; `composedPath()` starts at the
+// element inside an open root. A closed root keeps its inside hidden, so the
+// host is all we get there. A synthetic event (trigger) has no path, so walk
+// up from its target instead.
+function eventPath(e) {
+  const path = e?.composedPath?.()
+  if (path?.length) return path
+  const out = []
+  for (let n = e?.target; n; n = n.parentNode || n.host) out.push(n)
+  return out
+}
+
+// What the input check sees where the key was typed: 'text' (text entry:
+// blocked), 'control' (another control: only chords pass, 'text' mode only)
+// or null. In the 'all' mode every <input> is text and buttons aren't
+// checked, as before 0.4.
+function focusKind(e, mode) {
+  const path = eventPath(e)
+  const t = path[0]
+  if (!t) return null
   const tag = String(t.tagName || '').toUpperCase()
-  return (
-    t.isContentEditable ||
-    tag === 'INPUT' ||
-    tag === 'TEXTAREA' ||
-    tag === 'SELECT' ||
-    t.getAttribute?.('role') === 'textbox'
-  )
+  if (t.isContentEditable || tag === 'TEXTAREA' || tag === 'SELECT' || t.getAttribute?.('role') === 'textbox') {
+    return 'text'
+  }
+  if (tag === 'INPUT') {
+    if (mode === 'all') return 'text'
+    const type = String(t.getAttribute?.('type') || 'text').toLowerCase()
+    return CONTROL_INPUT_TYPES.has(type) ? 'control' : 'text'
+  }
+  if (mode === 'text') {
+    // An element inside a button counts as that button.
+    for (const el of path) {
+      if (String(el.tagName || '').toUpperCase() === 'BUTTON' || el.getAttribute?.('role') === 'button') return 'control'
+    }
+  }
+  return null
+}
+
+// A chord: Ctrl, Alt or Meta held with a non-modifier key. A bare modifier
+// (Alt pressed or released on its own) is not one.
+function isChordEvent(e) {
+  return Boolean((e.ctrlKey || e.altKey || e.metaKey) && !MODIFIER_KEY_TOKEN[e.key])
+}
+
+// ignoreInput's value as a mode: 'all' (true, the default), 'text', or null
+// (false: no check).
+function inputMode(value) {
+  if (value === 'all' || value === 'text') return value
+  if (typeof value === 'string') {
+    throw new TypeError(`hotkeys.ignoreInput() expects true, false, 'all' or 'text', got "${value}"`)
+  }
+  return value ? 'all' : null
 }
 
 
@@ -335,7 +381,10 @@ function comboFromEvent(e, { physical = true, useMod = false, platform = PLATFOR
  * the router to keys from inside it. Two routers that both bind a key both
  * fire when the event reaches both; priority only arbitrates within one.
  *
- * @param {{ target?: EventTarget | null, capture?: boolean, ignoreInput?: boolean }} [options]
+ * `ignoreInput` sets the input check, as `router.ignoreInput()` does:
+ * `true`/`'all'` (default), `'text'` or `false`.
+ *
+ * @param {{ target?: EventTarget | null, capture?: boolean, ignoreInput?: boolean | 'all' | 'text' }} [options]
  */
 export function createRouter({
   target = typeof window !== 'undefined' ? window : null,
@@ -343,7 +392,7 @@ export function createRouter({
   ignoreInput: ignoreInputOption = true,
 } = {}) {
   // --- config ---
-  let ignoreEditable = !!ignoreInputOption
+  let focusMode = inputMode(ignoreInputOption)
   let defaultTarget = target
   const defaultCapture = capture
 
@@ -575,15 +624,21 @@ export function createRouter({
   }
 
   /**
-   * Toggle whether handlers fire when the event target is an editable element
-   * (input/textarea/contenteditable). Default `true`. Override per-binding via
-   * `options.allowIn`.
+   * Set whether handlers fire when the key was typed in a form field:
+   * - `true` / `'all'` (default): nothing fires from any `<input>`,
+   *   `<textarea>`, `<select>`, contenteditable or `role="textbox"`.
+   * - `'text'`: text entry stays blocked; other controls (checkbox, radio,
+   *   range, color, file and button-type inputs, `<button>`,
+   *   `role="button"`, and elements inside a button) block plain and
+   *   Shift-only keys but let chords with Ctrl, Alt or Meta through.
+   * - `false`: no check.
+   * Override per binding with `options.allowIn`.
    *
-   * @param {boolean} [value]
+   * @param {boolean | 'all' | 'text'} [value]
    * @returns {void}
    */
   function ignoreInput(value = true) {
-    ignoreEditable = !!value
+    focusMode = inputMode(value)
   }
 
   // allow changing the default target (iframes/tests).
@@ -617,7 +672,8 @@ export function createRouter({
     const guards = {
       altGraphChar: isAltGraphCharacter(e),
       composing: isComposingEvent(e),
-      fromInput: ignoreEditable && isFromInputTarget(e),
+      focus: focusMode && focusKind(e, focusMode),
+      chord: isChordEvent(e),
     }
 
     const candidates = []
@@ -635,7 +691,7 @@ export function createRouter({
     return candidates
   }
 
-  function collectEligible(candidates, lookupKey, e, type, phase, { altGraphChar, composing, fromInput }) {
+  function collectEligible(candidates, lookupKey, e, type, phase, { altGraphChar, composing, focus, chord }) {
     const bindings = registry.get(lookupKey)?.get(type)
     if (!bindings?.length) return
 
@@ -645,7 +701,9 @@ export function createRouter({
       if (phase === 'bubble' && o.capture) continue
       if (altGraphChar && !o.altGraph) continue
       if (composing && !o.composing) continue
-      if (fromInput && !o.allowIn?.(e)) continue
+      // The input check: text entry blocks everything, another control only
+      // lets chords through; allowIn overrides either.
+      if (focus && !(focus === 'control' && chord) && !o.allowIn?.(e)) continue
       if (type === 'keydown' && o.repeat === false && e.repeat) continue
       if (o.when && o.when(e) === false) continue
       candidates.push(b)
