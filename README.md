@@ -47,10 +47,14 @@ const hotkeys = require('hotkey-router').default
 const { createRouter } = require('hotkey-router')
 ```
 
-CDN (ESM):
+Only the main entry has a CommonJS build. The subpaths (`/core`, `/auto`,
+`/reservations`, `/sites`, `/validate`, `/format`) are ESM only, so load them
+with `import` (or `await import()` from CommonJS).
+
+CDN (ESM), pinned to a version:
 
 ```js
-import hotkeys from 'https://cdn.jsdelivr.net/npm/hotkey-router/dist/hotkey-router.min.js'
+import hotkeys from 'https://cdn.jsdelivr.net/npm/hotkey-router@0.5.1/dist/hotkey-router.min.js'
 ```
 
 Nothing at import (v0.4.0+): `hotkey-router/core` has `createRouter` and the
@@ -100,9 +104,11 @@ hotkeys.registerPlugin('docs', {
 })
 ```
 
-Browsers and the OS keep some shortcuts for themselves (Ctrl+T, Ctrl+W, Cmd+Q
-and more); a page never gets those keys. The examples above use keys that are
-free in every major browser. Before picking your own, see
+Browsers and the OS keep some shortcuts for themselves. A page never gets
+some of them (Ctrl+T, Ctrl+W, Cmd+Q). Others, like Ctrl+K, Ctrl+F or Ctrl+S on
+Windows, reach the page first, but the browser acts on them too unless the
+binding sets `preventDefault: true`. The examples above use keys that are free
+in every major browser. Before picking your own, see
 [Who gets a key](#who-gets-a-key). `hotkey-router/auto` warns in the console
 when you bind a reserved one.
 
@@ -115,7 +121,8 @@ when you bind a reserved one.
 Register a hotkey. Returns an `off()` function.
 
 ```js
-const off = hotkeys.bind('mod+k', openPalette)
+// preventDefault: on Windows and Linux the browser also uses Ctrl+K (search)
+const off = hotkeys.bind('mod+k', openPalette, null, { preventDefault: true })
 
 // Later
 off()
@@ -200,7 +207,8 @@ hotkeys.bind('delete', deleteItem, null, {
 Run once:
 
 ```js
-hotkeys.bind('ctrl+s', saveDraft, null, { once: true })
+// preventDefault, or the browser's Save As dialog opens too
+hotkeys.bind('ctrl+s', saveDraft, null, { once: true, preventDefault: true })
 ```
 
 ### `unbind(hotkey, handler?)`
@@ -278,6 +286,7 @@ Override per-binding with `allowIn()`:
 // Let the palette open from a focused checkbox or slider, but not from text fields
 hotkeys.bind('mod+k', openPalette, null, {
   allowIn: (e) => ['checkbox', 'radio', 'range'].includes(e.composedPath()[0].type),
+  preventDefault: true,
 })
 ```
 
@@ -347,7 +356,10 @@ phase.
 
 ### `parseHotkey(hotkey, options?)` / `comboFromEvent(event, options?)` (v0.3.0+)
 
-Named exports (also on the default object). `comboFromEvent` turns a
+Named exports (also on the default object). `parseHotkey` returns
+`{ combo, type, raw }`: `combo` is the parsed shape
+(`{ ctrl, meta, alt, shift, key, code, bareModifier }`) that `lookupReservation`
+takes, and `type` is `'keydown'` or `'keyup'`. `comboFromEvent` turns a
 keyboard event into a hotkey string for a "press your keys" recorder:
 physical by default, `{ useMod: true }` writes the platform's primary
 modifier as `mod`, and it returns `null` while only a modifier is held.
@@ -419,9 +431,12 @@ hotkeys.bind('escape', closeModal, null, {
 
 A keypress meets these in order, and each one can stop it before the next:
 
-1. **The browser and the OS.** Reserved shortcuts (Ctrl+T, Cmd+Q, Spotlight)
-   are taken before the page gets a keydown, and no listener can get them
-   back. [Conflict warnings](#conflict-warnings-v020) flag them when you bind.
+1. **The browser and the OS.** Some reserved shortcuts (Ctrl+T, Ctrl+W,
+   Cmd+Q, Spotlight) are taken before the page gets a keydown, and no
+   listener can get them back. Others (most Ctrl+letter keys on Windows and
+   Linux, such as Ctrl+K, Ctrl+F, Ctrl+S) reach the page first: the winning
+   binding's `preventDefault` keeps the browser out, and without it both act.
+   [Conflict warnings](#conflict-warnings-v020) flag both kinds when you bind.
 2. **The capture phase, from `window` down to the focused element.** Bindings
    with `{ capture: true }`, or every binding of a router started with
    `init({ capture: true })`, run here, at the router's target. That's before
@@ -515,8 +530,8 @@ import hotkeys from 'hotkey-router/auto'
 
 hotkeys.bind('meta+shift+f', toggleFullscreen)
 // Firefox on macOS:
-// [hotkey-router] "meta+shift+f" reserved by firefox on macOS:
-//   "Toggle fullscreen" [hard], will not fire.
+// [hotkey-router] "meta+shift+f" (meta+shift+f) reserved by firefox on macOS:
+//   "Toggle fullscreen" [hard] — will not fire.
 ```
 
 Explicit install, keep using the tiny core, install warnings yourself:
@@ -596,7 +611,7 @@ collide with the page's own shortcuts: Google Docs uses Ctrl+Shift+. for font
 size, GitHub for "quote". Unlike browser keys, those reach the page, so the
 app can choose. `hotkey-router/sites` knows which popular sites use which
 chords in the Ctrl/Cmd+Shift, Ctrl/Cmd+Alt, Shift+Alt and Ctrl/Cmd+Alt+Shift
-families ([docs/site-hotkeys.md](docs/site-hotkeys.md), sourced data in
+families ([docs/site-hotkeys.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/site-hotkeys.md), sourced data in
 `data/site-hotkeys.json`) and builds a `when()` gate that yields to the site
 unless the user is focused on the app:
 
@@ -658,7 +673,7 @@ shortcut that the page can win with `preventDefault` (`details.severity` is
 `'preventable'`; most Ctrl+letter keys on Windows and Linux); Ctrl+Alt acting
 as AltGr on some Windows layouts; and sites that use the same keys.
 
-It loads both data tables: with them, about 62 KB minified (~15 KB
+It loads both data tables: with them, about 69 KB minified (~16 KB
 gzipped). Import it in the settings page that records keys, not in code
 that runs on every page.
 
@@ -796,7 +811,7 @@ Everything runs locally; there is no hosted CI.
   `BROWSERS=chrome` runs one. Needs Node 22 or later.
 - `npm run data:age` (v0.4.0+): how old the browser/OS and website shortcut
   tables are; warns past six months (the build prints the same warning).
-  [docs/data-review.md](docs/data-review.md) says how to review them.
+  [docs/data-review.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/data-review.md) says how to review them.
 - `scripts/key-check.ahk` (Windows, AutoHotkey 1.1): real keyboard layouts
   (Russian, Greek, Hebrew, Polish AltGr) in Chrome, Firefox and Edge, with
   results written to `docs/notes/`. See `playground/key-check.html`.
@@ -805,4 +820,4 @@ Everything runs locally; there is no hosted CI.
 
 ## License
 
-Licensed under AGPL-3.0 with WATT3D Additional Terms. See [LICENSE](./LICENSE) and [ADDITIONAL_TERMS.md](./ADDITIONAL_TERMS.md). Commercial AI/model-training use requires compliance with those terms or a separate WATT3D license. © WATT3D.
+Licensed under AGPL-3.0 with WATT3D Additional Terms. See [LICENSE](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE) and [ADDITIONAL_TERMS.md](https://github.com/iWhatty/hotkey-router/blob/main/ADDITIONAL_TERMS.md). Commercial AI/model-training use requires compliance with those terms or a separate WATT3D license. © WATT3D.
