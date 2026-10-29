@@ -29,8 +29,10 @@ A tiny, deterministic keyboard routing engine for modern web apps. Not a key uti
 ## Install
 
 ```sh
-pnpm add hotkey-router
+npm install hotkey-router
 ```
+
+(or `pnpm add hotkey-router`, `yarn add hotkey-router`)
 
 ESM:
 
@@ -38,10 +40,11 @@ ESM:
 import hotkeys from 'hotkey-router'
 ```
 
-CommonJS:
+CommonJS (the router is the `default` export):
 
 ```js
-const hotkeys = require('hotkey-router')
+const hotkeys = require('hotkey-router').default
+const { createRouter } = require('hotkey-router')
 ```
 
 CDN (ESM):
@@ -67,22 +70,19 @@ keys.init() // when your app is ready
 ```js
 import hotkeys from 'hotkey-router'
 
-// Simple keydown
-hotkeys.bind('ctrl+k', () => {
+// Simple keydown. `mod` is Cmd on macOS, Ctrl elsewhere.
+hotkeys.bind('mod+shift+space', () => {
   openCommandPalette()
 })
 
-// Multi-modifier combos, including the spacebar
-hotkeys.bind('mod+shift+space', summonCommandPalette)
-
 // Keyup using " up" suffix
-hotkeys.bind('ctrl+p up', () => {
-  console.log('Released CTRL+P')
+hotkeys.bind('mod+shift+x up', () => {
+  console.log('Released Ctrl+Shift+X')
 })
 
 // AHK-style modifiers also supported
-hotkeys.bind('^k', () => {
-  openCommandPalette() // ctrl+k
+hotkeys.bind('^!k', () => {
+  openCommandPalette() // ctrl+alt+k
 })
 
 // Bare-modifier bindings (Alt-as-mode UX)
@@ -93,12 +93,18 @@ hotkeys.bind('alt up', exitSelectMode)      // fires on Alt keyup
 // works on macOS where Option remaps Alt+X to ≈)
 hotkeys.bind('alt+code:KeyX', deleteHovered, null, { preventDefault: true })
 
-// Plugin grouping
+// Plugin grouping. Plain keys don't fire while the user types in a field.
 hotkeys.registerPlugin('docs', {
-  'ctrl+f': openSearch,
+  '/': openSearch,
   'escape': closeSearch,
 })
 ```
+
+Browsers and the OS keep some shortcuts for themselves (Ctrl+T, Ctrl+W, Cmd+Q
+and more); a page never gets those keys. The examples above use keys that are
+free in every major browser. Before picking your own, see
+[Who gets a key](#who-gets-a-key). `hotkey-router/auto` warns in the console
+when you bind a reserved one.
 
 ---
 

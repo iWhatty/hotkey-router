@@ -3,10 +3,25 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## Unreleased
+## 0.4.1 — 2026-10-29
+
+Docs only: no change to the library's behaviour or API, so nothing to do
+when upgrading. Published so the README on npm matches.
 
 ### Docs
 
+- **The CommonJS example was wrong** (since at least 0.2.3).
+  `require('hotkey-router')` returns the named exports, so `hotkeys.bind` was
+  `undefined`. The README now says `require('hotkey-router').default`, and
+  shows `const { createRouter } = require('hotkey-router')`.
+- **Quick start no longer uses browser-reserved keys.** Its examples used
+  `ctrl+k`, `ctrl+p` and `ctrl+f`, which this package's own reservation table
+  marks as taken by the browser on Windows. They now use `mod+shift+space`,
+  `mod+shift+x`, `ctrl+alt+k`, `/` and `escape`, all free in every major
+  browser per the table. A short note points to "Who gets a key" and
+  `hotkey-router/auto`. Checked by running the Quick start as written: every
+  example fires, and the conflict warnings stay silent.
+- Install shows `npm install` first (pnpm and yarn too).
 - README: **"Who gets a key"**, in order: the browser and OS, the capture
   phase, the page's own handlers and the bubble phase, the checks and winner
   inside one router, and how routers relate. Also noted: `trigger()` doesn't
