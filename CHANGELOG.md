@@ -3,6 +3,35 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
+## 0.5.1 — 2026-10-29
+
+Docs only: no change to the library's behaviour or API, so nothing to do
+when upgrading. Published so the README on npm matches.
+
+### Docs
+
+- **Examples that let the browser act too.** Since 0.5.0 the reservation
+  table knows that Ctrl+K and Ctrl+S on Windows and Linux reach the page but
+  the browser also acts on them unless the binding prevents it. The `bind`
+  examples for `mod+k` and `ctrl+s` (and the `allowIn` one) now set
+  `preventDefault: true`.
+- **"Who gets a key" and the note after Quick start** said reserved keys
+  never reach the page. They now separate the keys a page never gets
+  (Ctrl+T, Ctrl+W, Cmd+Q) from the ones it can win with `preventDefault`.
+- The sample reservation warning matches what `formatReservationWarning`
+  prints.
+- `parseHotkey` documents its return value, `{ combo, type, raw }`, and
+  that `lookupReservation` takes the `combo`.
+- Install: only the main entry has a CommonJS build; the subpaths are ESM
+  only. The CDN example is pinned to a version.
+- Links to `docs/`, `LICENSE` and `ADDITIONAL_TERMS.md` are absolute, so
+  they work on npmjs.com.
+- `hotkey-router/validate` size corrected to about 69 KB minified (~16 KB
+  gzipped).
+- **Correction to 0.5.0's upgrade note:** SpellBolt does not read the JSON
+  severities itself. It calls `lookupReservation` and checks for `os`, so
+  `preventable` changes nothing for it.
+
 ## 0.5.0 — 2026-10-29
 
 Minor release: the reservation table and `validateCombo`
