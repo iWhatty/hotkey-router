@@ -143,7 +143,7 @@ export function validateCombo(combo, {
       if (severityIsHard(hit.severity)) {
         add({ code: 'reserved', severity: 'error', message: `${where} uses these keys (${hit.action}), so a page never sees them.`, platforms: [platform], details: { browser, action: hit.action } })
       } else {
-        add({ code: 'reserved-soft', severity: 'warning', message: `${where} uses these keys in some situations (${hit.action}).`, platforms: [platform], details: { browser, action: hit.action, severity: hit.severity } })
+        add({ code: 'reserved-soft', severity: 'warning', message: hit.severity === 'preventable' ? `${where} uses these keys (${hit.action}) unless the page calls preventDefault, which a binding does with preventDefault: true.` : `${where} uses these keys in some situations (${hit.action}).`, platforms: [platform], details: { browser, action: hit.action, severity: hit.severity } })
       }
     }
 

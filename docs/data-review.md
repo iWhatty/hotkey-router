@@ -25,9 +25,14 @@ Review both tables twice a year, or when that warning appears.
    `severity` (see `severityLevels`).
 3. Add, change or remove rows. For a new kind of reservation, check that its
    `severity` is one of `severityLevels`.
-4. Set `version.generated` to today (`YYYY-MM-DD`).
-5. Run `npm test` (the reservation tests use real rows) and `node build.js`.
-6. If a change affects a key SpellBolt or another consumer uses, say so in the
+4. On Windows, check the rows with real keys: run
+   `scripts/key-check-reserved.ahk` (AutoHotkey 1.1; about a minute, and it
+   waits while you use the PC), then `node scripts/key-check-reserved-report.mjs`.
+   A key where the page wins is `preventable`; one the page never sees is
+   `hard`. Pass `all all control` to check every Ctrl+letter.
+5. Set `version.generated` to today (`YYYY-MM-DD`).
+6. Run `npm test` (the reservation tests use real rows) and `node build.js`.
+7. If a change affects a key SpellBolt or another consumer uses, say so in the
    CHANGELOG under Fixed, as 0.3.1 did for Cmd+Shift+/.
 
 ## Website table

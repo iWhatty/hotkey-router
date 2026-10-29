@@ -8,12 +8,12 @@ const day = (iso) => new Date(`${iso}T12:00:00Z`)
 
 describe('tableAges', () => {
   it('reads each table date from the data files', () => {
-    const rows = tableAges({ now: day('2026-10-27') })
+    const rows = tableAges({ now: day('2026-10-29') })
     expect(rows.map((r) => [r.file, r.date])).toEqual([
-      ['data/browser-hotkeys.json', '2026-10-15'],
+      ['data/browser-hotkeys.json', '2026-10-29'],
       ['data/site-hotkeys.json', '2026-10-03'],
     ])
-    expect(rows.map((r) => r.days)).toEqual([12, 24])
+    expect(rows.map((r) => r.days)).toEqual([0, 26])
     expect(rows.every((r) => !r.stale)).toBe(true)
   })
 

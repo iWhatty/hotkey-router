@@ -19,8 +19,10 @@ const SUPPORTED_SCHEMA = '1.0'
 const HARD_SEVERITIES = new Set(['hard', 'os', 'menu-activation'])
 
 // Severities that mean "combo fires in normal browsing, only intercepted in
-// narrow contexts (find bar focused, text input focused, devtools open)."
-const SOFT_SEVERITIES = new Set(['find-bar-only', 'compose', 'system-text', 'devtools-open'])
+// narrow contexts (find bar focused, text input focused, devtools open)", or
+// "the page sees it first and preventDefault() keeps the browser out"
+// (preventable).
+const SOFT_SEVERITIES = new Set(['find-bar-only', 'compose', 'system-text', 'devtools-open', 'preventable'])
 
 // --- platform / browser detection ---------------------------------------------
 // One shared detector (platform.js). Here ChromeOS reports as 'linux': the
@@ -101,7 +103,7 @@ export const lookupKeyFromCombo = lookupKey
 /**
  * @typedef {'mac' | 'windows' | 'linux'} Platform
  * @typedef {'chrome' | 'firefox' | 'safari' | 'edge'} Browser
- * @typedef {'hard' | 'os' | 'menu-activation' | 'find-bar-only' | 'compose' | 'system-text' | 'devtools-open'} Severity
+ * @typedef {'hard' | 'os' | 'menu-activation' | 'find-bar-only' | 'compose' | 'system-text' | 'devtools-open' | 'preventable'} Severity
  *   hard tiers (never reach the page): hard, os, menu-activation; the rest are soft
  *
  * @typedef {{
@@ -174,31 +176,41 @@ export function severityIsSoft(severity) {
  *
  * @param {Reservation} reservation
  * @param {string} rawHotkey
+ * @param {{ preventDefault?: boolean }} [bindOptions]  the binding's options
  * @returns {string}
  */
-export function formatReservationWarning(reservation, rawHotkey) {
+export function formatReservationWarning(reservation, rawHotkey, bindOptions) {
   const where = platformLabel(reservation.platform)
   const sourceLabel = reservation.source === 'browser'
     ? `${reservation.browser} on ${where}`
     : where
   const tag = severityIsHard(reservation.severity)
     ? 'will not fire'
-    : 'fires in normal browsing'
+    : reservation.severity === 'preventable'
+      ? (bindOptions?.preventDefault
+          ? 'fires first; preventDefault keeps the browser out'
+          : 'fires, and the browser acts too; bind with preventDefault: true')
+      : 'fires in normal browsing'
   return `[hotkey-router] "${rawHotkey}" (${reservation.lookupKey}) reserved by ${sourceLabel}: "${reservation.action}" [${reservation.severity}] — ${tag}.`
 }
 
 /**
  * Emit a reservation warning via the given console (or the global `console`
- * by default). Hard reservations log via `warn`; soft ones via `info`.
+ * by default). Hard reservations log via `warn`; soft ones via `info`, except
+ * a preventable key bound without `preventDefault`, where the browser's
+ * action runs too: that logs via `warn`.
  *
  * @param {Reservation} reservation
  * @param {string} rawHotkey
  * @param {Console} [console_]
+ * @param {{ preventDefault?: boolean }} [bindOptions]  the binding's options
  * @returns {void}
  */
-export function emitReservationWarning(reservation, rawHotkey, console_ = console) {
-  const msg = formatReservationWarning(reservation, rawHotkey)
-  const fn = severityIsHard(reservation.severity) ? console_.warn : console_.info
+export function emitReservationWarning(reservation, rawHotkey, console_ = console, bindOptions) {
+  const msg = formatReservationWarning(reservation, rawHotkey, bindOptions)
+  const loud = severityIsHard(reservation.severity) ||
+    (reservation.severity === 'preventable' && !bindOptions?.preventDefault)
+  const fn = loud ? console_.warn : console_.info
   fn.call(console_, msg)
 }
 
@@ -243,7 +255,7 @@ export function installReservationWarnings(hotkeys, opts = {}) {
     if (options?.warnOnReserved === false) return
     if (!platform || !browser) return
     const reservation = lookupReservation(combo, { platform, browser })
-    if (reservation) emitReservationWarning(reservation, raw, console_)
+    if (reservation) emitReservationWarning(reservation, raw, console_, options)
   })
 }
 

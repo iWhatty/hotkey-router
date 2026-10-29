@@ -157,6 +157,23 @@ describe('lookupReservation — WebRadar smoke scenarios', () => {
     expect(k?.action).toMatch(/duplicate tab/i)
   })
 
+  // Real keys on Windows (docs/notes/key-check-reserved-2026-10-29.md): the
+  // page sees Ctrl+K, F and P first and preventDefault keeps the browser
+  // out; Ctrl+T, N and W never reach the page.
+  it('Windows Ctrl+K, F, P are preventable (soft); Ctrl+T, N, W stay hard', () => {
+    const ctrl = (key) => combo({ ctrl: true, key })
+    for (const browser of ['chrome', 'edge', 'firefox']) {
+      for (const key of ['f', 'p']) expect(lookupReservation(ctrl(key), { platform: 'windows', browser })?.severity).toBe('preventable')
+      for (const key of ['t', 'n', 'w']) expect(lookupReservation(ctrl(key), { platform: 'windows', browser })?.severity).toBe('hard')
+    }
+    expect(lookupReservation(ctrl('k'), { platform: 'windows', browser: 'chrome' })?.severity).toBe('preventable')
+    expect(severityIsSoft('preventable')).toBe(true)
+    expect(severityIsHard('preventable')).toBe(false)
+    const r = lookupReservation(ctrl('k'), { platform: 'windows', browser: 'edge' })
+    expect(formatReservationWarning(r, 'ctrl+k')).toMatch(/browser acts too/)
+    expect(formatReservationWarning(r, 'ctrl+k', { preventDefault: true })).toMatch(/preventDefault keeps/)
+  })
+
   it('falls through to platform.system when browser table misses', () => {
     // meta+space is a macOS system reservation (Spotlight), not a browser one.
     // The parsed key is ' '; the data spells it "space".
@@ -245,6 +262,28 @@ describe('bind() conflict warnings', () => {
     expect(calls.info.length).toBe(1)
     expect(calls.warn.length).toBe(0)
     expect(calls.info[0]).toMatch(/find-bar-only/)
+  })
+
+  it('warns on a preventable key bound without preventDefault (the browser acts too)', () => {
+    const calls = captureBind('ctrl+s', { platform: 'windows', browser: 'chrome' })
+    expect(calls.warn.length).toBe(1)
+    expect(calls.info.length).toBe(0)
+    expect(calls.warn[0]).toMatch(/\[preventable\]/)
+    expect(calls.warn[0]).toMatch(/browser acts too/)
+  })
+
+  it('info-logs a preventable key bound with preventDefault', () => {
+    const calls = captureBind('ctrl+s', { platform: 'windows', browser: 'chrome', preventDefault: true })
+    expect(calls.warn.length).toBe(0)
+    expect(calls.info.length).toBe(1)
+    expect(calls.info[0]).toMatch(/preventDefault keeps/)
+  })
+
+  it('Firefox Windows Ctrl+E and Ctrl+K (search bar) are preventable', () => {
+    for (const key of ['e', 'k']) {
+      const calls = captureBind(`ctrl+${key}`, { platform: 'windows', browser: 'firefox', preventDefault: true })
+      expect(calls.info[0]).toMatch(/\[preventable\]/)
+    }
   })
 
   it('does not warn on unreserved combos', () => {

@@ -117,6 +117,16 @@ describe('validateCombo messages and platforms', () => {
     expect(reason(mac, 'reserved').message).toMatch(/Safari on macOS/)
   })
 
+  it('a preventable key is a warning that says to use preventDefault', () => {
+    const r = validateCombo('mod+code:KeyS', { platforms: ['windows'], browsers: ['chrome'], sites: false })
+    expect(r.ok).toBe(true)
+    const hit = reason(r, 'reserved-soft')
+    expect(hit.details.severity).toBe('preventable')
+    expect(hit.message).toMatch(/^Chrome on Windows uses these keys \(Save page\)/i)
+    expect(hit.message).toMatch(/preventDefault/)
+    expect(hit.message).not.toMatch(/some situations/)
+  })
+
   it('system reservations name the OS only', () => {
     const r = validateCombo('mod+code:Space', { platforms: ['mac'], browsers: ['chrome'] })
     const hit = reason(r, 'reserved')
