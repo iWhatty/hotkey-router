@@ -207,6 +207,18 @@ describe('createRouter', () => {
   })
 
   describe('scoped routers', () => {
+    it("trigger() doesn't check the router's scope: the target only feeds the input check", () => {
+      const dialog = document.createElement('div')
+      const outside = document.createElement('button')
+      document.body.append(dialog, outside)
+      const fn = vi.fn()
+      const r = make({ target: dialog })
+      r.init()
+      r.bind('k', fn)
+      expect(r.trigger('k', { target: outside })).toBe(true)
+      expect(fn).toHaveBeenCalledOnce()
+    })
+
     it('a router on a dialog sees keys from inside it only', () => {
       const dialog = document.createElement('div')
       const inside = document.createElement('button')

@@ -13,12 +13,15 @@ A tiny, deterministic keyboard routing engine for modern web apps. Not a key uti
 
 - O(1) dispatch
 - Plugin-safe lifecycle management
-- Deterministic winner selection (priority + recency)
-- Input-safe by default
+- Deterministic winner selection (priority + recency); see [Who gets a key](#who-gets-a-key)
+- Separate and scoped routers: per library, dialog, shadow root or iframe (`createRouter`)
+- Input-safe by default, with an opt-in mode that lets chords through on checkboxes, sliders and buttons
+- Works on any keyboard layout: physical-key `code:` bindings, and Ctrl/Cmd shortcuts on non-Latin layouts
+- AltGr and IME aware: no shortcut fires while typing a character
 - Testable via `trigger()`
-- Optional opt-in browser/OS conflict warnings (tree-shakable)
+- Optional opt-in browser/OS conflict warnings and website-shortcut awareness (tree-shakable)
 - Display helpers: `Ctrl+Shift+.` / `⇧⌘.` and accessible keycaps (`hotkey-router/format`)
-- ~4 kB minified + gzipped (core); ~8.5 kB with conflict warnings
+- ~4.9 kB minified + gzipped (core); ~9.5 kB with conflict warnings
 - Zero dependencies
 
 ---
@@ -381,6 +384,11 @@ would: the synthetic event has both `key` and `code` (US layout), so
 and the same guards apply (`when`, `ignoreInput`/`allowIn` with `target`,
 priority, `once`, `pause()`).
 
+Each router's `trigger()` fires only that router's bindings. It doesn't
+check the router's scope: `target` only feeds the input check, so a router
+on a dialog still fires for a `target` outside the dialog, where a real
+keypress would never reach it.
+
 ---
 
 ## Notes
@@ -400,6 +408,38 @@ hotkeys.bind('escape', closeModal, null, {
   preventDefault: true,
 })
 ```
+
+### Who gets a key
+
+A keypress meets these in order, and each one can stop it before the next:
+
+1. **The browser and the OS.** Reserved shortcuts (Ctrl+T, Cmd+Q, Spotlight)
+   are taken before the page gets a keydown, and no listener can get them
+   back. [Conflict warnings](#conflict-warnings-v020) flag them when you bind.
+2. **The capture phase, from `window` down to the focused element.** Bindings
+   with `{ capture: true }`, or every binding of a router started with
+   `init({ capture: true })`, run here, at the router's target. That's before
+   the page's own listeners below it, so they can stop the key with
+   `stopPropagation`. Listeners on the same target run in the order they were
+   added.
+3. **The focused element, then the bubble phase back up.** The page's own
+   handlers (an editor's keymap, say) run first and can stop the key. Other
+   bindings run when it reaches the router's target. For the default router,
+   that's `window`, last of all.
+4. **Inside one router**, each time its listener runs:
+   - **Lookup:** the bindings for the key (`ctrl+k`) and for the physical key
+     (`ctrl+code:KeyK`) are both candidates. The non-Latin fallback (`ctrl+k`
+     from Russian Ctrl+K) is tried only when neither has an eligible binding.
+   - **Checks per binding:** AltGr typing a character, IME composition, the
+     input check (`ignoreInput` / `allowIn`), auto-repeat, then `when`.
+     A paused router skips all of this.
+   - **One winner:** highest `priority`, then the most recently bound. One
+     binding per router fires in each phase.
+   - **What the winner can do:** `preventDefault` stops the browser's own action
+     (typing the character, scrolling). `stopPropagation` and
+     `stopImmediatePropagation` stop the event as in steps 2 and 3.
+5. **Between routers:** each picks its own winner, and both fire if the event
+   reaches both. See [Multiple routers](#multiple-routers-v040).
 
 ### Multiple routers (v0.4.0+)
 
@@ -460,7 +500,7 @@ The `code:` value is **case-sensitive** (matches the camelCase `KeyboardEvent.co
 
 Some combos are reserved by the browser chrome (find bar, devtools, bookmarks) or the OS (Spotlight, window management). They never reach page-world JavaScript, no matter how early you listen or whether you call `preventDefault`. hotkey-router ships an **opt-in** reservation table that emits a soft warning at bind time, so the silent failure becomes a noisy one.
 
-The feature is opt-in by design: the core router is ~10 KB minified (~4.5 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
+The feature is opt-in by design: the core router is ~11 KB minified (~4.9 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
 
 **Two ways to opt in.** One-line ergonomic, use the `auto` entry. Same default export as `hotkey-router`, with warnings pre-installed. It is the same router object, so other files can keep importing `hotkey-router` and their bindings are warned about too (v0.3.3+; earlier versions shipped a second copy of the router in `auto`). The CDN file `dist/auto.min.js` is a standalone build with its own router; don't mix it with other hotkey-router imports.
 
