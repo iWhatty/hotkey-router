@@ -66,17 +66,20 @@ Caveats:
 
 ## Change made to the table
 
-- New severity level **`preventable`** (soft, logs `info`): the browser's own
+- New severity level **`preventable`** (soft): the browser's own
   shortcut, but keydown reaches the page first, and `preventDefault()` keeps
   the browser out. None of the existing levels fit: `find-bar-only` and the
   others describe keys that the browser takes only in some situations.
 - Windows Chrome, Edge and Firefox: every Ctrl+letter row except Ctrl+T, N, W
   goes from `hard` to `preventable` (55 rows). Ctrl+T, N, W stay `hard`.
+- Firefox: new `preventable` rows for Ctrl+E and Ctrl+K. The unbound pass
+  shows the search bar taking focus, and the bound pass shows the page
+  winning; the table had no row for them.
 - `version.generated` is now 2026-10-29.
 
-Effect for users: `installReservationWarnings` now logs these as `info`
-("fires; bind with preventDefault or the browser acts too") instead of a
-`warn` saying they will not fire. `validateCombo` reports `reserved-soft`
+Effect for users: `installReservationWarnings` no longer says these keys
+will not fire. Bound without `preventDefault: true` they still log `warn`,
+saying the browser acts too; with it, `info`. `validateCombo` reports `reserved-soft`
 (warning) instead of `reserved` (error), so pickers stop refusing Ctrl+K.
 
 ## Rerunning

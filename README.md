@@ -504,7 +504,7 @@ The `code:` value is **case-sensitive** (matches the camelCase `KeyboardEvent.co
 
 ### Conflict warnings (v0.2.0+)
 
-Some combos are reserved by the browser chrome (find bar, devtools, bookmarks) or the OS (Spotlight, window management). They never reach page-world JavaScript, no matter how early you listen or whether you call `preventDefault`. hotkey-router ships an **opt-in** reservation table that emits a soft warning at bind time, so the silent failure becomes a noisy one.
+Some combos are reserved by the browser chrome (find bar, devtools, bookmarks) or the OS (Spotlight, window management). The hard ones never reach page-world JavaScript, no matter how early you listen or whether you call `preventDefault`: Ctrl+T, Ctrl+N and Ctrl+W on Windows, for example. Others reach the page first, and the browser acts on them too unless the page calls `preventDefault`: most Ctrl+letter shortcuts on Windows and Linux, such as Ctrl+K, Ctrl+F, Ctrl+P and Ctrl+S (checked with real key presses in Chrome, Edge and Firefox on Windows, 2026-10-29). hotkey-router ships an **opt-in** reservation table that emits a warning at bind time, so the silent failure (or the double action) becomes a noisy one.
 
 The feature is opt-in by design: the core router is ~11 KB minified (~4.9 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
 
@@ -542,7 +542,7 @@ hotkeys.bind('meta+shift+f', toggleFullscreen)
 | `compose`         | `info`    | macOS Option+letter types a special char in inputs.     |
 | `system-text`     | `info`    | Mac Ctrl+letter cursor controls inside text inputs.     |
 | `devtools-open`   | `info`    | Only relevant when DevTools is already open.            |
-| `preventable`     | `info`    | Browser default; the page sees it first, and `preventDefault: true` keeps the browser out. |
+| `preventable`     | `warn` without `preventDefault: true`, else `info` | The browser's shortcut, but the page sees it first and `preventDefault: true` keeps the browser out. Without it, both act. |
 
 **Per-bind opt-out:**
 
@@ -653,8 +653,10 @@ field.addEventListener('keydown', (e) => {
 Errors (`ok: false`): no key, no modifier, Alt as the only modifier on
 Windows/Linux, a rule you asked for (`requirePrimary`, `minModifiers`),
 already in `taken`, or reserved by a browser/OS (never reaches the page).
-Warnings (`ok: true`): reserved only in some situations, Ctrl+Alt acting as
-AltGr on some Windows layouts, and sites that use the same keys.
+Warnings (`ok: true`): reserved only in some situations; the browser's own
+shortcut that the page can win with `preventDefault` (`details.severity` is
+`'preventable'`; most Ctrl+letter keys on Windows and Linux); Ctrl+Alt acting
+as AltGr on some Windows layouts; and sites that use the same keys.
 
 It loads both data tables: with them, about 62 KB minified (~15 KB
 gzipped). Import it in the settings page that records keys, not in code

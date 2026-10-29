@@ -170,7 +170,8 @@ describe('lookupReservation — WebRadar smoke scenarios', () => {
     expect(severityIsSoft('preventable')).toBe(true)
     expect(severityIsHard('preventable')).toBe(false)
     const r = lookupReservation(ctrl('k'), { platform: 'windows', browser: 'edge' })
-    expect(formatReservationWarning(r, 'ctrl+k')).toMatch(/fires; bind with preventDefault/)
+    expect(formatReservationWarning(r, 'ctrl+k')).toMatch(/browser acts too/)
+    expect(formatReservationWarning(r, 'ctrl+k', { preventDefault: true })).toMatch(/preventDefault keeps/)
   })
 
   it('falls through to platform.system when browser table misses', () => {
@@ -261,6 +262,28 @@ describe('bind() conflict warnings', () => {
     expect(calls.info.length).toBe(1)
     expect(calls.warn.length).toBe(0)
     expect(calls.info[0]).toMatch(/find-bar-only/)
+  })
+
+  it('warns on a preventable key bound without preventDefault (the browser acts too)', () => {
+    const calls = captureBind('ctrl+s', { platform: 'windows', browser: 'chrome' })
+    expect(calls.warn.length).toBe(1)
+    expect(calls.info.length).toBe(0)
+    expect(calls.warn[0]).toMatch(/\[preventable\]/)
+    expect(calls.warn[0]).toMatch(/browser acts too/)
+  })
+
+  it('info-logs a preventable key bound with preventDefault', () => {
+    const calls = captureBind('ctrl+s', { platform: 'windows', browser: 'chrome', preventDefault: true })
+    expect(calls.warn.length).toBe(0)
+    expect(calls.info.length).toBe(1)
+    expect(calls.info[0]).toMatch(/preventDefault keeps/)
+  })
+
+  it('Firefox Windows Ctrl+E and Ctrl+K (search bar) are preventable', () => {
+    for (const key of ['e', 'k']) {
+      const calls = captureBind(`ctrl+${key}`, { platform: 'windows', browser: 'firefox', preventDefault: true })
+      expect(calls.info[0]).toMatch(/\[preventable\]/)
+    }
   })
 
   it('does not warn on unreserved combos', () => {

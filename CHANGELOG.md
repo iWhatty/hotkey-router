@@ -3,10 +3,28 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## 0.4.1 — 2026-10-29
+## Unreleased
 
-Docs only: no change to the library's behaviour or API, so nothing to do
-when upgrading. Published so the README on npm matches.
+Planned as **0.5.0** (minor): the reservation table and `validateCombo`
+give different answers for many Windows and Linux keys, and the public
+`Severity` type gains a value.
+
+### Changed
+
+- **Upgrading:** `Severity` (TypeScript) and the severities in
+  `hotkey-router/data/browser-hotkeys.json` now include `preventable`. Code
+  that switches over every severity, or reads the JSON and handles
+  severities itself (SpellBolt does), needs a case for it; treat it as
+  soft. `validateCombo` now returns `ok: true` with a `reserved-soft`
+  warning, not `ok: false`, for most Ctrl+letter combos on Windows and
+  Linux, such as `mod+code:KeyK`.
+- **A preventable key bound without `preventDefault: true` logs `warn`,**
+  since the browser's action runs too (`ctrl+s` opens Save As as well as
+  your handler). With `preventDefault: true` it logs `info`.
+  `formatReservationWarning` and `emitReservationWarning` take the
+  binding's options as an optional last argument.
+- `validateCombo`'s message for these keys says to use `preventDefault`,
+  not "in some situations".
 
 ### Fixed
 
@@ -15,8 +33,9 @@ when upgrading. Published so the README on npm matches.
   (Ctrl+K, F, P, S, L, D, R and the rest) was marked `hard`, so binding one
   warned "will not fire" and `validateCombo` refused it. Real key presses
   show the page gets them first and `preventDefault` keeps the browser out.
-  They are now `preventable`, a new soft severity that logs `info`. Only
-  Ctrl+T, Ctrl+N and Ctrl+W stay `hard`. Results:
+  They are now `preventable`, a new soft severity. Only Ctrl+T, Ctrl+N and
+  Ctrl+W stay `hard`. Firefox on Windows gains Ctrl+E and Ctrl+K (search
+  bar), also `preventable`. Results:
   `docs/notes/2026-10-29-reserved-keys-windows.md`.
 
 ### Added
@@ -25,6 +44,11 @@ when upgrading. Published so the README on npm matches.
   and `scripts/key-check-reserved-report.mjs`: a real-key check of the
   browser table's Ctrl+letter rows on Windows. It waits while someone is
   using the PC and stops if another window comes to the front.
+
+## 0.4.1 — 2026-10-29
+
+Docs only: no change to the library's behaviour or API, so nothing to do
+when upgrading. Published so the README on npm matches.
 
 ### Docs
 
