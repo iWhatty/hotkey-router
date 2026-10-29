@@ -3,9 +3,9 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## Unreleased
+## 0.5.0 — 2026-10-29
 
-Planned as **0.5.0** (minor): the reservation table and `validateCombo`
+Minor release: the reservation table and `validateCombo`
 give different answers for many Windows and Linux keys, and the public
 `Severity` type gains a value.
 
