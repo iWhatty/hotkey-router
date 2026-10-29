@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reserved key check</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      max-width: 60em;
+    }
+
+    code,
+    .mono {
+      font-family: monospace;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 3px 6px;
+      text-align: left;
+    }
+
+    .fired {
+      color: #0a6b2d;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Reserved key check</h1>
+  <p>
+    Is a key the browser-hotkeys table marks <code>hard</code> really out of a
+    page's reach? Every combo below is bound with <code>preventDefault: true</code>.
+    <code>scripts/key-check-reserved.ahk</code> presses each one for real (US layout)
+    and watches the browser; this page reports what it saw to the local server
+    (<code>npm run key-check</code>): each keydown, each handler that fired, and
+    the signs of the browser acting anyway (focus leaving the page, the tab hidden,
+    the page unloading, a resize from a sidebar, copy/cut/paste, a selection).
+    <code>node scripts/key-check-reserved-report.mjs</code> writes the note.
+  </p>
+  <p>
+    By hand: run the server, open this page, press a key, watch the log.
+    <code>?bound=0</code> binds nothing, to see what the browser does on its own.
+  </p>
+  <p class="mono" id="env"></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Event</th>
+        <th>Detail</th>
+      </tr>
+    </thead>
+    <tbody id="log"></tbody>
+  </table>
+  <p>Some text, so that Select all has something to select.</p>
+
+  <script type="module">
+    import hotkeys from '../hotkey-router.js'
+    import { detectBrowser } from '../platform.js'
+
+    const browser = detectBrowser() || 'unknown'
+    // ?bound=0: bind nothing, so the browser's own action shows (the control).
+    const bound = new URLSearchParams(location.search).get('bound') !== '0'
+    const logBody = document.getElementById('log')
+    document.getElementById('env').textContent = navigator.userAgent
+
+    // Each event goes to the server at once, by beacon, so it survives the
+    // page being closed or reloaded by the key under test.
+    function report(type, detail = {}) {
+      const event = { source: 'page', browser, bound, type, ...detail, focused: document.hasFocus(), visible: document.visibilityState }
+      navigator.sendBeacon('/probe', new Blob([JSON.stringify(event)], { type: 'application/json' }))
+      const tr = logBody.insertRow(0)
+      tr.insertCell().textContent = new Date().toISOString().slice(11, 23)
+      tr.insertCell().textContent = type
+      tr.insertCell().textContent = JSON.stringify(detail)
+      if (type === 'fired') tr.className = 'fired'
+      while (logBody.rows.length > 100) logBody.deleteRow(-1)
+    }
+
+    // Keep in step with KEYS in scripts/key-check-reserved.ahk.
+    const LETTERS = 'abcdefghjklmnoprstuvwxyz'
+    for (const letter of bound ? LETTERS : '') {
+      const combo = `ctrl+${letter}`
+      hotkeys.bind(combo, () => report('fired', { combo }), null, { preventDefault: true })
+    }
+
+    const mods = (e) => ['ctrl', 'shift', 'alt', 'meta'].filter((m) => e[`${m}Key`]).join('+')
+    window.addEventListener('keydown', (e) => {
+      if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return
+      report('keydown', { key: e.key, code: e.code, mods: mods(e) })
+    }, true)
+    // After the router: did the binding cancel the default?
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && /^Key[A-Z]$/.test(e.code)) report('keydown-after', { code: e.code, defaultPrevented: e.defaultPrevented })
+    })
+
+    window.addEventListener('blur', () => report('blur'))
+    window.addEventListener('focus', () => report('focus'))
+    document.addEventListener('visibilitychange', () => report('visibility', { state: document.visibilityState }))
+    window.addEventListener('pagehide', () => report('pagehide'))
+    window.addEventListener('beforeprint', () => report('beforeprint'))
+    window.addEventListener('resize', () => report('resize', { width: innerWidth, height: innerHeight }))
+    for (const type of ['copy', 'cut', 'paste']) document.addEventListener(type, () => report(type))
+    let selected = ''
+    document.addEventListener('selectionchange', () => {
+      const now = String(getSelection())
+      if (now && now !== selected) report('selection', { chars: now.length })
+      selected = now
+    })
+
+    report('ready', { userAgent: navigator.userAgent })
+    // The script waits for this title before pressing anything.
+    document.title = bound ? 'Reserved key check: ready' : 'Reserved key check: ready (unbound)'
+  </script>
+</body>
+
+</html>

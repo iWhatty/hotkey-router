@@ -7,10 +7,18 @@
 //   docs/notes/key-check-<date>-<browser>.md
 // scripts/key-check.ahk starts it when it isn't already running.
 //
+// The reserved-key check (playground/key-check-reserved.html and
+// scripts/key-check-reserved.ahk) posts events to POST /probe instead: the
+// page and the script each send small JSON events, appended with a time to
+// %TEMP%/hotkey-router-key-check/probe.jsonl. GET /probe/state tells the
+// script whether the page has focus. scripts/key-check-reserved-report.mjs
+// turns the log into a note.
+//
 // No dependencies. Port: KEY_CHECK_PORT, default 8080.
 
 import { createServer } from 'node:http'
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { appendFile, readFile, writeFile, mkdir } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -20,6 +28,7 @@ const PORT = Number(process.env.KEY_CHECK_PORT) || 8080
 const HOST = '127.0.0.1'
 const PAGE = '/playground/key-check.html'
 const MAX_BODY = 512 * 1024
+export const PROBE_LOG = join(tmpdir(), 'hotkey-router-key-check', 'probe.jsonl')
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -41,6 +50,7 @@ async function serveFile(req, res) {
   const path = decodeURIComponent(new URL(req.url, 'http://x').pathname)
   // Lets scripts/key-check.ahk tell this server from any other on the port.
   if (path === '/key-check-server') return json(res, 200, { server: 'key-check' })
+  if (path === '/probe/state') return json(res, 200, pageState)
   if (path === '/') {
     res.writeHead(302, { Location: PAGE })
     return res.end()
@@ -58,20 +68,39 @@ async function serveFile(req, res) {
   }
 }
 
-async function saveResults(req, res) {
+// The parsed body as { data }, or undefined once an error has been sent.
+async function readJson(req, res) {
   let size = 0
   const chunks = []
   for await (const chunk of req) {
     size += chunk.length
-    if (size > MAX_BODY) return json(res, 413, { error: 'Results too large.' })
+    if (size > MAX_BODY) return void json(res, 413, { error: 'Results too large.' })
     chunks.push(chunk)
   }
-  let data
   try {
-    data = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+    return { data: JSON.parse(Buffer.concat(chunks).toString('utf8')) }
   } catch {
-    return json(res, 400, { error: 'Body is not JSON.' })
+    json(res, 400, { error: 'Body is not JSON.' })
   }
+}
+
+// Last focus state the reserved-key page reported, for GET /probe/state.
+let pageState = { focused: false, visible: 'unknown', type: 'none' }
+
+async function saveProbe(req, res) {
+  const body = await readJson(req, res)
+  if (!body) return
+  const event = { t: Date.now(), ...body.data }
+  if (event.source === 'page') pageState = { focused: event.focused, visible: event.visible, type: event.type }
+  await mkdir(join(PROBE_LOG, '..'), { recursive: true })
+  await appendFile(PROBE_LOG, JSON.stringify(event) + '\n')
+  json(res, 200, { ok: true })
+}
+
+async function saveResults(req, res) {
+  const body = await readJson(req, res)
+  if (!body) return
+  const { data } = body
   const { date, browser, markdown } = data || {}
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '') || !/^[a-z]{2,20}$/.test(browser || '') || typeof markdown !== 'string') {
     return json(res, 400, { error: 'Expected { date: YYYY-MM-DD, browser: lowercase name, markdown: string }.' })
@@ -92,6 +121,7 @@ async function saveResults(req, res) {
 export function startServer({ port = PORT } = {}) {
   const server = createServer((req, res) => {
     const handle = req.method === 'POST' && req.url === '/results' ? saveResults
+      : req.method === 'POST' && req.url === '/probe' ? saveProbe
       : req.method === 'GET' || req.method === 'HEAD' ? serveFile
         : async (_, r) => send(r, 405, 'Method not allowed')
     handle(req, res).catch((err) => {

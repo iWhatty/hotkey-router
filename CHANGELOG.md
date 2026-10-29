@@ -8,6 +8,24 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 Docs only: no change to the library's behaviour or API, so nothing to do
 when upgrading. Published so the README on npm matches.
 
+### Fixed
+
+- **Browser table, Windows (and Linux, which shares its browser rows):**
+  every Ctrl+letter that Chrome, Edge and Firefox were said to take
+  (Ctrl+K, F, P, S, L, D, R and the rest) was marked `hard`, so binding one
+  warned "will not fire" and `validateCombo` refused it. Real key presses
+  show the page gets them first and `preventDefault` keeps the browser out.
+  They are now `preventable`, a new soft severity that logs `info`. Only
+  Ctrl+T, Ctrl+N and Ctrl+W stay `hard`. Results:
+  `docs/notes/2026-10-29-reserved-keys-windows.md`.
+
+### Added
+
+- `scripts/key-check-reserved.ahk` with `playground/key-check-reserved.html`
+  and `scripts/key-check-reserved-report.mjs`: a real-key check of the
+  browser table's Ctrl+letter rows on Windows. It waits while someone is
+  using the PC and stops if another window comes to the front.
+
 ### Docs
 
 - **The CommonJS example was wrong** (since at least 0.2.3).

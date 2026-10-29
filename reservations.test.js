@@ -157,6 +157,22 @@ describe('lookupReservation — WebRadar smoke scenarios', () => {
     expect(k?.action).toMatch(/duplicate tab/i)
   })
 
+  // Real keys on Windows (docs/notes/key-check-reserved-2026-10-29.md): the
+  // page sees Ctrl+K, F and P first and preventDefault keeps the browser
+  // out; Ctrl+T, N and W never reach the page.
+  it('Windows Ctrl+K, F, P are preventable (soft); Ctrl+T, N, W stay hard', () => {
+    const ctrl = (key) => combo({ ctrl: true, key })
+    for (const browser of ['chrome', 'edge', 'firefox']) {
+      for (const key of ['f', 'p']) expect(lookupReservation(ctrl(key), { platform: 'windows', browser })?.severity).toBe('preventable')
+      for (const key of ['t', 'n', 'w']) expect(lookupReservation(ctrl(key), { platform: 'windows', browser })?.severity).toBe('hard')
+    }
+    expect(lookupReservation(ctrl('k'), { platform: 'windows', browser: 'chrome' })?.severity).toBe('preventable')
+    expect(severityIsSoft('preventable')).toBe(true)
+    expect(severityIsHard('preventable')).toBe(false)
+    const r = lookupReservation(ctrl('k'), { platform: 'windows', browser: 'edge' })
+    expect(formatReservationWarning(r, 'ctrl+k')).toMatch(/fires; bind with preventDefault/)
+  })
+
   it('falls through to platform.system when browser table misses', () => {
     // meta+space is a macOS system reservation (Spotlight), not a browser one.
     // The parsed key is ' '; the data spells it "space".

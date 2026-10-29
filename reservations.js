@@ -19,8 +19,10 @@ const SUPPORTED_SCHEMA = '1.0'
 const HARD_SEVERITIES = new Set(['hard', 'os', 'menu-activation'])
 
 // Severities that mean "combo fires in normal browsing, only intercepted in
-// narrow contexts (find bar focused, text input focused, devtools open)."
-const SOFT_SEVERITIES = new Set(['find-bar-only', 'compose', 'system-text', 'devtools-open'])
+// narrow contexts (find bar focused, text input focused, devtools open)", or
+// "the page sees it first and preventDefault() keeps the browser out"
+// (preventable).
+const SOFT_SEVERITIES = new Set(['find-bar-only', 'compose', 'system-text', 'devtools-open', 'preventable'])
 
 // --- platform / browser detection ---------------------------------------------
 // One shared detector (platform.js). Here ChromeOS reports as 'linux': the
@@ -101,7 +103,7 @@ export const lookupKeyFromCombo = lookupKey
 /**
  * @typedef {'mac' | 'windows' | 'linux'} Platform
  * @typedef {'chrome' | 'firefox' | 'safari' | 'edge'} Browser
- * @typedef {'hard' | 'os' | 'menu-activation' | 'find-bar-only' | 'compose' | 'system-text' | 'devtools-open'} Severity
+ * @typedef {'hard' | 'os' | 'menu-activation' | 'find-bar-only' | 'compose' | 'system-text' | 'devtools-open' | 'preventable'} Severity
  *   hard tiers (never reach the page): hard, os, menu-activation; the rest are soft
  *
  * @typedef {{
@@ -183,7 +185,9 @@ export function formatReservationWarning(reservation, rawHotkey) {
     : where
   const tag = severityIsHard(reservation.severity)
     ? 'will not fire'
-    : 'fires in normal browsing'
+    : reservation.severity === 'preventable'
+      ? 'fires; bind with preventDefault or the browser acts too'
+      : 'fires in normal browsing'
   return `[hotkey-router] "${rawHotkey}" (${reservation.lookupKey}) reserved by ${sourceLabel}: "${reservation.action}" [${reservation.severity}] — ${tag}.`
 }
 

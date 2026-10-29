@@ -542,6 +542,7 @@ hotkeys.bind('meta+shift+f', toggleFullscreen)
 | `compose`         | `info`    | macOS Option+letter types a special char in inputs.     |
 | `system-text`     | `info`    | Mac Ctrl+letter cursor controls inside text inputs.     |
 | `devtools-open`   | `info`    | Only relevant when DevTools is already open.            |
+| `preventable`     | `info`    | Browser default; the page sees it first, and `preventDefault: true` keeps the browser out. |
 
 **Per-bind opt-out:**
 
