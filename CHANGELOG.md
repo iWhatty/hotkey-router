@@ -3,6 +3,16 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
+## Unreleased
+
+### Docs
+
+- README: **"Who gets a key"**, in order: the browser and OS, the capture
+  phase, the page's own handlers and the bubble phase, the checks and winner
+  inside one router, and how routers relate. Also noted: `trigger()` doesn't
+  check a router's scope (now pinned by a test). The Features list and size
+  figures are updated for 0.4.0.
+
 ## 0.4.0 — 2026-10-27
 
 Upgrading from 0.3.3 needs no code changes: every 0.3.3 import, binding and

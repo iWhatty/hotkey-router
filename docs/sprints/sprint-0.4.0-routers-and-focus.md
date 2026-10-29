@@ -1,10 +1,10 @@
 # Sprint 0.4.0: separate routers, a core entry, and focus on controls
 
-Date: 2026-10-26. Status: **in progress.** Decisions 1-3 settled by the panel
-review (2026-10-26, below). Slice A done (PR #7, merged 2026-10-26); slice B
-done 2026-10-26; slice C done 2026-10-26; slice D done 2026-10-26; slice E
-done 2026-10-27; F (release) prepared 2026-10-27: version 0.4.0, every check run, release PR open; publish pending. Builds on
-0.3.3 (on npm).
+Date: 2026-10-26. Status: **done: released as 0.4.0** (tag `v0.4.0`, on npm
+as `latest`, 2026-10-28). Decisions 1-3 settled by the panel review
+(2026-10-26, below). Slices A (#7), B (#8), C and D (#9, with #10), E (#11)
+and the release (#12) all merged. A clean install from npm passed every
+entry-point check. Builds on 0.3.3.
 Sources: the "Not in 0.3.3" list in `sprint-0.3.3-repair-and-polish.md`, the
 slice E decision there, and the post-0.3.3 review of the library.
 

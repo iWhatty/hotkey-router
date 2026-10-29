@@ -641,9 +641,6 @@ export function createRouter({
     focusMode = inputMode(value)
   }
 
-  // allow changing the default target (iframes/tests).
-  // we intentionally do not auto-rebind to keep the core tiny.
-
   /**
    * Replace this router's default target (used by {@link init} when no
    * `target` is provided), keeping the router object that other code and
