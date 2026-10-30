@@ -14,7 +14,9 @@
 // script whether the page has focus. scripts/key-check-reserved-report.mjs
 // turns the log into a note.
 //
-// No dependencies. Port: KEY_CHECK_PORT, default 8080.
+// No dependencies. Port: KEY_CHECK_PORT, default 8080. KEY_CHECK_NOTES and
+// KEY_CHECK_PROBE_LOG move the notes folder and the event log; the Windows
+// Sandbox run (scripts/sandbox/) points both at folders mapped from the host.
 
 import { createServer } from 'node:http'
 import { appendFile, readFile, writeFile, mkdir } from 'node:fs/promises'
@@ -23,12 +25,12 @@ import { extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
-const NOTES = join(ROOT, 'docs', 'notes')
+export const NOTES = process.env.KEY_CHECK_NOTES || join(ROOT, 'docs', 'notes')
 const PORT = Number(process.env.KEY_CHECK_PORT) || 8080
 const HOST = '127.0.0.1'
 const PAGE = '/playground/key-check.html'
 const MAX_BODY = 512 * 1024
-export const PROBE_LOG = join(tmpdir(), 'hotkey-router-key-check', 'probe.jsonl')
+export const PROBE_LOG = process.env.KEY_CHECK_PROBE_LOG || join(tmpdir(), 'hotkey-router-key-check', 'probe.jsonl')
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

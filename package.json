@@ -76,7 +76,8 @@
     "scrape:apply": "node scripts/scrape-reservations.mjs --apply",
     "sites:build": "node scripts/build-site-hotkeys.cjs",
     "data:age": "node scripts/data-age.mjs",
-    "key-check": "node scripts/key-check-server.mjs"
+    "key-check": "node scripts/key-check-server.mjs",
+    "key-check:sandbox": "node scripts/sandbox/key-check-sandbox.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.1",
