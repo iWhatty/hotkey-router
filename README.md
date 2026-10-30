@@ -1,43 +1,67 @@
 # hotkey-router
 
 [![npm](https://img.shields.io/npm/v/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
-[![downloads](https://img.shields.io/npm/dm/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/hotkey-router)](https://bundlephobia.com/package/hotkey-router)
-[![license](https://img.shields.io/npm/l/hotkey-router)](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE)
-[![stars](https://img.shields.io/github/stars/iWhatty/hotkey-router?style=social)](https://github.com/iWhatty/hotkey-router)
 [![types](https://img.shields.io/npm/types/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
+[![license](https://img.shields.io/npm/l/hotkey-router)](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE)
 
-A tiny, deterministic keyboard routing engine for modern web apps. Not a key utility, a predictable plugin-first routing layer for keyboard shortcuts.
+A small, deterministic keyboard-shortcut router for modern web apps: named groups of bindings, one predictable
+winner per key.
 
-## Features
-
-- O(1) dispatch
-- Plugin-safe lifecycle management
-- Deterministic winner selection (priority + recency); see [Who gets a key](#who-gets-a-key)
-- Separate and scoped routers: per library, dialog, shadow root or iframe (`createRouter`)
-- Input-safe by default, with an opt-in mode that lets chords through on checkboxes, sliders and buttons
-- Works on any keyboard layout: physical-key `code:` bindings, and Ctrl/Cmd shortcuts on non-Latin layouts
-- AltGr and IME aware: no shortcut fires while typing a character
-- Testable via `trigger()`
-- Optional opt-in browser/OS conflict warnings and website-shortcut awareness (tree-shakable)
-- Display helpers: `Ctrl+Shift+.` / `⇧⌘.` and accessible keycaps (`hotkey-router/format`)
-- ~4.9 kB minified + gzipped (core); ~9.5 kB with conflict warnings
-- Zero dependencies
-
----
-
-## Install
+## First five minutes
 
 ```sh
 npm install hotkey-router
 ```
 
-(or `pnpm add hotkey-router`, `yarn add hotkey-router`)
+```js
+import hotkeys from 'hotkey-router' // starts listening on window
+
+// `mod` is Cmd on macOS, Ctrl elsewhere
+const off = hotkeys.bind('mod+shift+space', openPalette)
+
+// A plugin is a named group of bindings that you remove together
+hotkeys.registerPlugin('search', {
+  '/': openSearch,
+  'escape': [closeSearch, { allowIn: () => true }], // also from inside the search field
+})
+
+off()                              // remove one binding
+hotkeys.unregisterPlugin('search') // remove the group
+```
+
+By default no binding fires while the user types in a field, chords included; `allowIn` opts one in (see
+[`ignoreInput`](#ignoreinputvalue)).
+During development, import `hotkey-router/auto` instead: it is the same router, and it warns in the console
+when you bind a key the browser or OS keeps for itself.
+
+## Why this library
+
+- **`code:` bindings** match the physical key (`alt+code:KeyX`), whatever the layout or macOS Option types.
+- **Non-Latin layouts:** `ctrl+k` still fires for Ctrl+K on a Russian, Greek or Hebrew layout, as browser
+  shortcuts do.
+- **AltGr and IME guards**, on by default: nothing fires while the user types `<` with AltGr or composes CJK
+  text.
+- **Input handling:** nothing fires from text fields by default; `'text'` mode lets chords through on
+  checkboxes, sliders and buttons; `allowIn` overrides per binding.
+- **One winner per key:** highest priority, then the most recent binding.
+- **Several routers:** one per library on a shared page, or scoped to a dialog, shadow root or iframe.
+- **Opt-in data:** which keys the browser and OS take, and which a page can win with `preventDefault` (Windows
+  rows checked with real key presses); which keys popular websites use.
+- **`validateCombo`** for "press your keys" settings, with reasons ready to show.
+- Zero dependencies. Core ~11.2 KB minified, ~4.85 KB gzipped; the data lives in separate entries.
+
+It doesn't do key sequences (`g i`, `ctrl+k ctrl+s`), and it targets current browsers only.
+
+## Install
+
+```sh
+npm install hotkey-router   # or: pnpm add hotkey-router / yarn add hotkey-router
+```
 
 ESM:
 
 ```js
-import hotkeys from 'hotkey-router'
+import hotkeys, { createRouter } from 'hotkey-router'
 ```
 
 CommonJS (the router is the `default` export):
@@ -47,9 +71,8 @@ const hotkeys = require('hotkey-router').default
 const { createRouter } = require('hotkey-router')
 ```
 
-Only the main entry has a CommonJS build. The subpaths (`/core`, `/auto`,
-`/reservations`, `/sites`, `/validate`, `/format`) are ESM only, so load them
-with `import` (or `await import()` from CommonJS).
+Only the main entry has a CommonJS build. The subpaths (`/core`, `/auto`, `/reservations`, `/sites`,
+`/validate`, `/format`) are ESM only; load them with `import`, or `await import()` from CommonJS.
 
 CDN (ESM), pinned to a version:
 
@@ -57,8 +80,11 @@ CDN (ESM), pinned to a version:
 import hotkeys from 'https://cdn.jsdelivr.net/npm/hotkey-router@0.5.1/dist/hotkey-router.min.js'
 ```
 
-Nothing at import (v0.4.0+): `hotkey-router/core` has `createRouter` and the
-helpers, but no ready router and no listeners until you start one.
+`dist/auto.min.js` at the same path is the router with reservation warnings. It is a standalone build with its
+own router, so don't load both.
+
+Importing `hotkey-router` starts the default router on `window`. `hotkey-router/core` does nothing at import:
+`createRouter` and the helpers, no router and no listeners until you start one.
 
 ```js
 import { createRouter } from 'hotkey-router/core'
@@ -67,757 +93,345 @@ const keys = createRouter()
 keys.init() // when your app is ready
 ```
 
----
+## Hotkey syntax
 
-## Quick start
+A hotkey is a string: modifiers, then one key, joined by `+`, with an optional ` up` suffix for keyup (keydown
+by default). The router parses it into a combo; a binding is a combo plus its handler and options.
 
-```js
-import hotkeys from 'hotkey-router'
+| Hotkey | Meaning |
+| --- | --- |
+| `ctrl+alt+x`, `shift+a` | Modifiers before the key; `k+ctrl` throws. |
+| `mod+shift+space` | `mod` is Cmd (meta) on macOS, Ctrl elsewhere, decided when the hotkey is parsed. |
+| `ctrl+alt+x up` | Fires on keyup. |
+| `^k` `!k` `+k` `#k` `^!k` | AutoHotkey prefixes: Ctrl, Alt, Shift, Meta, Ctrl+Alt. |
+| `ctrl++`, `ctrl+plus` | The `+` key. |
+| `alt+code:KeyX`, `!code:KeyX` | A `code:` binding: the physical key, by `KeyboardEvent.code`. |
+| `alt`, `alt up` | A bare modifier: fires when Alt itself goes down or up. |
 
-// Simple keydown. `mod` is Cmd on macOS, Ctrl elsewhere.
-hotkeys.bind('mod+shift+space', () => {
-  openCommandPalette()
-})
+- **Modifiers:** `ctrl` `control` `⌃`; `shift` `⇧`; `alt` `option` `opt` `⌥`; `meta` `cmd` `command` `win`
+  `⌘`; `mod`.
+- **Keys:** `escape`/`esc`, `enter`/`return`, `space`/`spacebar`, `tab`, `backspace`, `delete`/`del`, `home`,
+  `end`, `pageup`/`pgup`, `pagedown`/`pgdn`, `up` `down` `left` `right`, `f1`…`f19`; any other key by its
+  `KeyboardEvent.key` (`/`, `[`, `a`).
+- Names and keys are case-insensitive. The `code:` value is case-sensitive, as in the spec (`KeyA`, `Digit1`,
+  `ArrowLeft`, `Period`), and a hotkey has one `code:` token at most. A key-based and a `code:` binding for
+  the same keys can coexist; priority and recency pick the winner.
+- **Bare modifiers:** one only (`ctrl+alt` throws; add a key). A held modifier fires once. The match is loose:
+  `alt` fires whenever Alt goes down or up, whatever else is held; add a `when` check for an exact set.
 
-// Keyup using " up" suffix
-hotkeys.bind('mod+shift+x up', () => {
-  console.log('Released Ctrl+Shift+X')
-})
+## Core API
 
-// AHK-style modifiers also supported
-hotkeys.bind('^!k', () => {
-  openCommandPalette() // ctrl+alt+k
-})
-
-// Bare-modifier bindings (Alt-as-mode UX)
-hotkeys.bind('alt', enterSelectMode)        // fires on Alt keydown
-hotkeys.bind('alt up', exitSelectMode)      // fires on Alt keyup
-
-// Layout-stable matching via KeyboardEvent.code (cross-platform Alt+letter,
-// works on macOS where Option remaps Alt+X to ≈)
-hotkeys.bind('alt+code:KeyX', deleteHovered, null, { preventDefault: true })
-
-// Plugin grouping. Plain keys don't fire while the user types in a field.
-hotkeys.registerPlugin('docs', {
-  '/': openSearch,
-  'escape': closeSearch,
-})
-```
-
-Browsers and the OS keep some shortcuts for themselves. A page never gets
-some of them (Ctrl+T, Ctrl+W, Cmd+Q). Others, like Ctrl+K, Ctrl+F or Ctrl+S on
-Windows, reach the page first, but the browser acts on them too unless the
-binding sets `preventDefault: true`. The examples above use keys that are free
-in every major browser. Before picking your own, see
-[Who gets a key](#who-gets-a-key). `hotkey-router/auto` warns in the console
-when you bind a reserved one.
-
----
-
-## API
+The default export is a router; `createRouter()` makes more with the same methods.
 
 ### `bind(hotkey, handler, plugin?, options?)`
 
-Register a hotkey. Returns an `off()` function.
+Adds a binding and returns `off()`, which removes it (and has `off.id` and `off.hotkey`). `plugin` is a label
+that `onBind` hooks receive, or `null`; `unregisterPlugin` only removes bindings made by `registerPlugin`.
 
 ```js
 // preventDefault: on Windows and Linux the browser also uses Ctrl+K (search)
-const off = hotkeys.bind('mod+k', openPalette, null, { preventDefault: true })
+hotkeys.bind('mod+k', openPalette, null, { preventDefault: true, allowIn: () => true })
 
-// Later
-off()
+// preventDefault, or the browser's Save As dialog opens too
+hotkeys.bind('ctrl+s', saveDraft, null, { once: true, preventDefault: true })
+
+hotkeys.bind('delete', deleteItem, null, { when: () => selectionCount() > 0 })
 ```
 
-**Options**
+| Option | Default | What it does |
+| --- | --- | --- |
+| `preventDefault` | `false` | Call `event.preventDefault()` when this binding wins: keeps the browser's own action (and typing) out. |
+| `stopPropagation` | `false` | Stop the event from reaching listeners further along. |
+| `stopImmediatePropagation` | `false` | Also stop other listeners on the same target. |
+| `repeat` | `false` (keydown) | Fire on auto-repeat while the key is held. |
+| `once` | `false` | Remove the binding after it runs once (even if the handler throws). |
+| `when(event)` | — | Gate: the binding is skipped when it returns exactly `false`. |
+| `allowIn(event)` | — | Return `true` to fire where the input check would block it. |
+| `priority` | `0` | Higher wins; ties go to the most recent binding. |
+| `capture` | `false` | Run in the capture phase, before the page's own listeners. |
+| `altGraph` | `false` | Also fire on an AltGr keystroke that types a character. |
+| `composing` | `false` | Also fire during IME composition. |
+| `warnOnReserved` | `true` | `false` silences [reservation warnings](#reservation-warnings) for this binding. |
 
-```ts
-{
-  preventDefault?: boolean
-  stopPropagation?: boolean
-  stopImmediatePropagation?: boolean
-  repeat?: boolean         // default false on keydown
-  once?: boolean
-  when?: (event) => boolean
-  allowIn?: (event) => boolean
-  priority?: number        // default 0
-  warnOnReserved?: boolean // only read when conflict warnings are installed
-  capture?: boolean        // v0.3.0+: run in the capture phase, before the page's listeners
-  altGraph?: boolean       // v0.3.0+: also fire on an AltGr keystroke that types a character
-  composing?: boolean      // v0.3.0+: also fire during IME composition
-}
-```
-
-By default (v0.3.0+), a binding is skipped when the keystroke is AltGr typing
-a character (Windows reports AltGr as Ctrl+Alt, so `ctrl+alt+code:Comma`
-would otherwise swallow the `<` a Polish or Czech user typed) and while an
-IME is composing.
-
-`when` and `allowIn` receive the `KeyboardEvent`, not an element. To check
-where the key was typed, read `event.composedPath()[0]` (the element inside an
-open shadow root) or `event.target`.
-
-**Shifted punctuation.** With Shift held, `event.key` is the shifted
-character, so a key-based `ctrl+shift+,` waits for a `,` that a US keyboard
-reports as `<`, and never fires. Bind the physical key instead:
-`ctrl+shift+code:Comma`. Since v0.3.3, `bind()` warns once in the console for
-Shift with `` , . / ; ' [ ] \ - = ` ``, and `validateCombo` rejects it with the
-reason `shifted-punctuation`.
-
-**Non-Latin layouts (v0.3.3+).** On a Russian layout Ctrl+K reports
-`event.key === 'л'` with `event.code === 'KeyK'`. Like the browser's own
-shortcuts, a key-based `ctrl+k` binding still fires there: when Ctrl or Cmd is
-held (Shift allowed, Alt not), the key types a letter from a non-Latin script
-(Cyrillic, Greek, Hebrew, Arabic, ...), and `code` is `KeyA`..`KeyZ`, the
-router also looks up the Latin letter for that key. It does this only when no
-exact binding is eligible, so a `ctrl+л` or `ctrl+code:KeyK` binding always
-wins over it. Plain and Shift-only letters (typing), Alt and AltGr chords, IME
-composition, digits and Latin layouts such as AZERTY are never affected. To
-require the exact character, gate the binding: `when: (e) => e.key === 'k'`.
-
-**Examples**
-
-Ignore repeat keydown (default behavior):
+`when` and `allowIn` get the `KeyboardEvent`. To see where the key was typed, read `event.composedPath()[0]`
+(the element inside an open shadow root) or `event.target`:
 
 ```js
-hotkeys.bind('j', nextItem)
-```
-
-Allow inside inputs:
-
-```js
-hotkeys.bind('mod+k', openPalette, null, {
-  allowIn: () => true,
-  preventDefault: true,
-})
-
-// Only in one field (the event, not the element, is passed in)
 hotkeys.bind('enter', submitFollowUp, null, {
   allowIn: (e) => e.composedPath()[0] === followUpInput,
 })
 ```
 
-Conditional binding:
-
-```js
-hotkeys.bind('delete', deleteItem, null, {
-  when: () => selectionCount() > 0,
-})
-```
-
-Run once:
-
-```js
-// preventDefault, or the browser's Save As dialog opens too
-hotkeys.bind('ctrl+s', saveDraft, null, { once: true, preventDefault: true })
-```
-
 ### `unbind(hotkey, handler?)`
 
-Remove bindings.
+Removes the bindings for that hotkey and type (keydown or keyup), or only the ones with `handler`. A key-based
+hotkey and its `code:` spelling are different bindings: `unbind('ctrl+k')` leaves `ctrl+code:KeyK`.
+
+### `registerPlugin(name, map)` / `unregisterPlugin(name)`
+
+A plugin is a named group of bindings. `registerPlugin` binds every entry of `map` (a handler, or `[handler,
+options]`) under `name` and returns a function that unregisters it. Removing a plugin never touches other
+bindings. If a hotkey in the map doesn't parse, it throws and binds nothing; a name that is already registered
+throws too.
 
 ```js
-hotkeys.unbind('ctrl+k')
-hotkeys.unbind('ctrl+k', openPalette)
-```
-
-### `registerPlugin(name, map)`
-
-Batch register hotkeys under a plugin namespace.
-
-```js
-const unregister = hotkeys.registerPlugin('files', {
-  'mod+o': openFile,
-  'delete': deleteFile,
+const unregister = hotkeys.registerPlugin('editor', {
+  'mod+shift+space': openPalette,
+  'escape': [closeMenu, { priority: 10 }],
 })
-
-// Later
-unregister()
 ```
-
-Plugin cleanup is isolated. Removing one plugin never affects other bindings.
-If any key string fails to parse, `registerPlugin` throws and binds nothing
-(v0.3.3+).
-
-### `unregisterPlugin(name)`
-
-Remove all hotkeys associated with a plugin.
-
-### `onBind(hook)`
-
-Subscribe to bind events. The hook receives `{ combo, raw, options, plugin, id }` after every successful `bind()`. Returns an unsubscribe function. Used internally by `installReservationWarnings`; exposed for telemetry, dev panels, and custom validation.
-
-```js
-const off = hotkeys.onBind(({ raw }) => {
-  console.debug('bound:', raw)
-})
-// off() unsubscribes.
-```
-
-Hook errors are caught and logged via `console.error`. A buggy hook can't break the bind.
 
 ### `pause()` / `resume()`
 
-Temporarily disable or re-enable all routing.
+Stop and restart all routing on this router. Bindings stay registered.
 
-### `ignoreInput(value = true)`
+### `ignoreInput(value)`
 
-`value` is `true` / `'all'` (the default, below), `'text'` (v0.4.0+, below)
-or `false` (no check). By default, hotkeys do **not** fire inside:
+The input check. `true` or `'all'` (the default), `'text'`, or `false` (no check). By default no binding fires
+when the key was typed in an `<input>` (any type), `<textarea>`, `<select>`, a contenteditable element or
+`role="textbox"`, including inside an open shadow root (a closed one only shows its host). A native `<button>`
+isn't on the list, so a plain `space` or `enter` binding fires while a button has focus; gate it with `when`
+if that matters.
 
-- `<input>`
-- `<textarea>`
-- `<select>`
-- `[contenteditable]`
-- `role="textbox"`
-
-This includes those elements inside an open shadow root (v0.3.3+; the router
-reads `event.composedPath()[0]`). A closed shadow root hides its inside from
-the page, so only its host element is checked there.
-
-Every `<input>` counts, whatever its `type` and whatever modifiers are held:
-a checkbox, radio, range slider, color or file input blocks `ctrl+k` as well
-as Space. A native `<button>` is **not** on the list, so a plain `space` or
-`enter` binding fires while a button has focus; gate such bindings with
-`when` if that matters.
-
-Override per-binding with `allowIn()`:
-
-```js
-// Let the palette open from a focused checkbox or slider, but not from text fields
-hotkeys.bind('mod+k', openPalette, null, {
-  allowIn: (e) => ['checkbox', 'radio', 'range'].includes(e.composedPath()[0].type),
-  preventDefault: true,
-})
-```
-
-**The `'text'` mode (v0.4.0+, opt-in).** For apps with forms and settings
-panels, `hotkeys.ignoreInput('text')` (or `createRouter({ ignoreInput:
-'text' })`) blocks typing but not shortcuts:
+`'text'` (also `createRouter({ ignoreInput: 'text' })`) is for apps with forms and settings panels: it blocks
+typing, not shortcuts.
 
 | Where the key was typed | Plain and Shift-only keys | Chords with Ctrl, Alt or Meta |
 | --- | --- | --- |
 | Text entry: text-like and date/time `<input>` types (and any type not listed below), `<textarea>`, `<select>`, contenteditable, `role="textbox"` | blocked | blocked |
 | Other controls: checkbox, radio, range, color, file, button, submit, reset and image inputs; `<button>`; `role="button"`; any element inside a button | blocked (Space, Enter and arrows belong to the control) | **fire** |
 
-A chord needs a non-modifier key, so bare-modifier bindings (`alt`,
-`alt up`) stay blocked on controls. Where an element is both (an editable
-element inside a button), text entry wins. `allowIn` still overrides the
-input check, but not the AltGr, IME, repeat or `when` checks. The default
-stays `'all'`, so nothing changes unless you opt in.
+A chord needs a non-modifier key, so bare-modifier bindings stay blocked on controls. An editable element
+inside a button counts as text entry. `allowIn` overrides the input check, but not the AltGr, IME, repeat or
+`when` checks.
 
-### `createRouter(options?)` (v0.4.0+)
+### `init(options?)` / `destroy()`
 
-A separate router: its own bindings, plugins, `pause()`, `ignoreInput()`,
-`onBind` hooks and listeners, with the same methods as the default export.
-It attaches nothing until you call `init()`.
+`init({ target, capture })` attaches the `keydown` and `keyup` listeners (default: the router's target, `window` for the default router). The
+default router calls it at import in browsers; a router from `createRouter()` waits for you. Calling it again
+calls `destroy()` first. `capture: true` runs every binding in the capture phase; by default only bindings
+with `{ capture: true }` do. `destroy()` removes the listeners and clears all bindings and plugins; `onBind`
+hooks survive it.
 
-```js
-import { createRouter } from 'hotkey-router'
+### `trigger(hotkey, options?)`
 
-const dialogKeys = createRouter({ target: dialogEl })
-dialogKeys.init()
-dialogKeys.bind('escape', closeDialog)
-// Later
-dialogKeys.destroy() // the page's other routers keep working
-```
+Fires the binding a real keypress would, through the same checks (`when`, the input check with `{ target }`,
+priority, `once`, `pause()`), and returns `true` if a handler ran: `hotkeys.trigger('mod+shift+space')`. For
+tests; see [docs/testing.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/testing.md).
 
-Options: `target` (default `window` when there is one; an element, a
-`ShadowRoot` or an iframe's window scopes the router to keys from inside
-it), `capture` (default `false`) and `ignoreInput` (default `true`; also
-`'text'` or `false`, as for `ignoreInput()`).
-`target` and `capture` are defaults: `init({ target, capture })` overrides
-them for that call only. `setTarget(target)` changes the default target of an
-existing router, which is useful when other code holds on to it; it doesn't
-move listeners until the next `init()`. See [Multiple routers](#multiple-routers-v040).
+### `parseHotkey(hotkey, options?)`
 
-### `init(options?)`
+Named export. Returns `{ combo, type, raw }`: `combo` is `{ ctrl, shift, alt, meta, key, code, bareModifier
+}`, `type` is `'keydown'` or `'keyup'`, `raw` the string you passed. Throws on a hotkey the router can't bind.
+`{ platform }` resolves `mod` for another platform.
 
-Manually attach listeners.
+### `comboFromEvent(event, options?)`
 
-```js
-hotkeys.init({
-  target: window,
-  capture: false,
-})
-```
-
-Auto-initializes on `window` by default (browser environments): importing
-`hotkey-router` attaches `keydown` and `keyup` listeners to `window` straight
-away, and `hotkey-router/auto` also installs the reservation warnings. The
-package's `sideEffects` list names those files so bundlers keep that work;
-`/core` (v0.4.0+), `/reservations`, `/sites`, `/validate` and `/format` do
-nothing at import and tree-shake away when unused. `hotkey-router` is built
-on `hotkey-router/core`, so an app that imports both bundles one copy.
-
-With `capture: false` (the default), bindings run in the bubble phase except
-those bound with `{ capture: true }`, which a second, capture-phase listener
-handles (v0.3.0+). `capture: true` here runs every binding in the capture
-phase.
-
-### `parseHotkey(hotkey, options?)` / `comboFromEvent(event, options?)` (v0.3.0+)
-
-Named exports (also on the default object). `parseHotkey` returns
-`{ combo, type, raw }`: `combo` is the parsed shape
-(`{ ctrl, meta, alt, shift, key, code, bareModifier }`) that `lookupReservation`
-takes, and `type` is `'keydown'` or `'keyup'`. `comboFromEvent` turns a
-keyboard event into a hotkey string for a "press your keys" recorder:
-physical by default, `{ useMod: true }` writes the platform's primary
-modifier as `mod`, and it returns `null` while only a modifier is held.
-Both take `{ platform }` (v0.3.2+) to resolve `mod` for a platform other
-than the one detected.
+Named export. Turns a keyboard event into a hotkey string, for a "press your keys" recorder. Physical by
+default (`ctrl+shift+code:Period`); `{ useMod: true }` writes the platform's primary modifier as `mod`; `{
+physical: false }` uses `event.key`; `{ platform }` decides what `mod` stands for. Returns `null` while only a
+modifier is held.
 
 ```js
 import { comboFromEvent } from 'hotkey-router'
 
-input.addEventListener('keydown', (e) => {
-  const combo = comboFromEvent(e, { useMod: true }) // 'mod+shift+code:Period'
-  if (combo) save(combo)
+field.addEventListener('keydown', (e) => {
+  const hotkey = comboFromEvent(e, { useMod: true }) // 'mod+shift+code:Period'
+  if (hotkey) save(hotkey)
 })
 ```
 
-### `detectPlatform(navigator?, { chromeos? })` (v0.3.2+)
+### `detectPlatform(navigator?, { chromeos? })`
 
-The one platform detector the router, reservations, sites, validate and
-format all use: `'mac'`, `'windows'`, `'linux'` or `null`. ChromeOS counts as
-`'linux'` unless you pass `{ chromeos: true }`. Reads
-`navigator.userAgentData.platform`, then `navigator.platform`, then the user
-agent. Also exported from `hotkey-router/reservations`.
+Named export. `'mac'`, `'windows'`, `'linux'` or `null`. ChromeOS counts as `'linux'` unless you pass `{
+chromeos: true }`. Reads `navigator.userAgentData.platform`, then `navigator.platform`, then the user agent.
+The router and every add-on use it, so they agree on `mod`.
 
-### `destroy()`
+### `onBind(hook)`
 
-Removes all listeners and clears internal state.
-
-### `trigger(hotkey, options?)`
-
-Programmatically trigger a hotkey. Useful for testing.
+Calls `hook({ combo, raw, options, plugin, id })` after every successful `bind()` on this router, and returns
+an unsubscribe function. Reservation warnings are built on it; use it for dev panels or telemetry. A hook that
+throws is logged with `console.error` and doesn't break the bind.
 
 ```js
-hotkeys.trigger('ctrl+k')
-hotkeys.trigger('ctrl+k', { target: inputElement }) // as if typed in the input
+const stop = hotkeys.onBind(({ raw, plugin }) => console.debug('bound', raw, plugin))
 ```
 
-Returns `true` if a handler ran. Since v0.3.2 it fires what a real keypress
-would: the synthetic event has both `key` and `code` (US layout), so
-`trigger('ctrl+k')` also fires a `ctrl+code:KeyK` binding and the reverse,
-and the same guards apply (`when`, `ignoreInput`/`allowIn` with `target`,
-priority, `once`, `pause()`).
+## How routing works
 
-Each router's `trigger()` fires only that router's bindings. It doesn't
-check the router's scope: `target` only feeds the input check, so a router
-on a dialog still fires for a `target` outside the dialog, where a real
-keypress would never reach it.
+A keypress meets these in order, and each can stop it before the next:
 
----
-
-## Notes
-
-### Routing model
-
-When multiple handlers match the same hotkey:
-
-1. Highest `priority` wins.
-2. If equal priority, newest binding wins.
-
-This makes modal overrides simple:
-
-```js
-hotkeys.bind('escape', closeModal, null, {
-  priority: 100,
-  preventDefault: true,
-})
-```
-
-### Who gets a key
-
-A keypress meets these in order, and each one can stop it before the next:
-
-1. **The browser and the OS.** Some reserved shortcuts (Ctrl+T, Ctrl+W,
-   Cmd+Q, Spotlight) are taken before the page gets a keydown, and no
-   listener can get them back. Others (most Ctrl+letter keys on Windows and
-   Linux, such as Ctrl+K, Ctrl+F, Ctrl+S) reach the page first: the winning
-   binding's `preventDefault` keeps the browser out, and without it both act.
-   [Conflict warnings](#conflict-warnings-v020) flag both kinds when you bind.
-2. **The capture phase, from `window` down to the focused element.** Bindings
-   with `{ capture: true }`, or every binding of a router started with
-   `init({ capture: true })`, run here, at the router's target. That's before
-   the page's own listeners below it, so they can stop the key with
-   `stopPropagation`. Listeners on the same target run in the order they were
-   added.
-3. **The focused element, then the bubble phase back up.** The page's own
-   handlers (an editor's keymap, say) run first and can stop the key. Other
-   bindings run when it reaches the router's target. For the default router,
-   that's `window`, last of all.
+1. **The browser and the OS.** Some shortcuts (Ctrl+T, Ctrl+W, Cmd+Q, Spotlight) are taken before the page
+   gets a keydown, and no listener can get them back. Others (most Ctrl+letter keys on Windows and Linux, such
+   as Ctrl+K, Ctrl+F, Ctrl+S) reach the page first: the winning binding's `preventDefault` keeps the browser
+   out, and without it both act. [Reservation warnings](#reservation-warnings) flag both kinds when you bind.
+2. **The capture phase, from `window` down to the focused element.** Bindings with `{ capture: true }`, or
+   every binding of a router started with `init({ capture: true })`, run here at the router's target: before
+   the page's own listeners below it, so they can stop the key with `stopPropagation`.
+3. **The focused element, then the bubble phase back up.** The page's own handlers (an editor's keymap, say)
+   run first and can stop the key. The other bindings run when it reaches the router's target; for the default
+   router that's `window`, last of all.
 4. **Inside one router**, each time its listener runs:
-   - **Lookup:** the bindings for the key (`ctrl+k`) and for the physical key
-     (`ctrl+code:KeyK`) are both candidates. The non-Latin fallback (`ctrl+k`
-     from Russian Ctrl+K) is tried only when neither has an eligible binding.
-   - **Checks per binding:** AltGr typing a character, IME composition, the
-     input check (`ignoreInput` / `allowIn`), auto-repeat, then `when`.
-     A paused router skips all of this.
-   - **One winner:** highest `priority`, then the most recently bound. One
-     binding per router fires in each phase.
-   - **What the winner can do:** `preventDefault` stops the browser's own action
-     (typing the character, scrolling). `stopPropagation` and
-     `stopImmediatePropagation` stop the event as in steps 2 and 3.
-5. **Between routers:** each picks its own winner, and both fire if the event
-   reaches both. See [Multiple routers](#multiple-routers-v040).
+   - **Lookup:** bindings for the key (`ctrl+k`) and for the physical key (`ctrl+code:KeyK`) are both
+     candidates. The non-Latin fallback is tried only when neither has an eligible binding.
+   - **Checks per binding:** AltGr, IME composition, the input check (`ignoreInput` / `allowIn`), auto-repeat,
+     then `when`. A paused router skips everything.
+   - **One winner:** highest `priority`, then the most recent binding. One binding per router fires in each
+     phase.
+   - **The winner** can `preventDefault` (no browser action, no typed character) and stop propagation, as in
+     steps 2 and 3.
+5. **Between routers:** each picks its own winner, and both fire if the event reaches both. See [Multiple
+   routers](#multiple-routers).
 
-### Multiple routers (v0.4.0+)
+**AltGr and IME.** Windows reports AltGr as Ctrl+Alt, so a `ctrl+alt+code:Comma` binding would swallow the `<`
+a Polish or Czech user types with AltGr. A keystroke with AltGr held that types one character is skipped, as
+is every keystroke during IME composition. `altGraph: true` or `composing: true` on a binding turns its guard
+off.
 
-The default export is one router, started on `window` at import. Each
-`createRouter()` call makes another. Use one when:
+**Shifted punctuation.** With Shift held, `event.key` is the shifted character, so a key-based `ctrl+shift+,`
+waits for a `,` that a US keyboard reports as `<`, and never fires. Bind the physical key:
+`ctrl+shift+code:Comma`. `bind()` warns once in the console for Shift with `` , . / ; ' [ ] \ - = ` ``, and
+`validateCombo` reports it as `shifted-punctuation`.
 
-- **two libraries in one bundle both use hotkey-router.** They'd otherwise share
-  the default router (one copy of the module, one registry), so one's
-  `pause()` or `destroy()` would stop the other's keys. With its own router
-  each is independent. A browser extension's content scripts don't share a
-  router with the page's own scripts anyway: they run in a separate,
-  isolated JavaScript world with their own copy of the module. Key events
-  still reach both.
-- **keys belong to a scope.** A router on a dialog element, a `ShadowRoot` or
-  an iframe's window only sees keys from inside it, while page-wide keys stay
-  on the default router.
+**Non-Latin layouts.** On a Russian layout Ctrl+K reports `event.key === 'л'` with `event.code === 'KeyK'`.
+When Ctrl or Cmd is held (Shift allowed, Alt not), the key types a letter from a non-Latin script and `code`
+is `KeyA`…`KeyZ`, the router also looks up the Latin letter, so `ctrl+k` fires. It does this only when no
+exact binding is eligible, so `ctrl+л` or `ctrl+code:KeyK` always wins. Plain and Shift-only letters, Alt and
+AltGr chords, IME composition, digits and Latin layouts such as AZERTY are never affected. To require the
+exact character, add `when: (e) => e.key === 'k'`.
 
-Routers don't arbitrate between each other. If two routers bind the same key
-and the event reaches both, both fire: priority and recency only pick a
-winner within one router. To let one take the key, gate the other with `when`,
-or keep their scopes apart. `stopPropagation` doesn't stop another router
-listening on the same target. `stopImmediatePropagation` does, but only for
-routers whose listeners were added later.
+## Multiple routers
 
-Shared by every router: the parser, `comboFromEvent`, `detectPlatform`, and
-the one-time console warning for shifted punctuation (once per combo per
-loaded copy of the module). Reservation warnings are per router:
-`installReservationWarnings(router)` covers that router's binds only, and
-`hotkey-router/auto` covers the default router.
-
-### Bare-modifier bindings (v0.1.0+)
-
-Some UX patterns are driven by a bare modifier rather than a chord. For example, "hold Alt to enter select mode, release Alt to exit."
+`createRouter(options?)` makes a router with its own bindings, plugins, `pause()`, `ignoreInput()`, `onBind`
+hooks and listeners. It attaches nothing until `init()`. Use one when two libraries in one bundle both use
+hotkey-router (so one's `pause()` or `destroy()` can't stop the other's keys), or when keys belong to a scope:
+a router on a dialog, a `ShadowRoot` or an iframe's window only sees keys from inside it.
 
 ```js
-hotkeys.bind('alt', onAltDown)       // fires on Alt keydown
-hotkeys.bind('alt up', onAltUp)      // fires on Alt keyup
-hotkeys.bind('ctrl', onCtrlDown)     // any single modifier supported
+import { createRouter } from 'hotkey-router'
+
+const dialogKeys = createRouter({ target: dialogEl, ignoreInput: 'text' })
+dialogKeys.init()
+dialogKeys.bind('escape', closeDialog)
+dialogKeys.destroy() // later; the page's other routers keep working
 ```
 
-- Only **single** bare modifiers are supported. Multi-modifier bare bindings (`'ctrl+alt'`) throw, add a base key for those.
-- Default `repeat: false` applies, so a held modifier fires only once on keydown.
-- Loose match: a bare-Alt binding fires whenever the Alt key is the one being pressed/released, regardless of which other modifier flags are also set. Add a `when` filter for exact-set semantics.
+Options: `target` (default `window`), `capture` (default `false`) and `ignoreInput` (default `true`). Routers
+don't arbitrate between each other: if two bind the same key and the event reaches both, both fire. Gate one
+with `when`, keep their scopes apart, or stop the event from the inner one. `setTarget`, how `stopPropagation`
+and `stopImmediatePropagation` work between routers, and what is shared:
+[docs/routers.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/routers.md).
 
-### Code-based matching (v0.1.0+)
+## Opt-in add-ons
 
-`KeyboardEvent.key` is layout- and modifier-dependent. Alt+X gives `≈` on macOS, `x` on Linux/Windows. For shortcuts that should be stable across platforms, bind to `KeyboardEvent.code` instead:
+Each add-on is a separate entry that the core never imports, so it costs nothing unless you import it. Sizes
+are minified (gzipped) in an app bundle.
 
-```js
-hotkeys.bind('alt+code:KeyX', deleteHovered)   // matches the physical X key
-hotkeys.bind('ctrl+code:Digit1', goToTab1)     // matches digit row, not numpad
-hotkeys.bind('!code:KeyX', deleteHovered)      // AHK shorthand also works
-```
+| Entry | What it does | Size |
+| --- | --- | --- |
+| `hotkey-router/auto` | The default router with reservation warnings installed | ~34 KB (~9.6 KB), router included |
+| `hotkey-router/reservations` | Which keys the browser and OS take; warnings and lookup | ~24 KB (~5.6 KB) |
+| `hotkey-router/validate` | Checks a recorded hotkey before you save it | ~69 KB (~16 KB), both tables |
+| `hotkey-router/format` | Shows a hotkey to people: `Ctrl+Shift+.`, `⇧⌘.`, keycaps | ~8.6 KB (~3.5 KB) |
+| `hotkey-router/sites` | Which keys popular websites use; a `when` gate that yields to them | ~38 KB (~9 KB) |
 
-The `code:` value is **case-sensitive** (matches the camelCase `KeyboardEvent.code` spec values: `KeyA`, `Digit1`, `ArrowLeft`, etc.). Only one `code:` token per binding is allowed; multiple `code:` tokens throw a parse error. Both key-based and code-based bindings can coexist; the standard priority + recency rules pick the winner.
+The data tables are big next to the core. Use `/auto`, `/reservations`, `/validate` and `/sites` in
+development builds or in the settings page that records keys, not on every page, unless your app needs them at
+runtime.
 
-### Conflict warnings (v0.2.0+)
+### Reservation warnings
 
-Some combos are reserved by the browser chrome (find bar, devtools, bookmarks) or the OS (Spotlight, window management). The hard ones never reach page-world JavaScript, no matter how early you listen or whether you call `preventDefault`: Ctrl+T, Ctrl+N and Ctrl+W on Windows, for example. Others reach the page first, and the browser acts on them too unless the page calls `preventDefault`: most Ctrl+letter shortcuts on Windows and Linux, such as Ctrl+K, Ctrl+F, Ctrl+P and Ctrl+S (checked with real key presses in Chrome, Edge and Firefox on Windows, 2026-10-29). hotkey-router ships an **opt-in** reservation table that emits a warning at bind time, so the silent failure (or the double action) becomes a noisy one.
-
-The feature is opt-in by design: the core router is ~11 KB minified (~4.9 KB gzipped), and the reservation module (~23 KB minified, ~5.5 KB gzipped, mostly data) is tree-shaken out entirely unless you import it.
-
-**Two ways to opt in.** One-line ergonomic, use the `auto` entry. Same default export as `hotkey-router`, with warnings pre-installed. It is the same router object, so other files can keep importing `hotkey-router` and their bindings are warned about too (v0.3.3+; earlier versions shipped a second copy of the router in `auto`). The CDN file `dist/auto.min.js` is a standalone build with its own router; don't mix it with other hotkey-router imports.
+`hotkey-router/auto` is the same router object as `hotkey-router`, with warnings installed, so bindings made
+through either import are checked:
 
 ```js
 import hotkeys from 'hotkey-router/auto'
 
 hotkeys.bind('meta+shift+f', toggleFullscreen)
 // Firefox on macOS:
-// [hotkey-router] "meta+shift+f" (meta+shift+f) reserved by firefox on macOS:
-//   "Toggle fullscreen" [hard] — will not fire.
+// [hotkey-router] "meta+shift+f" (meta+shift+f) reserved by firefox on macOS: "Toggle fullscreen" [hard] — will not fire.
 ```
 
-Explicit install, keep using the tiny core, install warnings yourself:
+Or `installReservationWarnings(router, { platform, browser })` from `hotkey-router/reservations`, on any
+router. Keys the page never gets log a `warn`; a key the page can win logs a `warn` without `preventDefault:
+true` and an `info` with it. `lookupReservation(combo, { platform, browser })` answers the same question at
+runtime. Severities, every export, caveats and how the table was checked with real keys:
+[docs/reservations.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/reservations.md).
+
+### Validating a recorded hotkey
 
 ```js
-import hotkeys from 'hotkey-router'
-import { installReservationWarnings } from 'hotkey-router/reservations'
+import { validateCombo } from 'hotkey-router/validate'
 
-installReservationWarnings(hotkeys)
-hotkeys.bind('meta+shift+f', toggleFullscreen)
-```
-
-`installReservationWarnings()` returns an `uninstall` function if you ever need to detach. The warning is **never fatal**, the binding is still registered, in case you're running in a browser/platform where the conflict doesn't apply.
-
-**Severity to log level:**
-
-| Severity          | Log level | Meaning                                                 |
-| ----------------- | --------- | ------------------------------------------------------- |
-| `hard`            | `warn`    | Browser intercepts before page world; combo won't fire. |
-| `os`              | `warn`    | OS intercepts globally.                                 |
-| `menu-activation` | `warn`    | Alt+letter activates the browser menu bar (Win/Linux).  |
-| `find-bar-only`   | `info`    | Reserved only when the find bar is focused.             |
-| `compose`         | `info`    | macOS Option+letter types a special char in inputs.     |
-| `system-text`     | `info`    | Mac Ctrl+letter cursor controls inside text inputs.     |
-| `devtools-open`   | `info`    | Only relevant when DevTools is already open.            |
-| `preventable`     | `warn` without `preventDefault: true`, else `info` | The browser's shortcut, but the page sees it first and `preventDefault: true` keeps the browser out. Without it, both act. |
-
-**Per-bind opt-out:**
-
-```js
-hotkeys.bind('meta+shift+f', toggleFullscreen, null, { warnOnReserved: false })
-```
-
-To turn warnings off globally, just don't install them (use the bare `hotkey-router` entry instead of `hotkey-router/auto`).
-
-**Force a platform/browser (tests, SSR previews):**
-
-```js
-installReservationWarnings(hotkeys, { platform: 'mac', browser: 'firefox' })
-```
-
-Accepted platforms: `'mac' | 'windows' | 'linux'`. Browsers: `'firefox' | 'chrome' | 'safari' | 'edge'`.
-
-**Caveats:**
-
-- Reservations reflect **default** keybindings. Users with custom shortcuts (Edge 95+ rebinds, Firefox add-ons, OS-level customization) may not match.
-- KDE/XFCE desktop reservations beyond GNOME are not yet catalogued. Linux coverage is conservative.
-- Layout-specific differences (Dvorak, AZERTY) change which physical key produces `event.key === 'f'`. For layout-stable bindings against the physical key, use `code:KeyX` syntax. The reservation lookup normalizes both.
-- macOS menu-bar shortcuts that every app gets from the system (Cmd+Shift+/ for Help menu search, Cmd+H, Cmd+Option+H, Cmd+M, Cmd+Q, Cmd+`) are listed under the mac `system` table. Punctuation matches whether you bind it by code (`mod+shift+code:Slash`) or by key (`mod+shift+/`); a shifted character such as `?` depends on the layout, so bind the physical key.
-
-**Programmatic lookup.** If you want to query the table yourself (e.g. building a cheatsheet that flags conflicts):
-
-```js
-import { lookupReservation } from 'hotkey-router/reservations'
-
-const r = lookupReservation(
-  { meta: true, shift: true, key: 'f' },
-  { platform: 'mac', browser: 'firefox' }
-)
-// → { source: 'browser', action: 'Toggle fullscreen', severity: 'hard', ... }
-```
-
-**Extension hook (`onBind`).** Reservation warnings are built on a public `onBind` hook, useful for telemetry, dev panels, or any cross-cutting concern that needs to observe every binding:
-
-```js
-const off = hotkeys.onBind(({ combo, raw, options, plugin, id }) => {
-  // combo: parsed combo { ctrl, meta, alt, shift, key, code, bareModifier }
-  // raw:   original hotkey string
+const { ok, reasons } = validateCombo('mod+shift+code:Period', {
+  requirePrimary: true, // must include Ctrl (Cmd on macOS)
+  taken: ['mod+shift+code:Space'],
 })
-// off() unsubscribes.
+// ok: true; reasons: site-conflict warnings (Google Docs, GitHub, ...)
 ```
 
-### Website shortcuts (v0.3.0+)
+Errors make `ok` false: no key, no modifier, Alt alone on Windows/Linux, a rule you asked for, already taken,
+reserved by the browser or OS, shifted punctuation. Warnings keep it true: keys the page wins with
+`preventDefault`, Ctrl+Alt as AltGr, sites that use the keys. Every reason code and option:
+[docs/validate.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/validate.md).
 
-Apps that run on other people's pages (browser extensions, embedded widgets)
-collide with the page's own shortcuts: Google Docs uses Ctrl+Shift+. for font
-size, GitHub for "quote". Unlike browser keys, those reach the page, so the
-app can choose. `hotkey-router/sites` knows which popular sites use which
-chords in the Ctrl/Cmd+Shift, Ctrl/Cmd+Alt, Shift+Alt and Ctrl/Cmd+Alt+Shift
-families ([docs/site-hotkeys.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/site-hotkeys.md), sourced data in
-`data/site-hotkeys.json`) and builds a `when()` gate that yields to the site
-unless the user is focused on the app:
+### Showing a hotkey
+
+```js
+import { formatCombo, comboTokens } from 'hotkey-router/format'
+
+formatCombo('mod+shift+code:Period', { platform: 'windows' })              // 'Ctrl+Shift+.'
+formatCombo('mod+shift+code:Period', { platform: 'mac', style: 'glyphs' }) // '⇧⌘.'
+comboTokens('mod+code:KeyK', { platform: 'mac' })
+// [{ label: '⌘', name: 'Command', modifier: 'meta' }, { label: 'K', name: 'K', key: 'KeyK' }]
+```
+
+Modifiers come in each platform's own order, and every keycap has a name a screen reader can say. All
+functions and options: [docs/format.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/format.md).
+
+### Website shortcuts
+
+For browser extensions and widgets that run on other people's pages:
 
 ```js
 import hotkeys from 'hotkey-router'
 import { siteAware } from 'hotkey-router/sites'
 
 hotkeys.bind('mod+shift+code:Period', nextTypo, null, {
-  capture: true,          // see the key before the page's editor
+  capture: true,         // see the key before the page's editor
   preventDefault: true,
-  stopPropagation: true,  // when we take it, the page doesn't run it too
+  stopPropagation: true, // when we take it, the page doesn't run it too
   allowIn: () => true,
-  when: siteAware('mod+shift+code:Period', {
-    engaged: () => popupIsOpen() || panelHasFocus(),
-  }),
+  when: siteAware('mod+shift+code:Period', { engaged: () => panelHasFocus() }),
 })
 ```
 
-On sites that don't use the chord the gate is always true. On sites that do
-(Docs, Slides, Confluence, GitHub, WordPress ...), it returns `engaged()`;
-when that is false, the router leaves the event untouched and the site's
-shortcut runs.
+On sites that use the chord (Google Docs, GitHub, ...) the gate returns `engaged()`, and when that's false the
+site's shortcut runs. Options, the other exports and the sourced table:
+[docs/sites.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/sites.md).
 
-Also exported: `lookupSiteConflicts(combo, { url, platform, verifiedOnly })`,
-`matchSites(url)`, `siteLookupKey(combo, platform)`, `detectSitePlatform()`
-and `listSites()`. Platforms: `windows` (also used for Linux), `mac`,
-`chromeos`. The module is ~38 KB minified (~9 KB gzipped, mostly the table)
-and imports nothing from the core, so it never creates a second router.
+## Browser support
 
-### Validating a recorded combo (v0.3.0+)
+Current Chrome, Edge, Firefox and Safari. The core relies on `KeyboardEvent.key` and `.code`, `composedPath()`
+(it walks up from `event.target` when that is missing), `getModifierState('AltGraph')`, `isComposing`, `Map`
+and `Set`, and Unicode property escapes in regular expressions; the build targets ES2020. The browser tests
+run in Chrome and Edge; real keyboard layouts and reserved keys were checked in Chrome, Edge and Firefox on
+Windows. See [docs/testing.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/testing.md).
 
-For a "press your keys" setting: record with `comboFromEvent`, then check
-with `hotkey-router/validate` before saving. Reasons come in plain language,
-ready to show.
+## Scope
 
-```js
-import { comboFromEvent } from 'hotkey-router'
-import { validateCombo } from 'hotkey-router/validate'
+hotkey-router routes keys: it decides which one binding gets a keypress, and keeps plugins from stepping on
+each other. It is not:
 
-field.addEventListener('keydown', (e) => {
-  e.preventDefault()
-  const combo = comboFromEvent(e, { useMod: true })
-  if (!combo) return // still holding modifiers
-  const { ok, reasons } = validateCombo(combo, {
-    requirePrimary: true,          // must include Ctrl (Cmd on macOS)
-    minModifiers: 2,
-    taken: ['mod+shift+code:Space'],
-  })
-  show(reasons.map((r) => r.message))
-  if (ok) save(combo)
-})
-```
-
-Errors (`ok: false`): no key, no modifier, Alt as the only modifier on
-Windows/Linux, a rule you asked for (`requirePrimary`, `minModifiers`),
-already in `taken`, or reserved by a browser/OS (never reaches the page).
-Warnings (`ok: true`): reserved only in some situations; the browser's own
-shortcut that the page can win with `preventDefault` (`details.severity` is
-`'preventable'`; most Ctrl+letter keys on Windows and Linux); Ctrl+Alt acting
-as AltGr on some Windows layouts; and sites that use the same keys.
-
-It loads both data tables: with them, about 69 KB minified (~16 KB
-gzipped). Import it in the settings page that records keys, not in code
-that runs on every page.
-
-### Showing a combo to people (v0.3.2+)
-
-`hotkey-router/format` turns a hotkey string (or a parsed combo) into what
-people read. It loads no data tables (~9 KB minified, ~3.5 KB gzipped).
-
-```js
-import { formatCombo, comboTokens, modifierLabel } from 'hotkey-router/format'
-
-formatCombo('mod+shift+code:Period')                                       // 'Ctrl+Shift+.' (Windows/Linux)
-formatCombo('mod+shift+code:Period', { platform: 'mac' })                  // 'Shift+Cmd+.'
-formatCombo('mod+shift+code:Period', { platform: 'mac', style: 'glyphs' }) // '⇧⌘.'
-
-comboTokens('mod+shift+code:Period', { platform: 'mac' })
-// [{ label: '⇧', name: 'Shift',   modifier: 'shift' },
-//  { label: '⌘', name: 'Command', modifier: 'meta' },
-//  { label: '.', name: 'Period',  key: 'Period' }]
-
-modifierLabel('alt', { platform: 'mac', style: 'both' })                   // '⌥ Option'
-modifierLabel('mod')                                                       // 'Cmd' or 'Ctrl'
-```
-
-- `formatCombo(combo, { platform, style, order, separator })`: one string.
-  `style: 'text'` (default) joins words with `+`; `'glyphs'` uses the macOS
-  symbols (⌃ ⌥ ⇧ ⌘ ↩ ⌫ ⎋ ← …) with no separator.
-- `comboTokens(combo, { platform, style, order })`: one keycap per key,
-  `'glyphs'` by default. `name` is what a screen reader should say; put it in
-  visually hidden text or `aria-label` next to a glyph.
-- `modifierLabel(name, { platform, style })` (`'text'`, `'glyphs'` or
-  `'both'`), `modifierName(name, { platform })` (spoken), `keyLabel(key,
-  { platform, style })`, `listModifiers(names, { platform, conjunction })`
-  (`'Ctrl, Alt or Shift'`), `platformLabel('mac')` (`'macOS'`),
-  `browserLabel('edge')`.
-- `KEY_LABELS`: label and spoken name for `KeyboardEvent.code` values
-  (`Period` → `.` / "Period", `Enter` → Enter, Return on macOS, ↩).
-
-Words per platform: macOS Cmd, Option, Control, Shift; Windows Ctrl, Alt,
-Shift, Win; Linux the same with Super; ChromeOS with Search. `platform`
-defaults to `detectPlatform()`. On Windows, Linux and ChromeOS `'glyphs'`
-gives the same words as `'text'` (they have no modifier symbols).
-
-**Modifier order.** Modifiers come in the platform's own order whatever order
-the string is written in: on macOS Apple's ⌃⌥⇧⌘ (Control, Option, Shift,
-Command), the order every Mac menu shows, so `mod+shift+.` is `⇧⌘.`; on
-Windows, Linux and ChromeOS Win/Super/Search, Ctrl, Alt, Shift. Pass
-`{ order: 'combo' }` to keep the written order (`⌘⇧.`).
-
-### Supported syntax
-
-**Standard:**
-
-- `ctrl+k`
-- `shift+a`
-- `ctrl+k up`
-- `mod+s` (meta on macOS, ctrl elsewhere)
-- `ctrl++` or `ctrl+plus` (the `+` key; reservation and site lookups treat
-  it as `=`, since `+` is Shift+= on most layouts)
-
-**AHK-style prefix modifiers:**
-
-- `^k` → `ctrl+k`
-- `!k` → `alt+k`
-- `+k` → `shift+k`
-- `#k` → `meta+k`
-- `^!k` → `ctrl+alt+k`
-
-Modifiers must appear before the base key.
-
-**Modifier aliases:**
-
-- `ctrl`, `control`, `⌃`
-- `shift`, `⇧`, `+`
-- `alt`, `option`, `opt`, `⌥`, `!`
-- `meta`, `cmd`, `command`, `win`, `⌘`, `#`
-- `mod` (meta on macOS, ctrl elsewhere)
-
-**Navigation / special key aliases:**
-
-- `escape`, `esc`
-- `enter`, `return`
-- `space`, `spacebar`
-- `tab`
-- `backspace`
-- `delete`, `del`
-- `home`, `end`
-- `pageup`, `pgup`
-- `pagedown`, `pgdn`
-- `up`, `down`, `left`, `right`
-- `f1`–`f19`
-
-Keys are case-insensitive.
-
-### Philosophy
-
-hotkey-router follows three core rules:
-
-1. **Predictable routing.** Highest priority wins. Ties go to the most recently bound handler.
-2. **Safe composition.** Plugins can register and unregister without affecting others.
-3. **Modern only.** Built for modern browsers using `KeyboardEvent.key`.
-
-No keycodes. No legacy IE hacks. No hidden global scope state.
-
-### What this is not
-
-- Not a keycode polyfill
-- Not a legacy browser shim
-- Not a global scope manager
-- Not a VSCode-style sequence engine
-
-This is a small, deterministic routing layer for modern applications.
-
-### Browser support
-
-Modern browsers supporting:
-
-- `KeyboardEvent.key`
-- `Map`
-- `addEventListener`
-
-Chrome, Firefox, Safari, Edge.
-
-### Testing
-
-Everything runs locally; there is no hosted CI.
-
-- `npm test`: unit tests in jsdom.
-- `npm run test:browser` (v0.4.0+): builds, then runs `browser-tests/` in the
-  Chrome and Edge installed on this machine through `playwright-core`. That
-  covers real key events through shadow roots, routers scoped to a dialog, a
-  shadow root and an iframe, capture against a page that stops keys, the
-  `'text'` mode on real controls, and the built entries as an app bundles
-  them. Nothing is downloaded; a browser that isn't installed is skipped.
-  `BROWSERS=chrome` runs one. Needs Node 22 or later.
-- `npm run data:age` (v0.4.0+): how old the browser/OS and website shortcut
-  tables are; warns past six months (the build prints the same warning).
-  [docs/data-review.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/data-review.md) says how to review them.
-- `scripts/key-check.ahk` (Windows, AutoHotkey 1.1): real keyboard layouts
-  (Russian, Greek, Hebrew, Polish AltGr) in Chrome, Firefox and Edge, with
-  results written to `docs/notes/`. See `playground/key-check.html`.
-
----
+- a key-sequence engine (`g i`, VS Code-style chords in sequence);
+- a keycode polyfill or a shim for legacy browsers;
+- a scope manager: use separate routers, `when` or `pause()` for modes and dialogs;
+- a store for user-remapped shortcuts: `comboFromEvent` and `validateCombo` help you record and check them,
+  and you save them.
 
 ## License
 
-Licensed under AGPL-3.0 with WATT3D Additional Terms. See [LICENSE](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE) and [ADDITIONAL_TERMS.md](https://github.com/iWhatty/hotkey-router/blob/main/ADDITIONAL_TERMS.md). Commercial AI/model-training use requires compliance with those terms or a separate WATT3D license. © WATT3D.
+Licensed under AGPL-3.0 with WATT3D Additional Terms. See
+[LICENSE](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE) and
+[ADDITIONAL_TERMS.md](https://github.com/iWhatty/hotkey-router/blob/main/ADDITIONAL_TERMS.md). Commercial
+AI/model-training use requires compliance with those terms or a separate WATT3D license. © WATT3D.
