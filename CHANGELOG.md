@@ -3,6 +3,25 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
+## Unreleased
+
+### Docs
+
+- **README restructured** (about 820 lines to about 440): first five
+  minutes, why this library, install, hotkey syntax, the core API in order
+  of use, how routing works, multiple routers, then the opt-in add-ons with
+  one example each. Version tags such as "(v0.3.0+)" are gone from the
+  README; this file has them.
+- Detail moved to new pages, checked against the source:
+  `docs/reservations.md`, `docs/validate.md` (every reason code and
+  option), `docs/format.md`, `docs/sites.md`, `docs/routers.md` and
+  `docs/testing.md`.
+- Corrected on the way: `when` skips a binding only when it returns
+  exactly `false`; `init()` on a running router calls `destroy()`, which
+  clears its bindings; `validateCombo` doesn't repeat the parser's syntax
+  checks; the browser table has no Edge rows for macOS, and no rows yet for
+  the `compose`, `system-text` and `devtools-open` severities.
+
 ## 0.5.1 — 2026-10-29
 
 Docs only: no change to the library's behaviour or API, so nothing to do
