@@ -1,8 +1,8 @@
 # hotkey-router
 
-[![npm](https://img.shields.io/npm/v/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
-[![types](https://img.shields.io/npm/types/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
-[![license](https://img.shields.io/npm/l/hotkey-router)](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE)
+[![npm](https://badgen.net/npm/v/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
+[![types](https://badgen.net/npm/types/hotkey-router)](https://www.npmjs.com/package/hotkey-router)
+[![license](https://badgen.net/static/license/AGPL-3.0%20%2B%20terms/blue)](https://github.com/iWhatty/hotkey-router/blob/main/LICENSE)
 
 A small, deterministic keyboard-shortcut router for modern web apps: named groups of bindings, one predictable
 winner per key.
