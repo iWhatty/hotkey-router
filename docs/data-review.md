@@ -32,6 +32,11 @@ Review both tables twice a year, or when that warning appears.
    `hard`. Pass `all all control` to check every Ctrl+letter. To keep the
    PC usable while it runs, run it in Windows Sandbox instead (below).
 
+5. Set `version.generated` to today (`YYYY-MM-DD`).
+6. Run `npm test` (the reservation tests use real rows) and `node build.js`.
+7. If a change affects a key SpellBolt or another consumer uses, say so in the
+   CHANGELOG under Fixed, as 0.3.1 did for Cmd+Shift+/.
+
 ## Real-key checks in Windows Sandbox
 
 The AHK checks press real keys and bring browser windows to the front, so on
@@ -77,10 +82,6 @@ How it fits together: `scripts/sandbox/key-check-sandbox.mjs` writes the
 `scripts/sandbox/logon.ps1` runs at the sandbox's logon, sets
 `KEY_CHECK_NOTES` and `KEY_CHECK_PROBE_LOG` for `key-check-server.mjs` and
 the report, and runs the AHK script.
-5. Set `version.generated` to today (`YYYY-MM-DD`).
-6. Run `npm test` (the reservation tests use real rows) and `node build.js`.
-7. If a change affects a key SpellBolt or another consumer uses, say so in the
-   CHANGELOG under Fixed, as 0.3.1 did for Cmd+Shift+/.
 
 ## Website table
 

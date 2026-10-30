@@ -65,3 +65,6 @@ Everything runs locally; there is no hosted CI.
 - `scripts/key-check-reserved.ahk` (Windows, AutoHotkey 1.1): whether the
   page or the browser gets each Ctrl+letter, with real key presses; see
   [docs/reservations.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/reservations.md#how-the-table-is-checked).
+- `npm run key-check:sandbox` (Windows Sandbox, untested end to end): runs
+  either AHK check inside Windows Sandbox so it doesn't take over the PC;
+  see [docs/data-review.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/data-review.md#real-key-checks-in-windows-sandbox).
