@@ -8,8 +8,13 @@
 //
 // A browser that is missing, or blocked by policy, is reported and its tests
 // skipped, not failed.
+//
+// Launches go through the fleet's seeded helper (scripts/safe-chromium.mjs,
+// a managed copy from static-web-watt3d), so each run gets a seeded profile
+// and respects the machine-wide browser lock and quiet window.
 
 import { chromium } from 'playwright-core'
+import { launchSafeChromium } from '../scripts/safe-chromium.mjs'
 import { startServer } from '../scripts/key-check-server.mjs'
 
 export const CHANNELS = (process.env.BROWSERS || 'chrome,msedge').split(',').map((s) => s.trim()).filter(Boolean)
@@ -30,7 +35,7 @@ export function server() {
  */
 export async function launch(channel) {
   try {
-    return await chromium.launch({ channel, headless: true })
+    return await launchSafeChromium(chromium, { channel, headless: true })
   } catch (err) {
     console.log(`# ${channel}: not launched, its tests are skipped (${String(err.message).split('\n')[0]})`)
     return null

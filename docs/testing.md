@@ -54,7 +54,11 @@ Everything runs locally; there is no hosted CI.
   root and an iframe, capture against a page that stops keys, the `'text'`
   mode on real controls, and the built entries as an app bundles them.
   Nothing is downloaded; a browser that isn't installed is skipped.
-  `BROWSERS=chrome` runs one. Needs Node 22 or later.
+  `BROWSERS=chrome` runs one. Needs Node 22 or later. Each launch goes
+  through `scripts/safe-chromium.mjs` (with its sibling
+  `scripts/quiet-window.mjs`), byte-identical copies of the WATT3D fleet's
+  seeded-profile helper kept in sync by static-web-watt3d: never edit them
+  here.
 - `npm run data:age`: how old the browser/OS and website shortcut tables
   are; warns past six months (the build prints the same warning).
   [docs/data-review.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/data-review.md)
