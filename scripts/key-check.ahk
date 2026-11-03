@@ -112,7 +112,7 @@ for _, b in browsers {
 }
 if !japaneseHkl
     summary .= "`nJapanese IME not installed: checks 6 and 7 not run."
-MsgBox, 64, Key check, % "Finished.`n`n" summary "`n`nNotes are in docs\notes\key-check-*.md"
+MsgBox, 64, Key check, % "Finished.`n`n" summary "`n`nNotes are in docs\notes\key-check-*.md", 60
 ExitApp
 
 Pause::Abort("Stopped with the Pause key.")
@@ -283,7 +283,7 @@ StartServer() {
 
 Abort(message) {
     Log("stopped: " message)
-    MsgBox, 48, Key check, %message%`n`nLog: %LOG%
+    MsgBox, 48, Key check, %message%`n`nLog: %LOG%, 60
     ExitApp
 }
 

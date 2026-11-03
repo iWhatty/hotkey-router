@@ -5,6 +5,13 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ## Unreleased
 
+### Added
+
+- `npm run key-check:sandbox`: runs the real-key AHK checks in Windows
+  Sandbox, so they don't take over the PC; notes come back to `docs/notes/`.
+  `key-check-server.mjs` takes `KEY_CHECK_NOTES` and `KEY_CHECK_PROBE_LOG`.
+  See `docs/data-review.md`.
+
 ### Docs
 
 - **README restructured** (about 820 lines to about 440): first five
