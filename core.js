@@ -456,7 +456,7 @@ export function createRouter({
   /**
    * Bind a hotkey combo string to a handler.
    *
-   * @param {string} hotkeyStr      e.g. `'ctrl+shift+k'`, `'meta+slash'`, `'alt+code:KeyX'`
+   * @param {string} hotkeyStr      e.g. `'ctrl+shift+k'`, `'meta+/'`, `'alt+code:KeyX'`
    * @param {HotkeyHandler} handler
    * @param {string | null} [plugin]  optional plugin/namespace tag for bulk cleanup
    * @param {BindOptions} [options]
@@ -714,12 +714,9 @@ export function createRouter({
     if (o.stopImmediatePropagation) e.stopImmediatePropagation()
     else if (o.stopPropagation) e.stopPropagation()
 
-    // A handler that throws has still had its one run.
-    try {
-      winner.handler(e)
-    } finally {
-      if (o.once) removeById(winner.id)
-    }
+    // Remove before calling so nested dispatch cannot run a once binding again.
+    if (o.once) removeById(winner.id)
+    winner.handler(e)
   }
 
   function handleEvent(type, phase = 'all') {

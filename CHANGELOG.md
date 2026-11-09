@@ -5,6 +5,8 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ## Unreleased
 
+- Prevent `once` handlers from running again during nested dispatch.
+
 ### Docs
 
 - **README restructured** (about 820 lines to about 440): first five

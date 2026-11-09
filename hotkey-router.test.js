@@ -612,6 +612,27 @@ describe('0.3.3 repairs', () => {
   })
 
   describe('once and plugins', () => {
+    it.each(['ctrl+k', 'ctrl+k up'])('does not re-enter a once handler through trigger(%s)', (combo) => {
+      let nested
+      const handler = vi.fn(() => {
+        if (handler.mock.calls.length === 1) nested = hotkeys.trigger(combo)
+      })
+      hotkeys.bind(combo, handler, null, { once: true })
+      expect(hotkeys.trigger(combo)).toBe(true)
+      expect(nested).toBe(false)
+      expect(handler).toHaveBeenCalledOnce()
+    })
+
+    it('does not re-enter a once handler through DOM dispatch', () => {
+      const press = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))
+      const handler = vi.fn(() => {
+        if (handler.mock.calls.length === 1) press()
+      })
+      hotkeys.bind('ctrl+k', handler, null, { once: true })
+      press()
+      expect(handler).toHaveBeenCalledOnce()
+    })
+
     it('removes a once binding even when its handler throws', () => {
       const boom = vi.fn(() => { throw new Error('boom') })
       hotkeys.bind('ctrl+q', boom, null, { once: true })
