@@ -81,3 +81,17 @@ describe('one parser for router, sites and reservations', () => {
     expect(hit?.action).toMatch(/help/i)
   })
 })
+
+describe('prototype names are not lookup entries', () => {
+  it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty', 'valueOf', 'toLocaleString'])('keeps %s as an unknown label', (name) => {
+    expect(platformLabel(name)).toBe(name)
+    expect(browserLabel(name)).toBe(name)
+  })
+
+  it.each(['constructor', '__proto__'])('parses and looks up %s as a key', (key) => {
+    expect(parseHotkey('ctrl+' + key).combo.key).toBe(key)
+    expect(siteLookupKey('ctrl+' + key, 'windows')).toBe('ctrl+' + key)
+    expect(() => parseHotkey('ctrl+shift+' + key)).not.toThrow()
+    expect(lookupReservation({ key }, { platform: 'windows', browser: 'constructor' })).toBe(null)
+  })
+})

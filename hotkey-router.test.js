@@ -71,6 +71,34 @@ describe('hotkey-router', () => {
     expect(log).not.toHaveBeenCalled()
   })
 
+  it.each(['name', 'cleanup', 'destroy'])('stale plugin cleanup preserves a replacement after %s removal', (removal) => {
+    const stale = hotkeys.registerPlugin('demo', { 'alt+x': log })
+    if (removal === 'name') hotkeys.unregisterPlugin('demo')
+    else if (removal === 'cleanup') stale()
+    else {
+      hotkeys.destroy()
+      hotkeys.init({ target: window, capture: false })
+    }
+    const replacement = vi.fn()
+    const cleanup = hotkeys.registerPlugin('demo', { 'alt+x': replacement })
+    stale()
+    stale()
+    dispatch('keydown', 'x', { altKey: true })
+    expect(log).not.toHaveBeenCalled()
+    expect(replacement).toHaveBeenCalledOnce()
+    cleanup()
+    dispatch('keydown', 'x', { altKey: true })
+    expect(replacement).toHaveBeenCalledOnce()
+  })
+
+  it.each(['constructor', '__proto__'])('dispatches prototype-named key %s', (key) => {
+    hotkeys.bind('ctrl+' + key, log)
+    dispatch('keydown', key, { ctrlKey: true })
+    expect(log).toHaveBeenCalledOnce()
+    hotkeys.trigger('ctrl+' + key)
+    expect(log).toHaveBeenCalledTimes(2)
+  })
+
   it('can pause and resume', () => {
     hotkeys.bind('ctrl+x', log)
     hotkeys.pause()

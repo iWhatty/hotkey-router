@@ -16,6 +16,7 @@
 // `hotkey-router/reservations` module. Bundlers tree-shake the data file
 // out entirely when neither is imported.
 
+import { ownValue } from './lookup.js'
 import { parseHotkey, normalizeKey, shiftedPunctuationHint } from './parse.js'
 import { detectPlatform } from './platform.js'
 
@@ -126,7 +127,7 @@ function comboKeyFromEvent(e) {
   // press/release. Match it via the bare-modifier sentinel regardless of which
   // other modifier flags are set (loose match — Alt fires `alt` even when held
   // alongside Ctrl).
-  const bareMod = MODIFIER_KEY_TOKEN[e.key]
+  const bareMod = ownValue(MODIFIER_KEY_TOKEN, e.key)
   if (bareMod) return `__bare__:${bareMod}`
 
   return comboKeyFromParts({
@@ -203,7 +204,7 @@ function focusKind(e, mode) {
 // A chord: Ctrl, Alt or Meta held with a non-modifier key. A bare modifier
 // (Alt pressed or released on its own) is not one.
 function isChordEvent(e) {
-  return Boolean((e.ctrlKey || e.altKey || e.metaKey) && !MODIFIER_KEY_TOKEN[e.key])
+  return Boolean((e.ctrlKey || e.altKey || e.metaKey) && !ownValue(MODIFIER_KEY_TOKEN, e.key))
 }
 
 // ignoreInput's value as a mode: 'all' (true, the default), 'text', or null
@@ -325,7 +326,7 @@ function keyForCode(code) {
   const digit = /^(?:Digit|Numpad)(\d)$/.exec(code)
   if (digit) return digit[1]
   if (/^F\d{1,2}$/.test(code)) return code
-  return CODE_TO_KEY[code] ?? null
+  return ownValue(CODE_TO_KEY, code) ?? null
 }
 
 function codeForKey(key) {
@@ -333,7 +334,7 @@ function codeForKey(key) {
   if (/^[a-z]$/.test(key)) return 'Key' + key.toUpperCase()
   if (/^\d$/.test(key)) return 'Digit' + key
   if (/^f\d{1,2}$/.test(key)) return key.toUpperCase()
-  return KEY_TO_CODE[key] ?? null
+  return ownValue(KEY_TO_CODE, key) ?? null
 }
 
 
@@ -351,7 +352,7 @@ function codeForKey(key) {
  * @returns {string | null}
  */
 function comboFromEvent(e, { physical = true, useMod = false, platform = PLATFORM } = {}) {
-  if (!e || MODIFIER_KEY_TOKEN[e.key]) return null
+  if (!e || ownValue(MODIFIER_KEY_TOKEN, e.key)) return null
   const parts = []
   const primaryIsMeta = platform === 'mac'
   if (useMod && (primaryIsMeta ? e.metaKey : e.ctrlKey)) parts.push('mod')
@@ -594,7 +595,9 @@ export function createRouter({
     }
 
     plugins.set(name, ids)
-    return () => unregisterPlugin(name)
+    return () => {
+      if (plugins.get(name) === ids) unregisterPlugin(name)
+    }
   }
 
   /**
@@ -813,7 +816,7 @@ export function createRouter({
     // Fill `.key` from bareModifier when the binding is bare-modifier-only;
     // otherwise from combo.key, or the key a `code:` value types.
     const eventKey = combo.bareModifier
-      ? BARE_MOD_TO_KEY[combo.bareModifier]
+      ? ownValue(BARE_MOD_TO_KEY, combo.bareModifier)
       : combo.key ?? keyForCode(combo.code)
     const eventCode = combo.bareModifier
       ? null

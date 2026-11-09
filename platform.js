@@ -7,6 +7,8 @@
 // navigator.platform as Linux), navigator.userAgentData.platform (Chromium),
 // navigator.platform, then the user agent string.
 
+import { ownValue } from './lookup.js'
+
 /** @typedef {'mac' | 'windows' | 'linux' | 'chromeos'} Platform */
 /** @typedef {'chrome' | 'firefox' | 'safari' | 'edge'} Browser */
 
@@ -60,10 +62,10 @@ const BROWSER_LABELS = { chrome: 'Chrome', firefox: 'Firefox', edge: 'Edge', saf
 
 /** 'mac' -> 'macOS'. Unknown names come back as given. @param {string} platform @returns {string} */
 export function platformLabel(platform) {
-  return PLATFORM_LABELS[platform] || platform
+  return ownValue(PLATFORM_LABELS, platform) || platform
 }
 
 /** 'chrome' -> 'Chrome'. Unknown names come back as given. @param {string} browser @returns {string} */
 export function browserLabel(browser) {
-  return BROWSER_LABELS[browser] || browser
+  return ownValue(BROWSER_LABELS, browser) || browser
 }

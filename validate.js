@@ -15,6 +15,7 @@
 // Data: data/browser-hotkeys.json (keys the browser or OS take before the
 // page sees them) and data/site-hotkeys.runtime.json (keys popular sites use).
 
+import { ownValue } from './lookup.js'
 import { lookupReservation, severityIsHard } from './reservations.js'
 import { parseComboString, listSites } from './sites.js'
 import { modifierLabel, listModifiers, platformLabel, browserLabel } from './format.js'
@@ -152,7 +153,7 @@ export function validateCombo(combo, {
     }
 
     if (sites) {
-      const col = SITE_COL[platform]
+      const col = ownValue(SITE_COL, platform)
       const names = []
       for (const site of listSites()) {
         if (site.shortcuts.some((row) => row[col] === key)) names.push(site.name)

@@ -172,7 +172,7 @@ hotkey and its `code:` spelling are different bindings: `unbind('ctrl+k')` leave
 A plugin is a named group of bindings. `registerPlugin` binds every entry of `map` (a handler, or `[handler,
 options]`) under `name` and returns a function that unregisters it. Removing a plugin never touches other
 bindings. If a hotkey in the map doesn't parse, it throws and binds nothing; a name that is already registered
-throws too.
+throws too. The returned cleanup only removes its own registration, even if the name is reused.
 
 ```js
 const unregister = hotkeys.registerPlugin('editor', {

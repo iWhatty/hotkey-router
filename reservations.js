@@ -9,6 +9,7 @@
 // Data file: data/browser-hotkeys.json. Schema documented in that file's
 // `$keyFormat` / `$comment` fields. Severity tiers determine warn vs info.
 
+import { ownValue } from './lookup.js'
 import HOTKEY_DATA from './data/browser-hotkeys.json' with { type: 'json' }
 import { lookupKey } from './parse.js'
 import { detectPlatform, detectBrowser, platformLabel } from './platform.js'
@@ -130,11 +131,11 @@ export function lookupReservation(combo, { platform, browser } = {}) {
   const lookupKey = lookupKeyFromCombo(combo)
   if (!lookupKey) return null
 
-  const pdata = platform && INDEX.platforms[platform]
+  const pdata = platform && ownValue(INDEX.platforms, platform)
   if (!pdata) return null
 
-  const btable = browser ? pdata.browsers?.[browser] : null
-  const bclaim = btable?.[lookupKey]
+  const btable = browser ? ownValue(pdata.browsers, browser) : null
+  const bclaim = ownValue(btable, lookupKey)
   if (bclaim) {
     return {
       source: 'browser',
@@ -145,7 +146,7 @@ export function lookupReservation(combo, { platform, browser } = {}) {
       severity: bclaim.severity,
     }
   }
-  const sclaim = pdata.system?.[lookupKey]
+  const sclaim = ownValue(pdata.system, lookupKey)
   if (sclaim) {
     return {
       source: 'system',

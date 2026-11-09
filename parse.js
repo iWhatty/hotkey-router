@@ -3,6 +3,7 @@
 // validate and format read combos with it, so `opt`, `ctrl++`, `^k` and
 // `mod` mean the same thing everywhere. No state, no side effects.
 
+import { ownValue } from './lookup.js'
 import { detectPlatform } from './platform.js'
 
 // `mod` is the platform's primary modifier: meta on macOS, ctrl elsewhere.
@@ -77,7 +78,7 @@ export function normalizeKey(key) {
   if (original === ' ') return ' '
   const trimmed = original.trim()
   const k = trimmed.toLowerCase()
-  return keyAliases[k] ?? k
+  return ownValue(keyAliases, k) ?? k
 }
 
 function isModifierToken(token) {
@@ -176,7 +177,7 @@ export function readHotkey(hotkeyStr, { platform = DEFAULT_PLATFORM } = {}) {
       combo.code = codeValue
       continue
     }
-    const actual = keyAliases[part] ?? part
+    const actual = ownValue(keyAliases, part) ?? part
     if (modifierTokens.has(actual)) setMod(actual)
     else combo.key = normalizeKey(actual)
   }
@@ -250,7 +251,7 @@ const SHIFTED_PUNCT = {
 export function shiftedPunctuationHint(hotkeyStr) {
   const { combo, type, error } = readHotkey(hotkeyStr)
   if (error || !combo.shift || combo.code) return null
-  const shifted = SHIFTED_PUNCT[combo.key]
+  const shifted = ownValue(SHIFTED_PUNCT, combo.key)
   if (!shifted) return null
   const [typed, code] = shifted
 
@@ -288,9 +289,9 @@ export function codeToBase(code) {
 /** `'.'` -> `period`, `'Esc'` -> `escape`, `'K'` -> `k`. */
 export function keyToBase(key) {
   if (key == null || key === '') return null
-  if (PUNCT_NAMES[key]) return PUNCT_NAMES[key]
+  if (ownValue(PUNCT_NAMES, key)) return ownValue(PUNCT_NAMES, key)
   const k = normalizeKey(key)
-  return PUNCT_NAMES[k] || k || null
+  return ownValue(PUNCT_NAMES, k) || k || null
 }
 
 /**

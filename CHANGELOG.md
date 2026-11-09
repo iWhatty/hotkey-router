@@ -5,6 +5,9 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ## Unreleased
 
+- Keep stale plugin cleanup handles from removing replacement registrations.
+- Treat prototype names as unknown keys in string lookup tables.
+
 - Prevent `once` handlers from running again during nested dispatch.
 
 ### Docs
