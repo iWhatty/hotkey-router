@@ -14,7 +14,7 @@ Vendor help pages and keymap source, read by research agents (often through a su
 | Google Slides | docs.google.com (/presentation/) | 19 | 17 | 14 | 11 | 61/61 |
 | Gmail | mail.google.com | 13 | 2 | 0 | 0 | 15/15 |
 | Google Keep | keep.google.com | 1 | 0 | 0 | 0 | 1/1 |
-| Word for the web | word.cloud.microsoft, *.officeapps.live.com, onedrive.live.com, sharepoint.com (unconfirmed) | 7 | 1 | 2 | 1 | 7/11 |
+| Word for the web | word.cloud.microsoft, *.officeapps.live.com, onedrive.live.com, *.sharepoint.com (unconfirmed) | 7 | 1 | 2 | 1 | 7/11 |
 | Outlook on the web | outlook.office.com, outlook.live.com, outlook.cloud.microsoft, outlook.office365.com (unconfirmed) | 4 | 5 | 5 | 0 | 13/14 |
 | Microsoft Teams (web) | teams.microsoft.com, teams.live.com, teams.cloud.microsoft (unconfirmed) | 21 | 20 | 20 | 2 | 0/63 |
 | OneNote for the web | onenote.cloud.microsoft, www.onenote.com, *.officeapps.live.com, onedrive.live.com (unconfirmed) | 1 | 0 | 2 | 0 | 3/3 |
@@ -266,7 +266,7 @@ Gaps: Only one chord found in the three families; fetch summary only, so Keep ma
 
 ## Word for the web
 
-Hosts: word.cloud.microsoft, *.officeapps.live.com, onedrive.live.com, sharepoint.com (unconfirmed).
+Hosts: word.cloud.microsoft, *.officeapps.live.com, onedrive.live.com, *.sharepoint.com (unconfirmed).
 
 | Family | Windows | Mac | ChromeOS | Action | Verified |
 | --- | --- | --- | --- | --- | --- |

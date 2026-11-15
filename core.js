@@ -206,6 +206,13 @@ function isChordEvent(e) {
   return Boolean((e.ctrlKey || e.altKey || e.metaKey) && !MODIFIER_KEY_TOKEN[e.key])
 }
 
+// A handler that isn't a function would only fail later, on the keypress.
+function assertHandler(hotkeyStr, handler) {
+  if (typeof handler !== 'function') {
+    throw new TypeError(`hotkeys.bind("${hotkeyStr}") expects a function handler, got ${handler === null ? 'null' : typeof handler}`)
+  }
+}
+
 // ignoreInput's value as a mode: 'all' (true, the default), 'text', or null
 // (false: no check).
 function inputMode(value) {
@@ -287,6 +294,24 @@ function latinKeyFromEvent(e) {
     alt: false,
     meta: e.metaKey,
     key: letter[1].toLowerCase(),
+  })
+}
+
+// Lookup key without Shift, for a character the layout types with Shift: a
+// real '?' keydown has shiftKey set, so `?` (or `!`, `+`, or `1` on AZERTY)
+// would otherwise look up `shift+?` and never fire. Only a single character
+// with no case (not a letter: `shift+k` and `k` stay distinct) and not
+// whitespace (Shift+Space is its own key). An exact `shift+?` binding is
+// looked up first and always wins.
+function unshiftedKeyFromEvent(e) {
+  if (!e.shiftKey || typeof e.key !== 'string' || e.key.length !== 1) return null
+  if (/\s/.test(e.key) || e.key.toLowerCase() !== e.key.toUpperCase()) return null
+  return comboKeyFromParts({
+    ctrl: e.ctrlKey,
+    shift: false,
+    alt: e.altKey,
+    meta: e.metaKey,
+    key: normalizeKey(e.key),
   })
 }
 
@@ -464,6 +489,7 @@ export function createRouter({
    */
   function bind(hotkeyStr, handler, plugin = null, options = {}) {
     const { combo, type, raw } = parseHotkey(hotkeyStr)
+    assertHandler(hotkeyStr, handler)
     const comboStr = comboKeyFromParts(combo)
     const opts = normalizeOptions(type, options)
 
@@ -581,14 +607,17 @@ export function createRouter({
   function registerPlugin(name, hotkeyMap) {
     if (plugins.has(name)) throw new Error(`Plugin "${name}" already registered`)
 
-    // Parse every key string before binding any, so a bad one leaves nothing
-    // bound that unregisterPlugin could not reach.
-    const entries = Object.entries(hotkeyMap)
-    for (const [hotkeyStr] of entries) parseHotkey(hotkeyStr)
+    // Check every key string and handler before binding any, so a bad one
+    // leaves nothing bound that unregisterPlugin could not reach.
+    const entries = Object.entries(hotkeyMap).map(([hotkeyStr, fnOrTuple]) => {
+      const [fn, options] = Array.isArray(fnOrTuple) ? fnOrTuple : [fnOrTuple, {}]
+      parseHotkey(hotkeyStr)
+      assertHandler(hotkeyStr, fn)
+      return [hotkeyStr, fn, options]
+    })
 
     const ids = []
-    for (const [hotkeyStr, fnOrTuple] of entries) {
-      const [fn, options] = Array.isArray(fnOrTuple) ? fnOrTuple : [fnOrTuple, {}]
+    for (const [hotkeyStr, fn, options] of entries) {
       const off = bind(hotkeyStr, fn, name, options)
       ids.push(off.id)
     }
@@ -681,9 +710,13 @@ export function createRouter({
       collectEligible(candidates, lookupKey, e, type, phase, guards)
     }
 
-    if (!candidates.length) {
-      const latinKey = latinKeyFromEvent(e)
-      if (latinKey && !seen.has(latinKey)) collectEligible(candidates, latinKey, e, type, phase, guards)
+    for (const fallback of [latinKeyFromEvent, unshiftedKeyFromEvent]) {
+      if (candidates.length) break
+      const k = fallback(e)
+      if (k && !seen.has(k)) {
+        seen.add(k)
+        collectEligible(candidates, k, e, type, phase, guards)
+      }
     }
     return candidates
   }

@@ -1561,7 +1561,7 @@
         "word.cloud.microsoft",
         "*.officeapps.live.com",
         "onedrive.live.com",
-        "sharepoint.com"
+        "*.sharepoint.com"
       ],
       "hostsConfirmed": false,
       "pathPrefixes": [],

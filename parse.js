@@ -77,7 +77,16 @@ export function normalizeKey(key) {
   if (original === ' ') return ' '
   const trimmed = original.trim()
   const k = trimmed.toLowerCase()
-  return keyAliases[k] ?? k
+  return alias(k) ?? k
+}
+
+// Own-property lookup, so 'constructor' or '__proto__' is a plain key name
+// rather than something found on Object.prototype.
+function hasOwn(obj, k) {
+  return Object.prototype.hasOwnProperty.call(obj, k)
+}
+function alias(k) {
+  return hasOwn(keyAliases, k) ? keyAliases[k] : undefined
 }
 
 function isModifierToken(token) {
@@ -87,7 +96,7 @@ function isModifierToken(token) {
 // Matches `code:KeyX` (case-sensitive value). Used to extract code tokens BEFORE
 // the rest of the parser lowercases everything, since KeyboardEvent.code values
 // are camelCase (KeyA, Digit1, ArrowLeft) and must be preserved.
-const CODE_TOKEN_RE = /(^|\+)code:([A-Za-z][A-Za-z0-9_]*)/
+const CODE_TOKEN_RE = /(^|\+)\s*code:([A-Za-z][A-Za-z0-9_]*)/
 
 /**
  * Lenient parse: never throws. `error` holds the message `parseHotkey` would
@@ -126,8 +135,10 @@ export function readHotkey(hotkeyStr, { platform = DEFAULT_PLATFORM } = {}) {
   // We strip these BEFORE both the code-token extraction AND the lowercase
   // pass, because the AHK prefix chars (^ ! + #) are case-stable, and the
   // remainder may contain a case-sensitive `code:KeyX` token that must survive.
+  // A lone prefix character is the key itself: '+', '#', '!' and '^' bind
+  // that character, and '^+' is Ctrl with '+'.
   let stripped = baseRaw
-  while (stripped.length) {
+  while (stripped.length > 1) {
     const mod = ahkPrefixMap.get(stripped[0]) ?? null
     if (!mod) break
     setMod(mod)
@@ -171,17 +182,25 @@ export function readHotkey(hotkeyStr, { platform = DEFAULT_PLATFORM } = {}) {
   }
 
   // Continue parsing the remaining tokens (words/symbols/aliases)
+  // One base key: 'ctrl+a+b' or 'ctrl+k+code:KeyA' would otherwise keep
+  // only one of them without saying so.
+  let bases = 0
   for (const part of parts) {
     if (part === '__code__') {
       combo.code = codeValue
+      bases++
       continue
     }
-    const actual = keyAliases[part] ?? part
+    const actual = alias(part) ?? part
     if (modifierTokens.has(actual)) setMod(actual)
-    else combo.key = normalizeKey(actual)
+    else {
+      combo.key = normalizeKey(actual)
+      bases++
+    }
   }
+  if (bases > 1) fail('use one base key (e.g. "ctrl+k"), or one code: token')
 
-  if (!combo.key && !combo.code && impliedPlusKey) combo.key = '+'
+  if (!combo.key && !combo.code && (impliedPlusKey || stripped === '+')) combo.key = '+'
 
   // If no base key/code is set, this might be a bare-modifier binding ('alt' / 'ctrl').
   // Allow exactly ONE modifier with no other tokens. Multi-modifier bare bindings
@@ -237,6 +256,8 @@ const SHIFTED_PUNCT = {
   ']': ['}', 'BracketRight'], '\\': ['|', 'Backslash'], '-': ['_', 'Minus'],
   '=': ['+', 'Equal'], '`': ['~', 'Backquote'],
 }
+// Digits too: Shift+1 types '!' on US layouts.
+for (let d = 0; d < 10; d++) SHIFTED_PUNCT[d] = [')!@#$%^&*('[d], 'Digit' + d]
 
 /**
  * For a key-based combo with Shift and one of `, . / ; ' [ ] \ - = \``, the
@@ -250,7 +271,7 @@ const SHIFTED_PUNCT = {
 export function shiftedPunctuationHint(hotkeyStr) {
   const { combo, type, error } = readHotkey(hotkeyStr)
   if (error || !combo.shift || combo.code) return null
-  const shifted = SHIFTED_PUNCT[combo.key]
+  const shifted = hasOwn(SHIFTED_PUNCT, combo.key) ? SHIFTED_PUNCT[combo.key] : null
   if (!shifted) return null
   const [typed, code] = shifted
 
@@ -288,9 +309,9 @@ export function codeToBase(code) {
 /** `'.'` -> `period`, `'Esc'` -> `escape`, `'K'` -> `k`. */
 export function keyToBase(key) {
   if (key == null || key === '') return null
-  if (PUNCT_NAMES[key]) return PUNCT_NAMES[key]
+  if (hasOwn(PUNCT_NAMES, key)) return PUNCT_NAMES[key]
   const k = normalizeKey(key)
-  return PUNCT_NAMES[k] || k || null
+  return (hasOwn(PUNCT_NAMES, k) ? PUNCT_NAMES[k] : k) || null
 }
 
 /**

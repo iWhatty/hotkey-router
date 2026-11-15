@@ -127,18 +127,21 @@ function modifierInfo(mod, platform) {
   return PC_MODIFIERS[mod]
 }
 
+// Own-property read: a key named 'constructor' is not Object.prototype's.
+const own = (obj, k) => (Object.prototype.hasOwnProperty.call(obj, k) ? obj[k] : undefined)
+
 // A key or code as { label, name, glyph? } for the platform.
 function keyInfo({ key, code }, platform) {
   const mac = platform === 'mac'
   let c = code
   if (!c && key != null) {
-    c = KEY_TO_CODE[key]
+    c = own(KEY_TO_CODE, key)
     if (!c && /^[a-z]$/.test(key)) c = 'Key' + key.toUpperCase()
     if (!c && /^\d$/.test(key)) c = 'Digit' + key
     if (!c && /^f\d{1,2}$/.test(key)) c = key.toUpperCase()
   }
   if (c) {
-    const known = KEY_LABELS[c]
+    const known = own(KEY_LABELS, c)
     if (known) {
       const label = mac && known.mac ? known.mac : known.label
       return { label, name: mac && known.mac ? known.mac : known.name, glyph: mac ? known.glyph : undefined }
@@ -154,7 +157,7 @@ function keyInfo({ key, code }, platform) {
   }
   // Any other `event.key` value: a character as typed, a word capitalized.
   const k = String(key ?? '')
-  if (k.length === 1) return { label: k.toUpperCase(), name: KEY_NAMES[k] || k.toUpperCase() }
+  if (k.length === 1) return { label: k.toUpperCase(), name: own(KEY_NAMES, k) || k.toUpperCase() }
   const word = k.charAt(0).toUpperCase() + k.slice(1)
   return { label: word, name: word }
 }
@@ -246,7 +249,7 @@ export function keyLabel(key, { platform, style = 'text' } = {}) {
 
 function toKeyRef(key) {
   const s = String(key ?? '')
-  const code = /^code:(.+)$/.exec(s)?.[1] ?? (/^[A-Z][A-Za-z0-9]+$/.test(s) && (KEY_LABELS[s] || /^(Key[A-Z]|Digit\d|Numpad\d|F\d{1,2})$/.test(s)) ? s : null)
+  const code = /^code:(.+)$/.exec(s)?.[1] ?? (/^[A-Z][A-Za-z0-9]+$/.test(s) && (own(KEY_LABELS, s) || /^(Key[A-Z]|Digit\d|Numpad\d|F\d{1,2})$/.test(s)) ? s : null)
   return code ? { code } : { key: normalizeKey(s) }
 }
 

@@ -5,6 +5,54 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ## Unreleased
 
+### Fixed
+
+- **`?`, `!` and other characters typed with Shift now fire.** A real `?`
+  keydown has `shiftKey` set, so `bind('?')` looked up `shift+?` and never
+  ran, while `trigger('?')` said it did. When nothing matches exactly, a
+  character with no case (not a letter, not Space) is also looked up
+  without Shift; an exact `shift+?` binding still wins. This also fixes
+  digits on layouts that type them with Shift (AZERTY `1`).
+- **The parser refuses what it used to drop silently.** `ctrl+a+b` (two
+  base keys) and `ctrl+k+code:KeyA` (a key and a `code:`) now throw;
+  before, one of the keys was ignored. `ctrl + code:KeyK` (spaces around
+  `+`) reads the `code:` token instead of binding the key `code:keyk`.
+- **A lone `+`, `!`, `#` or `^` is that key**, not a bare Shift, Alt, Meta
+  or Ctrl press; `^+` is Ctrl with `+`. AHK prefixes before a key (`^k`,
+  `++`) are unchanged.
+- **`bind()` and `registerPlugin()` throw a `TypeError` for a handler that
+  isn't a function**, instead of failing on the keypress. A plugin with
+  one bad handler binds nothing.
+- **Key names such as `constructor` or `__proto__`** are plain keys
+  everywhere (parser, reservations, format); before, they read values off
+  `Object.prototype`.
+- **Reservations: five rows could never match.** Rows written with `esc`
+  or `del` (Windows Ctrl+Shift+Esc and Ctrl+Alt+Del, macOS
+  Cmd+Option+Esc, Linux Alt+Esc and Ctrl+Alt+Del) now index through the
+  same parser as a bound combo, so `lookupReservation`, the warnings and
+  `validateCombo` all see them.
+- **`validateCombo` reports `invalid`** for a string the router would
+  refuse (`k+ctrl`, two `code:` tokens), with the parser's message in
+  `details.error`, instead of returning `ok: true`.
+- **Types:** `reservations.d.ts` re-exported `HOTKEY_DATA` without
+  declaring it, which broke strict TypeScript builds without
+  `skipLibCheck` (TS2304).
+- **The shifted-punctuation hint covers digits**: `shift+1` suggests
+  `shift+code:Digit1`, and `validateCombo` reports it.
+
+### Data
+
+- **Edge on macOS** has its own table (37 rows) from Microsoft's Edge
+  shortcuts page, with the Edit-menu rows as Chrome's. Before, Edge on
+  macOS got system rows only. Not checked with real keys.
+- **Word for the web** matches `*.sharepoint.com` (tenant hosts) instead of
+  the bare `sharepoint.com`.
+
+### Internal
+
+- `vitest.config.js` leaves `.claude/**` out of the run, so agent worktrees'
+  copies of the suite no longer run with it.
+
 ### Docs
 
 - **README restructured** (about 820 lines to about 440): first five

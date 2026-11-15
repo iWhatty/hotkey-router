@@ -69,7 +69,7 @@ Errors (`ok: false`):
 
 | Code | When |
 | --- | --- |
-| `invalid` | Nothing was recorded: not a string, or an empty one. |
+| `invalid` | Nothing was recorded (not a string, or an empty one), or the router would refuse the keys (`k+ctrl`, two base keys, two `code:` tokens); `details.error` then has the parser's message. |
 | `no-key` | Only modifiers, no key. |
 | `no-modifier` | No modifier at all, so the key would fire while typing. |
 | `alt-only` | Alt is the only modifier, on Windows or Linux (releasing Alt focuses the browser's menu). |
@@ -77,7 +77,7 @@ Errors (`ok: false`):
 | `too-few-modifiers` | Fewer modifiers than `minModifiers`. |
 | `taken` | Same keys as an entry in `taken`; `details.combo` is that entry. |
 | `reserved` | The browser or OS takes the keys before the page (severity `hard`, `os` or `menu-activation`). `details` has `browser` and `action`. |
-| `shifted-punctuation` | A key-based Shift chord with `` , . / ; ' [ ] \ - = ` ``, which never matches on US layouts. `details.suggestion` is the `code:` spelling, e.g. `ctrl+shift+code:Comma`. |
+| `shifted-punctuation` | A key-based Shift chord with `` , . / ; ' [ ] \ - = ` `` or a digit, which never matches on US layouts. `details.suggestion` is the `code:` spelling, e.g. `ctrl+shift+code:Comma`. |
 
 Warnings (`ok` stays `true`):
 
