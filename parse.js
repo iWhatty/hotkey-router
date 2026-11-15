@@ -3,6 +3,7 @@
 // validate and format read combos with it, so `opt`, `ctrl++`, `^k` and
 // `mod` mean the same thing everywhere. No state, no side effects.
 
+import { ownValue } from './lookup.js'
 import { detectPlatform } from './platform.js'
 
 // `mod` is the platform's primary modifier: meta on macOS, ctrl elsewhere.
@@ -77,16 +78,7 @@ export function normalizeKey(key) {
   if (original === ' ') return ' '
   const trimmed = original.trim()
   const k = trimmed.toLowerCase()
-  return alias(k) ?? k
-}
-
-// Own-property lookup, so 'constructor' or '__proto__' is a plain key name
-// rather than something found on Object.prototype.
-function hasOwn(obj, k) {
-  return Object.prototype.hasOwnProperty.call(obj, k)
-}
-function alias(k) {
-  return hasOwn(keyAliases, k) ? keyAliases[k] : undefined
+  return ownValue(keyAliases, k) ?? k
 }
 
 function isModifierToken(token) {
@@ -191,7 +183,7 @@ export function readHotkey(hotkeyStr, { platform = DEFAULT_PLATFORM } = {}) {
       bases++
       continue
     }
-    const actual = alias(part) ?? part
+    const actual = ownValue(keyAliases, part) ?? part
     if (modifierTokens.has(actual)) setMod(actual)
     else {
       combo.key = normalizeKey(actual)
@@ -271,7 +263,7 @@ for (let d = 0; d < 10; d++) SHIFTED_PUNCT[d] = [')!@#$%^&*('[d], 'Digit' + d]
 export function shiftedPunctuationHint(hotkeyStr) {
   const { combo, type, error } = readHotkey(hotkeyStr)
   if (error || !combo.shift || combo.code) return null
-  const shifted = hasOwn(SHIFTED_PUNCT, combo.key) ? SHIFTED_PUNCT[combo.key] : null
+  const shifted = ownValue(SHIFTED_PUNCT, combo.key)
   if (!shifted) return null
   const [typed, code] = shifted
 
@@ -309,9 +301,9 @@ export function codeToBase(code) {
 /** `'.'` -> `period`, `'Esc'` -> `escape`, `'K'` -> `k`. */
 export function keyToBase(key) {
   if (key == null || key === '') return null
-  if (hasOwn(PUNCT_NAMES, key)) return PUNCT_NAMES[key]
+  if (ownValue(PUNCT_NAMES, key)) return ownValue(PUNCT_NAMES, key)
   const k = normalizeKey(key)
-  return (hasOwn(PUNCT_NAMES, k) ? PUNCT_NAMES[k] : k) || null
+  return ownValue(PUNCT_NAMES, k) || k || null
 }
 
 /**

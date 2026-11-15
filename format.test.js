@@ -178,3 +178,15 @@ describe('keyLabel / KEY_LABELS', () => {
     }
   })
 })
+
+describe('prototype names are not format entries', () => {
+  it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty'])('preserves unknown code %s', (name) => {
+    expect(keyLabel('code:' + name, windows)).toBe(name)
+    expect(comboTokens({ ctrl: true, code: name }, windows)[1]).toEqual({ label: name, name, key: name })
+  })
+
+  it('uses the default meta label for an unknown platform', () => {
+    expect(modifierLabel('meta', { platform: 'constructor' })).toBe('Win')
+    expect(modifierName('meta', { platform: '__proto__' })).toBe('Windows')
+  })
+})

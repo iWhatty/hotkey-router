@@ -277,6 +277,29 @@ describe('createRouter', () => {
       expect(hook).toHaveBeenCalledOnce()
     })
 
+    it('rejects an invalid onBind subscriber', () => {
+      expect(() => make().onBind(null)).toThrow(TypeError)
+    })
+
+    it('isolates a throwing onBind hook and still notifies later hooks', () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const r = make()
+      r.onBind(() => { throw new Error('hook failed') })
+      const hook = vi.fn()
+      const unsubscribe = r.onBind(hook)
+      const handler = vi.fn()
+      const off = r.bind('ctrl+k', handler, 'demo', { priority: 2 })
+      expect(hook).toHaveBeenCalledWith(expect.objectContaining({
+        id: off.id, raw: 'ctrl+k', plugin: 'demo', options: expect.objectContaining({ priority: 2 }),
+      }))
+      expect(error).toHaveBeenCalledOnce()
+      expect(r.trigger('ctrl+k')).toBe(true)
+      expect(handler).toHaveBeenCalledOnce()
+      unsubscribe()
+      r.bind('ctrl+j', handler)
+      expect(hook).toHaveBeenCalledOnce()
+    })
+
     it('the shifted-punctuation warning is once per combo across routers', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       make().bind('ctrl+shift+;', () => {})

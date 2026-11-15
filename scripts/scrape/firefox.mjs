@@ -12,9 +12,6 @@
 // as "skipped" and the diff stays clean. Fill in using cheerio + fetchText
 // from ./_common.mjs and return one partial per platform.
 
-// import { fetchText, canonicalCombo, inferSeverity } from './_common.mjs'
-// import { load } from 'cheerio'
-
 export default async function scrapeFirefox() {
   // TODO: implement parsing of Firefox support + DevTools tables. Should
   // emit three partials: mac/firefox, windows/firefox, linux/firefox.

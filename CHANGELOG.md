@@ -24,7 +24,7 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   isn't a function**, instead of failing on the keypress. A plugin with
   one bad handler binds nothing.
 - **Key names such as `constructor` or `__proto__`** are plain keys
-  everywhere (parser, reservations, format); before, they read values off
+  everywhere (parser, reservations, format, platform names); before, they read values off
   `Object.prototype`.
 - **Reservations: five rows could never match.** Rows written with `esc`
   or `del` (Windows Ctrl+Shift+Esc and Ctrl+Alt+Del, macOS
@@ -39,6 +39,10 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   `skipLibCheck` (TS2304).
 - **The shifted-punctuation hint covers digits**: `shift+1` suggests
   `shift+code:Digit1`, and `validateCombo` reports it.
+- **A plugin's stale cleanup handle no longer removes a newer registration**
+  of the same plugin.
+- **A `once` binding can't run twice** when its handler dispatches the
+  same key again: it is removed before it runs.
 
 ### Data
 

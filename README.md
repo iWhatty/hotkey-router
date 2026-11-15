@@ -133,7 +133,7 @@ that `onBind` hooks receive, or `null`; `unregisterPlugin` only removes bindings
 // preventDefault: on Windows and Linux the browser also uses Ctrl+K (search)
 hotkeys.bind('mod+k', openPalette, null, { preventDefault: true, allowIn: () => true })
 
-// preventDefault, or the browser's Save As dialog opens too
+// preventDefault, or the browser's Save dialog opens too
 hotkeys.bind('ctrl+s', saveDraft, null, { once: true, preventDefault: true })
 
 hotkeys.bind('delete', deleteItem, null, { when: () => selectionCount() > 0 })
@@ -145,7 +145,7 @@ hotkeys.bind('delete', deleteItem, null, { when: () => selectionCount() > 0 })
 | `stopPropagation` | `false` | Stop the event from reaching listeners further along. |
 | `stopImmediatePropagation` | `false` | Also stop other listeners on the same target. |
 | `repeat` | `false` (keydown) | Fire on auto-repeat while the key is held. |
-| `once` | `false` | Remove the binding after it runs once (even if the handler throws). |
+| `once` | `false` | Remove the binding before calling its handler, so nested dispatch cannot run it again (even if the handler throws). |
 | `when(event)` | — | Gate: the binding is skipped when it returns exactly `false`. |
 | `allowIn(event)` | — | Return `true` to fire where the input check would block it. |
 | `priority` | `0` | Higher wins; ties go to the most recent binding. |
@@ -173,7 +173,7 @@ hotkey and its `code:` spelling are different bindings: `unbind('ctrl+k')` leave
 A plugin is a named group of bindings. `registerPlugin` binds every entry of `map` (a handler, or `[handler,
 options]`) under `name` and returns a function that unregisters it. Removing a plugin never touches other
 bindings. If a hotkey in the map doesn't parse, it throws and binds nothing; a name that is already registered
-throws too.
+throws too. The returned cleanup only removes its own registration, even if the name is reused.
 
 ```js
 const unregister = hotkeys.registerPlugin('editor', {

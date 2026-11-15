@@ -25,6 +25,7 @@
 //
 // Imports only the shared parser and detector, never the core router.
 
+import { ownValue } from './lookup.js'
 import { readHotkey, normalizeKey } from './parse.js'
 import { detectPlatform, platformLabel, browserLabel } from './platform.js'
 
@@ -122,26 +123,23 @@ function resolvePlatform(platform) {
 }
 
 function modifierInfo(mod, platform) {
-  if (platform === 'mac') return MAC_MODIFIERS[mod]
-  if (mod === 'meta' && META_BY_PLATFORM[platform]) return META_BY_PLATFORM[platform]
-  return PC_MODIFIERS[mod]
+  if (platform === 'mac') return ownValue(MAC_MODIFIERS, mod)
+  if (mod === 'meta' && ownValue(META_BY_PLATFORM, platform)) return ownValue(META_BY_PLATFORM, platform)
+  return ownValue(PC_MODIFIERS, mod)
 }
-
-// Own-property read: a key named 'constructor' is not Object.prototype's.
-const own = (obj, k) => (Object.prototype.hasOwnProperty.call(obj, k) ? obj[k] : undefined)
 
 // A key or code as { label, name, glyph? } for the platform.
 function keyInfo({ key, code }, platform) {
   const mac = platform === 'mac'
   let c = code
   if (!c && key != null) {
-    c = own(KEY_TO_CODE, key)
+    c = ownValue(KEY_TO_CODE, key)
     if (!c && /^[a-z]$/.test(key)) c = 'Key' + key.toUpperCase()
     if (!c && /^\d$/.test(key)) c = 'Digit' + key
     if (!c && /^f\d{1,2}$/.test(key)) c = key.toUpperCase()
   }
   if (c) {
-    const known = own(KEY_LABELS, c)
+    const known = ownValue(KEY_LABELS, c)
     if (known) {
       const label = mac && known.mac ? known.mac : known.label
       return { label, name: mac && known.mac ? known.mac : known.name, glyph: mac ? known.glyph : undefined }
@@ -157,7 +155,7 @@ function keyInfo({ key, code }, platform) {
   }
   // Any other `event.key` value: a character as typed, a word capitalized.
   const k = String(key ?? '')
-  if (k.length === 1) return { label: k.toUpperCase(), name: own(KEY_NAMES, k) || k.toUpperCase() }
+  if (k.length === 1) return { label: k.toUpperCase(), name: ownValue(KEY_NAMES, k) || k.toUpperCase() }
   const word = k.charAt(0).toUpperCase() + k.slice(1)
   return { label: word, name: word }
 }
@@ -186,8 +184,8 @@ function writtenModifiers(str, platform) {
   // AHK prefixes first, then '+'-separated tokens.
   let i = 0
   const ahk = { '^': 'ctrl', '!': 'alt', '+': 'shift', '#': 'meta' }
-  while (i < raw.length && ahk[raw[i]] && raw[i + 1] !== undefined) {
-    out.push(ahk[raw[i]])
+  while (i < raw.length && ownValue(ahk, raw[i]) && raw[i + 1] !== undefined) {
+    out.push(ownValue(ahk, raw[i]))
     i++
   }
   for (const token of raw.slice(i).split('+')) {
@@ -249,7 +247,7 @@ export function keyLabel(key, { platform, style = 'text' } = {}) {
 
 function toKeyRef(key) {
   const s = String(key ?? '')
-  const code = /^code:(.+)$/.exec(s)?.[1] ?? (/^[A-Z][A-Za-z0-9]+$/.test(s) && (own(KEY_LABELS, s) || /^(Key[A-Z]|Digit\d|Numpad\d|F\d{1,2})$/.test(s)) ? s : null)
+  const code = /^code:(.+)$/.exec(s)?.[1] ?? (/^[A-Z][A-Za-z0-9]+$/.test(s) && (ownValue(KEY_LABELS, s) || /^(Key[A-Z]|Digit\d|Numpad\d|F\d{1,2})$/.test(s)) ? s : null)
   return code ? { code } : { key: normalizeKey(s) }
 }
 

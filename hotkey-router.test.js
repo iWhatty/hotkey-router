@@ -71,6 +71,34 @@ describe('hotkey-router', () => {
     expect(log).not.toHaveBeenCalled()
   })
 
+  it.each(['name', 'cleanup', 'destroy'])('stale plugin cleanup preserves a replacement after %s removal', (removal) => {
+    const stale = hotkeys.registerPlugin('demo', { 'alt+x': log })
+    if (removal === 'name') hotkeys.unregisterPlugin('demo')
+    else if (removal === 'cleanup') stale()
+    else {
+      hotkeys.destroy()
+      hotkeys.init({ target: window, capture: false })
+    }
+    const replacement = vi.fn()
+    const cleanup = hotkeys.registerPlugin('demo', { 'alt+x': replacement })
+    stale()
+    stale()
+    dispatch('keydown', 'x', { altKey: true })
+    expect(log).not.toHaveBeenCalled()
+    expect(replacement).toHaveBeenCalledOnce()
+    cleanup()
+    dispatch('keydown', 'x', { altKey: true })
+    expect(replacement).toHaveBeenCalledOnce()
+  })
+
+  it.each(['constructor', '__proto__'])('dispatches prototype-named key %s', (key) => {
+    hotkeys.bind('ctrl+' + key, log)
+    dispatch('keydown', key, { ctrlKey: true })
+    expect(log).toHaveBeenCalledOnce()
+    hotkeys.trigger('ctrl+' + key)
+    expect(log).toHaveBeenCalledTimes(2)
+  })
+
   it('can pause and resume', () => {
     hotkeys.bind('ctrl+x', log)
     hotkeys.pause()
@@ -612,6 +640,27 @@ describe('0.3.3 repairs', () => {
   })
 
   describe('once and plugins', () => {
+    it.each(['ctrl+k', 'ctrl+k up'])('does not re-enter a once handler through trigger(%s)', (combo) => {
+      let nested
+      const handler = vi.fn(() => {
+        if (handler.mock.calls.length === 1) nested = hotkeys.trigger(combo)
+      })
+      hotkeys.bind(combo, handler, null, { once: true })
+      expect(hotkeys.trigger(combo)).toBe(true)
+      expect(nested).toBe(false)
+      expect(handler).toHaveBeenCalledOnce()
+    })
+
+    it('does not re-enter a once handler through DOM dispatch', () => {
+      const press = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))
+      const handler = vi.fn(() => {
+        if (handler.mock.calls.length === 1) press()
+      })
+      hotkeys.bind('ctrl+k', handler, null, { once: true })
+      press()
+      expect(handler).toHaveBeenCalledOnce()
+    })
+
     it('removes a once binding even when its handler throws', () => {
       const boom = vi.fn(() => { throw new Error('boom') })
       hotkeys.bind('ctrl+q', boom, null, { once: true })
