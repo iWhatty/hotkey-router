@@ -100,11 +100,12 @@ by default). The router parses it into a combo; a binding is a combo plus its ha
 
 | Hotkey | Meaning |
 | --- | --- |
-| `ctrl+alt+x`, `shift+a` | Modifiers before the key; `k+ctrl` throws. |
+| `ctrl+alt+x`, `shift+a` | Modifiers before the key; `k+ctrl` and `ctrl+a+b` throw. |
 | `mod+shift+space` | `mod` is Cmd (meta) on macOS, Ctrl elsewhere, decided when the hotkey is parsed. |
 | `ctrl+alt+x up` | Fires on keyup. |
-| `^k` `!k` `+k` `#k` `^!k` | AutoHotkey prefixes: Ctrl, Alt, Shift, Meta, Ctrl+Alt. |
+| `^k` `!k` `+k` `#k` `^!k` | AutoHotkey prefixes: Ctrl, Alt, Shift, Meta, Ctrl+Alt. On its own, `+`, `!`, `#` or `^` is that key. |
 | `ctrl++`, `ctrl+plus` | The `+` key. |
+| `?`, `!`, `ctrl+?` | A character typed with Shift: fires while Shift is held to type it. An exact `shift+?` binding wins. |
 | `alt+code:KeyX`, `!code:KeyX` | A `code:` binding: the physical key, by `KeyboardEvent.code`. |
 | `alt`, `alt up` | A bare modifier: fires when Alt itself goes down or up. |
 
@@ -290,8 +291,10 @@ off.
 
 **Shifted punctuation.** With Shift held, `event.key` is the shifted character, so a key-based `ctrl+shift+,`
 waits for a `,` that a US keyboard reports as `<`, and never fires. Bind the physical key:
-`ctrl+shift+code:Comma`. `bind()` warns once in the console for Shift with `` , . / ; ' [ ] \ - = ` ``, and
-`validateCombo` reports it as `shifted-punctuation`.
+`ctrl+shift+code:Comma`. `bind()` warns once in the console for Shift with `` , . / ; ' [ ] \ - = ` `` or a
+digit, and `validateCombo` reports it as `shifted-punctuation`. The other way round works: a binding for a
+character with no case, such as `?`, `!` or `+`, also fires while Shift is held to type it, unless a `shift+`
+binding matches exactly. Letters and Space keep Shift as part of the key.
 
 **Non-Latin layouts.** On a Russian layout Ctrl+K reports `event.key === 'л'` with `event.code === 'KeyK'`.
 When Ctrl or Cmd is held (Shift allowed, Alt not), the key types a letter from a non-Latin script and `code`

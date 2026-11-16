@@ -11,7 +11,7 @@
 
 import { ownValue } from './lookup.js'
 import HOTKEY_DATA from './data/browser-hotkeys.json' with { type: 'json' }
-import { lookupKey } from './parse.js'
+import { lookupKey, readHotkey } from './parse.js'
 import { detectPlatform, detectBrowser, platformLabel } from './platform.js'
 
 const SUPPORTED_SCHEMA = '1.0'
@@ -32,22 +32,13 @@ export { detectPlatform, detectBrowser }
 
 // --- data normalization -------------------------------------------------------
 
-// Canonical modifier order for lookup keys: ctrl, meta, alt, shift, key.
-// The data file mostly follows this but has at least one entry that doesn't
-// (`ctrl+shift+alt+r` on Linux). Normalize both sides at load and lookup so
-// minor inconsistencies don't cause silent misses.
+// A data row's key as the same lookup key a parsed combo gets (parse.js
+// `lookupKey`): modifiers in canonical order and key names resolved, so a
+// row written `ctrl+shift+esc` or `meta+ctrl+q` matches `ctrl+shift+escape`
+// and `ctrl+meta+q`. The data's base names (`period`, `slash`) read as
+// `event.key` names and come back unchanged.
 function canonicalize(rawKey) {
-  const parts = String(rawKey).toLowerCase().split('+').map(p => p.trim()).filter(Boolean)
-  if (!parts.length) return ''
-  const base = parts[parts.length - 1]
-  const mods = new Set(parts.slice(0, -1))
-  const out = []
-  if (mods.has('ctrl')) out.push('ctrl')
-  if (mods.has('meta')) out.push('meta')
-  if (mods.has('alt')) out.push('alt')
-  if (mods.has('shift')) out.push('shift')
-  out.push(base)
-  return out.join('+')
+  return lookupKey(readHotkey(rawKey).combo) || ''
 }
 
 // Resolve $ref pointers ("$ref:platforms.windows.browsers.chrome") used by
@@ -73,10 +64,10 @@ function normalizeTable(table) {
 // Precompute normalized lookup tables once at module load. Browsers ship the
 // table inline; this keeps per-bind lookup to two Map-ish reads.
 function buildIndex(data) {
-  const idx = { platforms: {} }
+  const idx = { platforms: Object.create(null) }
   const platforms = data?.platforms || {}
   for (const [platform, pdata] of Object.entries(platforms)) {
-    const browsers = {}
+    const browsers = Object.create(null)
     for (const [name, btable] of Object.entries(pdata.browsers || {})) {
       browsers[name] = normalizeTable(resolveRef(btable, data))
     }
@@ -89,7 +80,7 @@ function buildIndex(data) {
 }
 
 const SCHEMA_OK = HOTKEY_DATA?.version?.schema === SUPPORTED_SCHEMA
-const INDEX = SCHEMA_OK ? buildIndex(HOTKEY_DATA) : { platforms: {} }
+const INDEX = SCHEMA_OK ? buildIndex(HOTKEY_DATA) : { platforms: Object.create(null) }
 
 // --- lookup-key construction --------------------------------------------------
 
@@ -262,4 +253,10 @@ export function installReservationWarnings(hotkeys, opts = {}) {
 
 export const SCHEMA_VERSION = HOTKEY_DATA?.version?.schema
 export const DATA_GENERATED = HOTKEY_DATA?.version?.generated
-export { HOTKEY_DATA }
+/**
+ * The bundled table as loaded from data/browser-hotkeys.json.
+ *
+ * @type {{ version: { schema: string, generated: string, sources: string[] }, platforms: Record<string, object> } & Record<string, any>}
+ */
+const BUNDLED_DATA = HOTKEY_DATA
+export { BUNDLED_DATA as HOTKEY_DATA }

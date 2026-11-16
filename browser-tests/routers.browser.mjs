@@ -56,6 +56,22 @@ for (const channel of CHANNELS) {
       assert.deepEqual(await takeFired(page), ['k'])
     })
 
+    test("'?' and '!' fire from Shift+/ and Shift+1, which report shiftKey", async (page) => {
+      await page.evaluate(async () => {
+        const { createRouter } = await import('/core.js')
+        const r = createRouter()
+        r.init()
+        const log = (name) => (e) => window.fired.push(`${name} ${e.key} shift=${e.shiftKey}`)
+        r.bind('?', log('?'))
+        r.bind('!', log('!'))
+        r.bind('k', log('k'))
+      })
+      await page.keyboard.press('Shift+Slash')
+      await page.keyboard.press('Shift+Digit1')
+      await page.keyboard.press('Shift+KeyK') // a letter keeps Shift meaningful
+      assert.deepEqual(await takeFired(page), ['? ? shift=true', '! ! shift=true'])
+    })
+
     test('a router on a dialog element sees keys from inside it only', async (page) => {
       await page.evaluate(async () => {
         const { createRouter } = await import('/core.js')

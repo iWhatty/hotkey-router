@@ -4,7 +4,7 @@ All origins are unconfirmed (not loaded in a browser). Verified means read on th
 
 ## Word for the web (word-web)
 
-Origins: word.cloud.microsoft (unconfirmed), *.officeapps.live.com (unconfirmed), onedrive.live.com (unconfirmed), sharepoint.com (unconfirmed)
+Origins: word.cloud.microsoft (unconfirmed), *.officeapps.live.com (unconfirmed), onedrive.live.com (unconfirmed), *.sharepoint.com (unconfirmed)
 
 | Windows | Mac | Action | Family | Verified |
 |---|---|---|---|---|
