@@ -5,6 +5,17 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ## Unreleased
 
+## 0.5.2 — 2026-11-16
+
+Fixes, data and docs; no new API. When upgrading, check for two things:
+
+- A hotkey with two base keys (`ctrl+a+b`, `ctrl+k+code:KeyA`) now throws
+  in `bind`. Before, one key was silently dropped, so it never did what it
+  said. Bind each key on its own instead.
+- A lone `+`, `!`, `#` or `^` now binds that character. Before, it was a
+  bare Shift, Alt, Meta or Ctrl press. Write `shift`, `alt`, `meta` or `ctrl`
+  for those.
+
 ### Fixed
 
 - **`?`, `!` and other characters typed with Shift now fire.** A real `?`
