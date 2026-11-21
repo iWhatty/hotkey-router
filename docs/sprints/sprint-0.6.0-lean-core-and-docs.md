@@ -99,8 +99,11 @@ warnings", "`code:` binding", "hotkey / combo / binding".
   the minified bundle fell from 29,974 B to 26,934 B (6,604 B to 6,475 B gzip).
   The core-only fixture stayed at 11,731 B minified. The build checks that
   `/core` and `/reservations` use the shared runtime modules.
-- `hotkey-router/testing`: `trigger(router, hotkey, opts)` on a small
-  `router.dispatch(event, type)`.
+- `trigger(router, hotkey, opts)` now lives in `hotkey-router/testing` and
+  calls `router.dispatch(event, type)`. The old `router.trigger` method was
+  removed. The minified CDN build fell from 11,893 B to 10,480 B (5,094 B to
+  4,533 B gzip). Adding `/testing` to an esbuild ES2020 IIFE that uses
+  `/core` adds 1,473 B minified and 585 B gzip.
 - `hotkey-router/dev`: `installDevWarnings(router)` = reservation warnings
   plus the shifted-punctuation hint, both through `onBind`. `/auto` becomes
   default router + `/dev`.

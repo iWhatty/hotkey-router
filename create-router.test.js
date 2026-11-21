@@ -3,6 +3,7 @@
 // export's behaviour is covered by the other test files, unchanged.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import hotkeys, { createRouter } from './hotkey-router.js'
+import { trigger } from './testing.js'
 import { installReservationWarnings } from './reservations.js'
 
 const key = (type, k, init = {}) =>
@@ -156,11 +157,11 @@ describe('createRouter', () => {
       const r2 = make()
       r1.registerPlugin('palette', { 'ctrl+k': a })
       expect(() => r2.registerPlugin('palette', { 'ctrl+k': b })).not.toThrow()
-      expect(r1.trigger('ctrl+k')).toBe(true)
+      expect(trigger(r1, 'ctrl+k')).toBe(true)
       expect(a).toHaveBeenCalledOnce()
       expect(b).not.toHaveBeenCalled()
       r1.unregisterPlugin('palette')
-      expect(r2.trigger('ctrl+k')).toBe(true)
+      expect(trigger(r2, 'ctrl+k')).toBe(true)
       expect(b).toHaveBeenCalledOnce()
     })
 
@@ -215,7 +216,7 @@ describe('createRouter', () => {
       const r = make({ target: dialog })
       r.init()
       r.bind('k', fn)
-      expect(r.trigger('k', { target: outside })).toBe(true)
+      expect(trigger(r, 'k', { target: outside })).toBe(true)
       expect(fn).toHaveBeenCalledOnce()
     })
 
@@ -293,7 +294,7 @@ describe('createRouter', () => {
         id: off.id, raw: 'ctrl+k', plugin: 'demo', options: expect.objectContaining({ priority: 2 }),
       }))
       expect(error).toHaveBeenCalledOnce()
-      expect(r.trigger('ctrl+k')).toBe(true)
+      expect(trigger(r, 'ctrl+k')).toBe(true)
       expect(handler).toHaveBeenCalledOnce()
       unsubscribe()
       r.bind('ctrl+j', handler)

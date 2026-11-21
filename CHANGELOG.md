@@ -5,6 +5,10 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 
 ## Unreleased
 
+- `router.trigger(hotkey, options)` moved to `trigger(router, hotkey, options)`
+  in `hotkey-router/testing`. Routers expose `dispatch(event, type)` for direct
+  keyboard-event routing.
+
 ## 0.5.2 — 2026-11-16
 
 Fixes, data and docs; no new API. When upgrading, check for two things:

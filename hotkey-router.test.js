@@ -1,6 +1,7 @@
 // hotkey-router.test.js
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import hotkeys from './hotkey-router'
+import { trigger } from './testing.js'
 
 describe('hotkey-router', () => {
   let log
@@ -95,7 +96,7 @@ describe('hotkey-router', () => {
     hotkeys.bind('ctrl+' + key, log)
     dispatch('keydown', key, { ctrlKey: true })
     expect(log).toHaveBeenCalledOnce()
-    hotkeys.trigger('ctrl+' + key)
+    trigger(hotkeys, 'ctrl+' + key)
     expect(log).toHaveBeenCalledTimes(2)
   })
 
@@ -243,13 +244,13 @@ describe('hotkey-router', () => {
 
   it('trigger() runs the handler and returns true', () => {
     hotkeys.bind('ctrl+k', log)
-    const ran = hotkeys.trigger('ctrl+k')
+    const ran = trigger(hotkeys, 'ctrl+k')
     expect(ran).toBe(true)
     expect(log).toHaveBeenCalledOnce()
   })
 
   it('trigger() returns false when no binding matches', () => {
-    const ran = hotkeys.trigger('ctrl+q')
+    const ran = trigger(hotkeys, 'ctrl+q')
     expect(ran).toBe(false)
   })
 
@@ -342,7 +343,7 @@ describe('hotkey-router', () => {
 
     it('trigger() works on bare-modifier bindings', () => {
       hotkeys.bind('alt', log)
-      const ran = hotkeys.trigger('alt')
+      const ran = trigger(hotkeys, 'alt')
       expect(ran).toBe(true)
       expect(log).toHaveBeenCalledOnce()
     })
@@ -458,7 +459,7 @@ describe('hotkey-router', () => {
     it('synthetic keyup event for bare-modifier has modifier flag false', () => {
       const seen = vi.fn()
       hotkeys.bind('alt up', (e) => seen(e.altKey))
-      hotkeys.trigger('alt up')
+      trigger(hotkeys, 'alt up')
       // Real Alt keyup has e.altKey === false (Alt has just been released).
       // The synthetic event must mirror that.
       expect(seen).toHaveBeenCalledWith(false)
@@ -467,37 +468,37 @@ describe('hotkey-router', () => {
     it('synthetic keydown event for bare-modifier has modifier flag true', () => {
       const seen = vi.fn()
       hotkeys.bind('alt', (e) => seen(e.altKey))
-      hotkeys.trigger('alt')
+      trigger(hotkeys, 'alt')
       expect(seen).toHaveBeenCalledWith(true)
     })
 
     it('synthetic event for code-based binding sets e.code', () => {
       const seen = vi.fn()
       hotkeys.bind('alt+code:KeyX', (e) => seen(e.code))
-      hotkeys.trigger('alt+code:KeyX')
+      trigger(hotkeys, 'alt+code:KeyX')
       expect(seen).toHaveBeenCalledWith('KeyX')
     })
 
     it('a key-based trigger fires a code: binding, and the reverse', () => {
       const byCode = vi.fn()
       hotkeys.bind('ctrl+shift+code:Period', byCode)
-      expect(hotkeys.trigger('ctrl+shift+.')).toBe(true)
+      expect(trigger(hotkeys, 'ctrl+shift+.')).toBe(true)
       expect(byCode).toHaveBeenCalledOnce()
 
       const byKey = vi.fn()
       hotkeys.bind('ctrl+k', byKey)
-      expect(hotkeys.trigger('ctrl+code:KeyK')).toBe(true)
+      expect(trigger(hotkeys, 'ctrl+code:KeyK')).toBe(true)
       expect(byKey).toHaveBeenCalledOnce()
     })
 
     it('applies ignoreInput/allowIn when given a target', () => {
       const input = document.createElement('input')
       hotkeys.bind('ctrl+k', log)
-      expect(hotkeys.trigger('ctrl+k', { target: input })).toBe(false)
+      expect(trigger(hotkeys, 'ctrl+k', { target: input })).toBe(false)
       expect(log).not.toHaveBeenCalled()
 
       hotkeys.bind('ctrl+j', log, null, { allowIn: () => true })
-      expect(hotkeys.trigger('ctrl+j', { target: input })).toBe(true)
+      expect(trigger(hotkeys, 'ctrl+j', { target: input })).toBe(true)
       expect(log).toHaveBeenCalledOnce()
     })
 
@@ -508,18 +509,18 @@ describe('hotkey-router', () => {
       hotkeys.bind('ctrl+code:KeyK', high, null, { priority: 5, once: true })
 
       hotkeys.pause()
-      expect(hotkeys.trigger('ctrl+k')).toBe(false)
+      expect(trigger(hotkeys, 'ctrl+k')).toBe(false)
       hotkeys.resume()
 
-      hotkeys.trigger('ctrl+k')
-      hotkeys.trigger('ctrl+k')
+      trigger(hotkeys, 'ctrl+k')
+      trigger(hotkeys, 'ctrl+k')
       expect(high).toHaveBeenCalledOnce()
       expect(low).toHaveBeenCalledOnce()
     })
 
     it('a when() gate returning false skips the binding', () => {
       hotkeys.bind('ctrl+k', log, null, { when: () => false })
-      expect(hotkeys.trigger('ctrl+k')).toBe(false)
+      expect(trigger(hotkeys, 'ctrl+k')).toBe(false)
     })
   })
 
@@ -643,10 +644,10 @@ describe('0.3.3 repairs', () => {
     it.each(['ctrl+k', 'ctrl+k up'])('does not re-enter a once handler through trigger(%s)', (combo) => {
       let nested
       const handler = vi.fn(() => {
-        if (handler.mock.calls.length === 1) nested = hotkeys.trigger(combo)
+        if (handler.mock.calls.length === 1) nested = trigger(hotkeys, combo)
       })
       hotkeys.bind(combo, handler, null, { once: true })
-      expect(hotkeys.trigger(combo)).toBe(true)
+      expect(trigger(hotkeys, combo)).toBe(true)
       expect(nested).toBe(false)
       expect(handler).toHaveBeenCalledOnce()
     })
@@ -664,17 +665,17 @@ describe('0.3.3 repairs', () => {
     it('removes a once binding even when its handler throws', () => {
       const boom = vi.fn(() => { throw new Error('boom') })
       hotkeys.bind('ctrl+q', boom, null, { once: true })
-      expect(() => hotkeys.trigger('ctrl+q')).toThrow('boom')
-      expect(hotkeys.trigger('ctrl+q')).toBe(false)
+      expect(() => trigger(hotkeys, 'ctrl+q')).toThrow('boom')
+      expect(trigger(hotkeys, 'ctrl+q')).toBe(false)
       expect(boom).toHaveBeenCalledOnce()
     })
 
     it('registerPlugin binds nothing when one key string does not parse', () => {
       expect(() => hotkeys.registerPlugin('half', { 'alt+1': log, 'k+ctrl': log })).toThrow()
-      expect(hotkeys.trigger('alt+1')).toBe(false)
+      expect(trigger(hotkeys, 'alt+1')).toBe(false)
       // The name was not taken, so the plugin can be registered once fixed.
       expect(() => hotkeys.registerPlugin('half', { 'alt+1': log })).not.toThrow()
-      expect(hotkeys.trigger('alt+1')).toBe(true)
+      expect(trigger(hotkeys, 'alt+1')).toBe(true)
     })
   })
 

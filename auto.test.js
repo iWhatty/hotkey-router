@@ -7,7 +7,7 @@ describe('hotkey-router/auto', () => {
   it('exports the same default as core', () => {
     expect(typeof hotkeys.bind).toBe('function')
     expect(typeof hotkeys.onBind).toBe('function')
-    expect(typeof hotkeys.trigger).toBe('function')
+    expect(typeof hotkeys.dispatch).toBe('function')
   })
 
   it('has a reservation hook already registered', () => {

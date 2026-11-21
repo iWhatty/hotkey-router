@@ -45,6 +45,10 @@
       "types": "./dist/types/format.d.ts",
       "import": "./dist/format.js"
     },
+    "./testing": {
+      "types": "./dist/types/testing.d.ts",
+      "import": "./dist/testing.js"
+    },
     "./data/browser-hotkeys.json": "./data/browser-hotkeys.json",
     "./data/site-hotkeys.json": "./data/site-hotkeys.json",
     "./data/site-hotkeys.runtime.json": "./data/site-hotkeys.runtime.json"

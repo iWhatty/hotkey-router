@@ -48,7 +48,7 @@ when you bind a key the browser or OS keeps for itself.
 - **Opt-in data:** which keys the browser and OS take, and which a page can win with `preventDefault` (Windows
   rows checked with real key presses); which keys popular websites use.
 - **`validateCombo`** for "press your keys" settings, with reasons ready to show.
-- Zero dependencies. Core ~11.2 KB minified, ~4.85 KB gzipped; the data lives in separate entries.
+- Zero dependencies. Core ~10.5 KB minified and ~4.5 KB gzipped. The data lives in separate entries.
 
 It doesn't do key sequences (`g i`, `ctrl+k ctrl+s`), and it targets current browsers only.
 
@@ -214,11 +214,12 @@ calls `destroy()` first. `capture: true` runs every binding in the capture phase
 with `{ capture: true }` do. `destroy()` removes the listeners and clears all bindings and plugins; `onBind`
 hooks survive it.
 
-### `trigger(hotkey, options?)`
+### `dispatch(event, type)`
 
-Fires the binding a real keypress would, through the same checks (`when`, the input check with `{ target }`,
-priority, `once`, `pause()`), and returns `true` if a handler ran: `hotkeys.trigger('mod+shift+space')`. For
-tests; see [docs/testing.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/testing.md).
+Routes a keyboard event directly through one router and returns `true` if a handler ran. Pass `'keydown'`
+or `'keyup'` as `type`. This considers both capture and bubble bindings without going through the DOM.
+For testing from a hotkey string, use `trigger(router, hotkey, options?)` from `hotkey-router/testing`.
+See [docs/testing.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/testing.md).
 
 ### `parseHotkey(hotkey, options?)`
 
@@ -337,6 +338,7 @@ are minified (gzipped) in an app bundle.
 | `hotkey-router/validate` | Checks a recorded hotkey before you save it | ~69 KB (~16 KB), both tables |
 | `hotkey-router/format` | Shows a hotkey to people: `Ctrl+Shift+.`, `⇧⌘.`, keycaps | ~8.6 KB (~3.5 KB) |
 | `hotkey-router/sites` | Which keys popular websites use; a `when` gate that yields to them | ~38 KB (~9 KB) |
+| `hotkey-router/testing` | Fires a router binding from a hotkey string in tests | ~1.5 KB (~0.6 KB) with `/core` already bundled |
 
 The data tables are big next to the core. Use `/auto`, `/reservations`, `/validate` and `/sites` in
 development builds or in the settings page that records keys, not on every page, unless your app needs them at
