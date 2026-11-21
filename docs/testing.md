@@ -2,22 +2,28 @@
 
 ## Testing your bindings with `trigger()`
 
-`router.trigger(hotkey, options?)` fires the binding a real keypress of
+`trigger(router, hotkey, options?)` from `hotkey-router/testing` fires the binding a real keypress of
 `hotkey` would fire, without a DOM event. It returns `true` if a handler
 ran.
 
 ```js
-hotkeys.trigger('mod+shift+space')
-hotkeys.trigger('escape', { target: inputElement }) // as if typed in the input: blocked, false
-hotkeys.trigger('alt up')                           // the " up" suffix fires keyup bindings
-hotkeys.trigger('alt', { type: 'keyup' })           // or force the type
+import hotkeys from 'hotkey-router'
+import { trigger } from 'hotkey-router/testing'
+
+trigger(hotkeys, 'mod+shift+space')
+trigger(hotkeys, 'escape', { target: inputElement }) // blocked by the input check
+trigger(hotkeys, 'alt up')                           // the suffix fires keyup bindings
+trigger(hotkeys, 'alt', { type: 'keyup' })           // or force the type
 ```
+
+In 0.6.0 the helper moved off the router instance. Replace
+`router.trigger(hotkey, options)` with `trigger(router, hotkey, options)`.
 
 What it does:
 
 - The synthetic event has both `key` and `code` (as a US layout types
   them; `key` in the parser's lowercase form, e.g. `escape`), so
-  `trigger('ctrl+k')` also fires a `ctrl+code:KeyK` binding, and the reverse.
+  `trigger(router, 'ctrl+k')` also fires a `ctrl+code:KeyK` binding, and the reverse.
 - The same checks apply as for a real keypress: `when`, the input check
   (`ignoreInput` / `allowIn`, using `target`), priority and recency, `once`,
   and `pause()` (a paused router returns `false`).
@@ -25,15 +31,19 @@ What it does:
   `stopPropagation()` do nothing, `repeat` and `isComposing` are `false`, and
   `getModifierState()` always returns `false`, so the AltGr and IME guards
   never skip a triggered binding.
-- For a bare-modifier keyup (`trigger('alt up')`), the modifier's own flag
+- For a bare-modifier keyup (`trigger(router, 'alt up')`), the modifier's own flag
   is `false`, as on a real release.
 - Capture and bubble phases aren't simulated: every eligible binding
   competes, and one winner fires.
 
-Each router's `trigger()` fires only that router's bindings, and it doesn't
+`trigger()` fires only the supplied router's bindings, and it doesn't
 check the router's scope: `target` only feeds the input check, so a router
 on a dialog still fires for a `target` outside the dialog, where a real
 keypress would never reach it.
+
+If you already have a keyboard event, `router.dispatch(event, type)` takes
+the same direct route. It uses `'keydown'` or `'keyup'` to select the binding
+and returns whether a handler fired.
 
 ## The library's own tests
 

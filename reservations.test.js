@@ -11,6 +11,7 @@ import {
   installReservationWarnings,
 } from './reservations.js'
 import hotkeys from './hotkey-router.js'
+import { trigger } from './testing.js'
 
 // Helpers --------------------------------------------------------------------
 
@@ -374,7 +375,7 @@ describe('bind() conflict warnings', () => {
     })
     try {
       hotkeys.bind('meta+shift+f', handler)
-      hotkeys.trigger('meta+shift+f')
+      trigger(hotkeys, 'meta+shift+f')
     } finally {
       uninstall()
     }

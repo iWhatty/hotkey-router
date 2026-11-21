@@ -33,6 +33,19 @@ describe('hotkey-router/core', () => {
     router.destroy()
   })
 
+  it('dispatches a keyboard event directly through one router before init', () => {
+    const router = core.createRouter()
+    const fn = vi.fn()
+    const event = new KeyboardEvent('keyup', { key: 'k', ctrlKey: true })
+    router.bind('ctrl+k up', fn, null, { once: true, capture: true })
+
+    expect(router).not.toHaveProperty('trigger')
+    expect(router.dispatch(event, 'keydown')).toBe(false)
+    expect(router.dispatch(event, 'keyup')).toBe(true)
+    expect(fn).toHaveBeenCalledExactlyOnceWith(event)
+    expect(router.dispatch(event, 'keyup')).toBe(false)
+  })
+
   it('is what the main entry is built on: same functions, plus a started default router', async () => {
     spy.mockClear()
     main = await import('./hotkey-router.js')

@@ -84,7 +84,8 @@ router's binds only; `hotkey-router/auto` covers the default router.
 
 ## `trigger()` and scopes
 
-Each router's `trigger()` fires only that router's bindings, and it doesn't
+`trigger(router, hotkey, options?)` from `hotkey-router/testing` fires only
+the supplied router's bindings, and it doesn't
 check the router's scope: `trigger`'s `target` option only feeds the input
 check. So a router on a dialog still fires for a `target` outside the
 dialog, where a real keypress would never reach it. See

@@ -19,6 +19,7 @@
     "sites.js",
     "validate.js",
     "format.js",
+    "testing.js",
     "parse.js",
     "platform.js"
   ],

@@ -90,7 +90,9 @@
   <script type="module">
     // Prefer dist if you build it; fall back to source during dev if you want.
     import hotkeys from '../dist/hotkey-router.js'
+    import { trigger } from '../dist/testing.js'
     // import hotkeys from '../hotkey-router.js'
+    // import { trigger } from '../testing.js'
 
     const actionSelect = document.getElementById('actionSelect')
     const hotkeyInput = document.getElementById('hotkeyInput')
@@ -211,7 +213,7 @@
     triggerBtn?.addEventListener('click', () => {
       const key = hotkeyInput.value.trim()
       if (!key) return
-      const ran = hotkeys.trigger(key)
+      const ran = trigger(hotkeys, key)
       log(ran ? `Triggered ${key}` : `No match for ${key}`)
     })
 

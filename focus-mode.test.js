@@ -4,6 +4,7 @@
 // Ctrl/Alt/Meta chords through. The default mode must not change.
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import hotkeys, { createRouter } from './hotkey-router.js'
+import { trigger } from './testing.js'
 
 const TEXT_TYPES = ['text', 'search', 'email', 'url', 'tel', 'password', 'number', 'date', 'time', 'datetime-local', 'month', 'week']
 const CONTROL_TYPES = ['checkbox', 'radio', 'range', 'color', 'file', 'button', 'submit', 'reset', 'image']
@@ -168,10 +169,10 @@ describe("ignoreInput('text')", () => {
       const span = add('<button><span>go</span></button>').firstElementChild
       r.bind('ctrl+k', () => {})
       r.bind('k', () => {})
-      expect(r.trigger('ctrl+k', { target: box })).toBe(true)
-      expect(r.trigger('k', { target: box })).toBe(false)
-      expect(r.trigger('k', { target: span })).toBe(false)
-      expect(r.trigger('ctrl+k', { target: span })).toBe(true)
+      expect(trigger(r, 'ctrl+k', { target: box })).toBe(true)
+      expect(trigger(r, 'k', { target: box })).toBe(false)
+      expect(trigger(r, 'k', { target: span })).toBe(false)
+      expect(trigger(r, 'ctrl+k', { target: span })).toBe(true)
     })
   })
 })
