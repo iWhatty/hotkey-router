@@ -1,13 +1,13 @@
 # Sprint 0.6.0 — lean core, opt-in add-ons, clean docs
 
-Status: **in progress** (2026-10-29). Owner decisions taken; slice A in
-progress as 0.5.1.
+Status: **in progress**. Slice C started on 2026-11-21 with parser sharing
+across the ESM package entries.
 
 Inputs, all from 2026-10-29: a fleet usage survey (static-web-watt3d and
 sibling repos), a measured cost map of the core bundle, and a README audit.
 The owner took the recommendation on all three decisions (2026-10-29).
 
-## Where we are
+## October 2026 baseline
 
 - 0.5.0 on npm. Core `dist/hotkey-router.min.js`: 11,201 B min, 4,850 B gzip
   (budget 12,288 B).
@@ -90,6 +90,15 @@ internal anchors in the same change. One name per thing: "reservation
 warnings", "`code:` binding", "hotkey / combo / binding".
 
 ### C. Lean core (0.6.0, test-first)
+- The ESM package entries share a private parser, platform detector, and lookup
+  helper. WebRadar's popup gets one parser when it imports `/core` and
+  `/reservations`. `/sites`, `/format`, and `/validate` use the same modules.
+  CDN and CommonJS builds remain standalone.
+
+  In an esbuild ES2020 IIFE using the popup's parser and reservation imports,
+  the minified bundle fell from 29,974 B to 26,934 B (6,604 B to 6,475 B gzip).
+  The core-only fixture stayed at 11,731 B minified. The build checks that
+  `/core` and `/reservations` use the shared runtime modules.
 - `hotkey-router/testing`: `trigger(router, hotkey, opts)` on a small
   `router.dispatch(event, type)`.
 - `hotkey-router/dev`: `installDevWarnings(router)` = reservation warnings
