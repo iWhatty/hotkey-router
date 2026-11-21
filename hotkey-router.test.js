@@ -1,6 +1,6 @@
 // hotkey-router.test.js
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import hotkeys from './hotkey-router'
+import hotkeys, { parseHotkey } from './hotkey-router'
 import { trigger } from './testing.js'
 
 describe('hotkey-router', () => {
@@ -532,8 +532,8 @@ describe('hotkey-router', () => {
     })
 
     it('resolves mod for a given platform', () => {
-      expect(hotkeys.parseHotkey('mod+k', { platform: 'mac' }).combo.meta).toBe(true)
-      expect(hotkeys.parseHotkey('mod+k', { platform: 'windows' }).combo.ctrl).toBe(true)
+      expect(parseHotkey('mod+k', { platform: 'mac' }).combo.meta).toBe(true)
+      expect(parseHotkey('mod+k', { platform: 'windows' }).combo.ctrl).toBe(true)
     })
   })
 

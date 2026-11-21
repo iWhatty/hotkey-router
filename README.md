@@ -223,13 +223,15 @@ See [docs/testing.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/te
 
 ### `parseHotkey(hotkey, options?)`
 
-Named export. Returns `{ combo, type, raw }`: `combo` is `{ ctrl, shift, alt, meta, key, code, bareModifier
+Import `parseHotkey` by name from `hotkey-router` or `hotkey-router/core`. Returns `{ combo, type, raw }`:
+`combo` is `{ ctrl, shift, alt, meta, key, code, bareModifier
 }`, `type` is `'keydown'` or `'keyup'`, `raw` the string you passed. Throws on a hotkey the router can't bind.
 `{ platform }` resolves `mod` for another platform.
 
 ### `comboFromEvent(event, options?)`
 
-Named export. Turns a keyboard event into a hotkey string, for a "press your keys" recorder. Physical by
+Import `comboFromEvent` by name from `hotkey-router` or `hotkey-router/core`. Turns a keyboard event into a
+hotkey string for a "press your keys" recorder. Physical by
 default (`ctrl+shift+code:Period`); `{ useMod: true }` writes the platform's primary modifier as `mod`; `{
 physical: false }` uses `event.key`; `{ platform }` decides what `mod` stands for. Returns `null` while only a
 modifier is held.
@@ -245,7 +247,8 @@ field.addEventListener('keydown', (e) => {
 
 ### `detectPlatform(navigator?, { chromeos? })`
 
-Named export. `'mac'`, `'windows'`, `'linux'` or `null`. ChromeOS counts as `'linux'` unless you pass `{
+Import `detectPlatform` by name from `hotkey-router` or `hotkey-router/core`. Returns `'mac'`, `'windows'`,
+`'linux'` or `null`. ChromeOS counts as `'linux'` unless you pass `{
 chromeos: true }`. Reads `navigator.userAgentData.platform`, then `navigator.platform`, then the user agent.
 The router and every add-on use it, so they agree on `mod`.
 

@@ -73,8 +73,9 @@ phase for the rest. One binding per router fires in each phase.
 ## Shared and per-router state
 
 Shared by every router (module-level, one per loaded copy of the module):
-the parser, `comboFromEvent`, `detectPlatform`, and the platform `mod` resolves
-to.
+the parser and the platform `mod` resolves to. Import `comboFromEvent`,
+`parseHotkey`, and `detectPlatform` by name from `hotkey-router` or
+`hotkey-router/core`.
 
 Per router: bindings, plugins (plugin names only need to be unique within a
 router), pause state, the input setting and `onBind` hooks.

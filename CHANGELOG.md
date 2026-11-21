@@ -13,6 +13,9 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
   default router. Import `installReservationWarnings`, `formatReservationWarning`,
   and `emitReservationWarning` from `/dev` when upgrading from `/reservations`.
   The bare router no longer warns about shifted punctuation at bind time.
+- `comboFromEvent`, `parseHotkey`, and `detectPlatform` are now named exports
+  only. Import them from `hotkey-router` or `hotkey-router/core` when upgrading
+  code that calls them on the default router or on an instance from `createRouter()`.
 
 ## 0.5.2 — 2026-11-16
 

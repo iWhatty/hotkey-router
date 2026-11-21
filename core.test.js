@@ -50,9 +50,12 @@ describe('hotkey-router/core', () => {
     spy.mockClear()
     main = await import('./hotkey-router.js')
     expect(main.createRouter).toBe(core.createRouter)
-    expect(main.parseHotkey).toBe(core.parseHotkey)
-    expect(main.comboFromEvent).toBe(core.comboFromEvent)
-    expect(main.detectPlatform).toBe(core.detectPlatform)
+    const router = core.createRouter()
+    for (const name of ['comboFromEvent', 'parseHotkey', 'detectPlatform']) {
+      expect(main[name]).toBe(core[name])
+      expect(router).not.toHaveProperty(name)
+      expect(main.default).not.toHaveProperty(name)
+    }
     expect(keyListeners(spy).length).toBeGreaterThan(0)
 
     const fn = vi.fn()
