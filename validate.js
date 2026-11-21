@@ -19,7 +19,8 @@ import { ownValue } from './lookup.js'
 import { lookupReservation, severityIsHard } from './reservations.js'
 import { parseComboString, listSites } from './sites.js'
 import { modifierLabel, listModifiers, platformLabel, browserLabel } from './format.js'
-import { shiftedPunctuationHint, readHotkey } from './parse.js'
+import { readHotkey } from './parse.js'
+import { shiftedPunctuationHint } from './shifted-punctuation.js'
 
 const ALL_PLATFORMS = ['mac', 'windows', 'linux']
 const ALL_BROWSERS = ['chrome', 'firefox', 'edge', 'safari']
@@ -88,13 +89,14 @@ export function validateCombo(combo, {
   // A string the router would refuse (`k+ctrl`, two base keys) can't be
   // bound, whatever else is true of it. The parser's message says why.
   // Modifiers with no key fall through to the friendlier 'no-key'.
-  const { error, combo: read } = readHotkey(combo)
+  const parsedCombo = readHotkey(combo)
+  const { error, combo: read } = parsedCombo
   if (error && (read.key || read.code)) {
     return { ok: false, reasons: [{ code: 'invalid', severity: 'error', message: 'These keys could not be read.', details: { error } }], lookupKeys }
   }
 
   // Same on every platform: Shift changes `event.key`, so the combo never matches.
-  const shifted = shiftedPunctuationHint(combo)
+  const shifted = shiftedPunctuationHint(combo, parsedCombo)
   if (shifted) {
     add({ code: 'shifted-punctuation', severity: 'error', message: shifted.message, details: { suggestion: shifted.suggestion } })
   }

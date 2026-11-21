@@ -15,6 +15,7 @@
     "core.js",
     "hotkey-router.js",
     "auto.js",
+    "dev.js",
     "reservations.js",
     "sites.js",
     "validate.js",

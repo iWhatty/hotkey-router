@@ -73,14 +73,15 @@ phase for the rest. One binding per router fires in each phase.
 ## Shared and per-router state
 
 Shared by every router (module-level, one per loaded copy of the module):
-the parser, `comboFromEvent`, `detectPlatform`, the platform `mod` resolves
-to, and the one-time console warning for shifted punctuation (once per
-hotkey, whichever router binds it).
+the parser, `comboFromEvent`, `detectPlatform`, and the platform `mod` resolves
+to.
 
 Per router: bindings, plugins (plugin names only need to be unique within a
-router), pause state, the input setting, `onBind` hooks and therefore
-reservation warnings. `installReservationWarnings(router)` covers that
-router's binds only; `hotkey-router/auto` covers the default router.
+router), pause state, the input setting and `onBind` hooks.
+`installDevWarnings(router)` from `hotkey-router/dev` subscribes to that router's
+binds. `hotkey-router/auto` installs the warnings on the default router.
+Shifted-punctuation hints are deduplicated by combo and event type across
+routers with warnings installed.
 
 ## `trigger()` and scopes
 

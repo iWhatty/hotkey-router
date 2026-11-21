@@ -31,8 +31,8 @@ hotkeys.unregisterPlugin('search') // remove the group
 
 By default no binding fires while the user types in a field, chords included; `allowIn` opts one in (see
 [`ignoreInput`](#ignoreinputvalue)).
-During development, import `hotkey-router/auto` instead: it is the same router, and it warns in the console
-when you bind a key the browser or OS keeps for itself.
+During development, import `hotkey-router/auto` to enable warnings on the same router for reserved keys
+and shifted-punctuation bindings.
 
 ## Why this library
 
@@ -48,7 +48,7 @@ when you bind a key the browser or OS keeps for itself.
 - **Opt-in data:** which keys the browser and OS take, and which a page can win with `preventDefault` (Windows
   rows checked with real key presses); which keys popular websites use.
 - **`validateCombo`** for "press your keys" settings, with reasons ready to show.
-- Zero dependencies. Core ~10.5 KB minified and ~4.5 KB gzipped. The data lives in separate entries.
+- Zero dependencies. Core ~9.7 KB minified and ~4.1 KB gzipped. The data lives in separate entries.
 
 It doesn't do key sequences (`g i`, `ctrl+k ctrl+s`), and it targets current browsers only.
 
@@ -251,9 +251,9 @@ The router and every add-on use it, so they agree on `mod`.
 
 ### `onBind(hook)`
 
-Calls `hook({ combo, raw, options, plugin, id })` after every successful `bind()` on this router, and returns
-an unsubscribe function. Reservation warnings are built on it; use it for dev panels or telemetry. A hook that
-throws is logged with `console.error` and doesn't break the bind.
+Calls `hook({ combo, type, raw, options, plugin, id })` after every successful `bind()` on this router and returns
+an unsubscribe function. `type` is `'keydown'` or `'keyup'`. The development warnings use this hook. The router
+logs a hook error with `console.error` and keeps the binding registered.
 
 ```js
 const stop = hotkeys.onBind(({ raw, plugin }) => console.debug('bound', raw, plugin))
@@ -291,9 +291,9 @@ is every keystroke during IME composition. `altGraph: true` or `composing: true`
 off.
 
 **Shifted punctuation.** With Shift held, `event.key` is the shifted character, so a key-based `ctrl+shift+,`
-waits for a `,` that a US keyboard reports as `<`, and never fires. Bind the physical key:
-`ctrl+shift+code:Comma`. `bind()` warns once in the console for Shift with `` , . / ; ' [ ] \ - = ` `` or a
-digit, and `validateCombo` reports it as `shifted-punctuation`. The other way round works: a binding for a
+waits for a `,` that a US keyboard reports as `<`, and never fires. Use the physical key `ctrl+shift+code:Comma`.
+Development warnings flag Shift with `` , . / ; ' [ ] \ - = ` `` or a digit once per combo and event type.
+`validateCombo` reports the same issue as `shifted-punctuation`. The other way round works: a binding for a
 character with no case, such as `?`, `!` or `+`, also fires while Shift is held to type it, unless a `shift+`
 binding matches exactly. Letters and Space keep Shift as part of the key.
 
@@ -333,16 +333,16 @@ are minified (gzipped) in an app bundle.
 
 | Entry | What it does | Size |
 | --- | --- | --- |
-| `hotkey-router/auto` | The default router with reservation warnings installed | ~34 KB (~9.6 KB), router included |
-| `hotkey-router/reservations` | Which keys the browser and OS take; warnings and lookup | ~24 KB (~5.6 KB) |
+| `hotkey-router/auto` | The default router with development warnings installed | ~35 KB (~9.5 KB), router included |
+| `hotkey-router/dev` | Installs reservation and shifted-punctuation warnings on a router | ~27.8 KB (~6.9 KB), reservation table included |
+| `hotkey-router/reservations` | Looks up keys reserved by the browser or OS | ~25.7 KB (~5.9 KB) |
 | `hotkey-router/validate` | Checks a recorded hotkey before you save it | ~69 KB (~16 KB), both tables |
 | `hotkey-router/format` | Shows a hotkey to people: `Ctrl+Shift+.`, `⇧⌘.`, keycaps | ~8.6 KB (~3.5 KB) |
 | `hotkey-router/sites` | Which keys popular websites use; a `when` gate that yields to them | ~38 KB (~9 KB) |
 | `hotkey-router/testing` | Fires a router binding from a hotkey string in tests | ~1.5 KB (~0.6 KB) with `/core` already bundled |
 
-The data tables are big next to the core. Use `/auto`, `/reservations`, `/validate` and `/sites` in
-development builds or in the settings page that records keys, not on every page, unless your app needs them at
-runtime.
+The data tables are big next to the core. Load `/auto` or `/dev` in development builds. Load `/reservations`,
+`/validate` or `/sites` where your app uses the lookup data, such as a settings page that records keys.
 
 ### Reservation warnings
 
@@ -357,10 +357,10 @@ hotkeys.bind('meta+shift+f', toggleFullscreen)
 // [hotkey-router] "meta+shift+f" (meta+shift+f) reserved by firefox on macOS: "Toggle fullscreen" [hard] — will not fire.
 ```
 
-Or `installReservationWarnings(router, { platform, browser })` from `hotkey-router/reservations`, on any
-router. Keys the page never gets log a `warn`; a key the page can win logs a `warn` without `preventDefault:
-true` and an `info` with it. `lookupReservation(combo, { platform, browser })` answers the same question at
-runtime. Severities, every export, caveats and how the table was checked with real keys:
+Call `installDevWarnings(router, { platform, browser })` from `hotkey-router/dev` to enable both warnings on a
+specific router. It returns an unsubscribe function. Keys the page never gets log a `warn`. A key the page
+can win logs an `info` with `preventDefault: true` and a `warn` otherwise. For runtime lookup use
+`lookupReservation(combo, { platform, browser })` from `hotkey-router/reservations`. See
 [docs/reservations.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/reservations.md).
 
 ### Validating a recorded hotkey

@@ -49,6 +49,10 @@
       "types": "./dist/types/testing.d.ts",
       "import": "./dist/testing.js"
     },
+    "./dev": {
+      "types": "./dist/types/dev.d.ts",
+      "import": "./dist/dev.js"
+    },
     "./data/browser-hotkeys.json": "./data/browser-hotkeys.json",
     "./data/site-hotkeys.json": "./data/site-hotkeys.json",
     "./data/site-hotkeys.runtime.json": "./data/site-hotkeys.runtime.json"

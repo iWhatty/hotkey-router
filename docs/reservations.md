@@ -1,20 +1,19 @@
 # Reservation warnings
 
-`hotkey-router/reservations` knows which keys the browser and the operating
-system use for themselves, and `hotkey-router/auto` wires that knowledge into
-the default router: when you bind a reserved key, the console says so. The
-core router ships none of this data; you opt in by importing one of the two.
+`hotkey-router/reservations` provides lookup data for keys reserved by the
+browser or operating system. `hotkey-router/dev` uses it to warn when you
+bind one of those keys. `hotkey-router/auto` installs the development
+warnings on the default router.
 
-About 24 KB minified (~5.6 KB gzipped), mostly the table in
+The lookup is about 25.7 KB minified (~5.9 KB gzipped), mostly the table in
 [`data/browser-hotkeys.json`](https://github.com/iWhatty/hotkey-router/blob/main/data/browser-hotkeys.json).
 Load it in development builds, a settings page or a key picker, not on every
 page in production, unless you need `lookupReservation` at runtime.
 
 ## Turning warnings on
 
-One import: `hotkey-router/auto` is the default router (the same object as
-`hotkey-router`) with warnings installed, so bindings made through either
-import are checked.
+`hotkey-router/auto` is the default router (the same object as
+`hotkey-router`) with reservation and shifted-punctuation warnings installed.
 
 ```js
 import hotkeys from 'hotkey-router/auto'
@@ -29,23 +28,24 @@ Or install them yourself, on the default router or on any router from
 
 ```js
 import hotkeys from 'hotkey-router'
-import { installReservationWarnings } from 'hotkey-router/reservations'
+import { installDevWarnings } from 'hotkey-router/dev'
 
-const uninstall = installReservationWarnings(hotkeys)
+const uninstall = installDevWarnings(hotkeys)
 ```
 
-`installReservationWarnings(router, options?)` subscribes to the router's
-`onBind` hook and returns an `uninstall()` function. Warnings are per router:
-installing them on one router doesn't cover another. A warning is never
-fatal; the binding is registered either way.
+`installDevWarnings(router, options?)` subscribes to the router's `onBind`
+hook for future binds and returns an `uninstall()` function. Each install
+covers the router you pass. For reservation warnings alone, use
+`installReservationWarnings(router, options?)` from the same entry. Both
+installers allow the binding to register when a warning fires.
 
 The CDN file `dist/auto.min.js` is a standalone build with its own copy of
 the router. Don't mix it with other hotkey-router imports on the same page.
 
-To keep warnings out of production, import by build flag rather than by
-environment sniffing, for example
-`if (__DEV__) installReservationWarnings(hotkeys)` with `__DEV__` defined by
-your bundler.
+To keep warnings out of production, define `__DEV__` as a build-time constant
+in your bundler and call `installDevWarnings(hotkeys)` inside `if (__DEV__)`.
+A bundler that removes the dead branch and tree-shakes unused imports can
+drop `/dev` and its table from the production bundle.
 
 ### Options
 
@@ -55,12 +55,12 @@ your bundler.
 | `browser` | `detectBrowser()` | `'chrome'`, `'edge'`, `'firefox'` or `'safari'` |
 | `console` | global `console` | any object with `warn` and `info`, e.g. for tests |
 
-If the platform or the browser can't be detected (Node, an unknown browser)
-and you didn't pass one, nothing is checked.
+Reservation checks require a platform and browser. Pass `null` for either to
+skip reservation checks. Shifted-punctuation hints work without detection.
 
 ```js
 // Tests, SSR previews, or checking another machine's keys
-installReservationWarnings(hotkeys, { platform: 'mac', browser: 'firefox' })
+installDevWarnings(hotkeys, { platform: 'mac', browser: 'firefox' })
 ```
 
 ### Per binding
@@ -68,6 +68,8 @@ installReservationWarnings(hotkeys, { platform: 'mac', browser: 'firefox' })
 ```js
 hotkeys.bind('meta+shift+f', toggleFullscreen, null, { warnOnReserved: false })
 ```
+
+`warnOnReserved: false` still allows shifted-punctuation hints.
 
 ## Severities
 
@@ -93,6 +95,12 @@ The warning text says what will happen: `will not fire` (hard tiers),
 `fires, and the browser acts too; bind with preventDefault: true` or
 `fires first; preventDefault keeps the browser out` (preventable), or
 `fires in normal browsing` (other soft tiers).
+
+For custom logging, `/dev` exports
+`formatReservationWarning(reservation, hotkey, bindOptions?)` and
+`emitReservationWarning(reservation, hotkey, console?, bindOptions?)`. In
+0.6.0 both functions and `installReservationWarnings` moved from
+`hotkey-router/reservations` to `hotkey-router/dev`.
 
 ## Looking keys up yourself
 
@@ -120,11 +128,8 @@ Everything `hotkey-router/reservations` exports:
 
 | Export | What it is |
 | --- | --- |
-| `installReservationWarnings(router, options?)` | Wires warnings into a router; returns `uninstall()`. |
 | `lookupReservation(combo, { platform, browser })` | The reservation for a combo, or `null`. |
 | `lookupKeyFromCombo(combo)` | The table's key for a combo: `ctrl+meta+alt+shift+base`, e.g. `ctrl+shift+period`. |
-| `formatReservationWarning(reservation, hotkey, bindOptions?)` | The warning text. |
-| `emitReservationWarning(reservation, hotkey, console?, bindOptions?)` | Logs it with `warn` or `info` as in the table above. |
 | `severityIsHard(severity)` / `severityIsSoft(severity)` | Which group a severity is in. |
 | `detectPlatform(navigator?, { chromeos? })` / `detectBrowser(navigator?)` | The detectors the module uses. |
 | `HOTKEY_DATA`, `SCHEMA_VERSION`, `DATA_GENERATED` | The raw table, its schema version and its date. |

@@ -8,6 +8,11 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 - `router.trigger(hotkey, options)` moved to `trigger(router, hotkey, options)`
   in `hotkey-router/testing`. Routers expose `dispatch(event, type)` for direct
   keyboard-event routing.
+- `hotkey-router/dev` installs reservation warnings and shifted-punctuation
+  hints through `installDevWarnings(router)`. `/auto` installs both on the
+  default router. Import `installReservationWarnings`, `formatReservationWarning`,
+  and `emitReservationWarning` from `/dev` when upgrading from `/reservations`.
+  The bare router no longer warns about shifted punctuation at bind time.
 
 ## 0.5.2 — 2026-11-16
 

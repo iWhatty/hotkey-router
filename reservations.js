@@ -1,18 +1,13 @@
 // reservations.js
 // Browser/OS hotkey reservation lookup for hotkey-router.
 //
-// At bind time, we look up the requested combo against a table of known
-// browser- and OS-level shortcuts and emit a console.warn/info if the host
-// will intercept it before the page sees the keydown. Soft warning only —
-// never throws, never blocks the bind.
-//
 // Data file: data/browser-hotkeys.json. Schema documented in that file's
-// `$keyFormat` / `$comment` fields. Severity tiers determine warn vs info.
+// `$keyFormat` / `$comment` fields. Bind warnings live in hotkey-router/dev.
 
 import { ownValue } from './lookup.js'
 import HOTKEY_DATA from './data/browser-hotkeys.json' with { type: 'json' }
 import { lookupKey, readHotkey } from './parse.js'
-import { detectPlatform, detectBrowser, platformLabel } from './platform.js'
+import { detectPlatform, detectBrowser } from './platform.js'
 
 const SUPPORTED_SCHEMA = '1.0'
 
@@ -151,8 +146,6 @@ export function lookupReservation(combo, { platform, browser } = {}) {
   return null
 }
 
-// --- warning emission ---------------------------------------------------------
-
 /** @param {Severity | string} severity @returns {boolean} */
 export function severityIsHard(severity) {
   return HARD_SEVERITIES.has(severity)
@@ -161,94 +154,6 @@ export function severityIsHard(severity) {
 /** @param {Severity | string} severity @returns {boolean} */
 export function severityIsSoft(severity) {
   return SOFT_SEVERITIES.has(severity)
-}
-
-/**
- * Render a console-friendly warning string for a reservation.
- *
- * @param {Reservation} reservation
- * @param {string} rawHotkey
- * @param {{ preventDefault?: boolean }} [bindOptions]  the binding's options
- * @returns {string}
- */
-export function formatReservationWarning(reservation, rawHotkey, bindOptions) {
-  const where = platformLabel(reservation.platform)
-  const sourceLabel = reservation.source === 'browser'
-    ? `${reservation.browser} on ${where}`
-    : where
-  const tag = severityIsHard(reservation.severity)
-    ? 'will not fire'
-    : reservation.severity === 'preventable'
-      ? (bindOptions?.preventDefault
-          ? 'fires first; preventDefault keeps the browser out'
-          : 'fires, and the browser acts too; bind with preventDefault: true')
-      : 'fires in normal browsing'
-  return `[hotkey-router] "${rawHotkey}" (${reservation.lookupKey}) reserved by ${sourceLabel}: "${reservation.action}" [${reservation.severity}] — ${tag}.`
-}
-
-/**
- * Emit a reservation warning via the given console (or the global `console`
- * by default). Hard reservations log via `warn`; soft ones via `info`, except
- * a preventable key bound without `preventDefault`, where the browser's
- * action runs too: that logs via `warn`.
- *
- * @param {Reservation} reservation
- * @param {string} rawHotkey
- * @param {Console} [console_]
- * @param {{ preventDefault?: boolean }} [bindOptions]  the binding's options
- * @returns {void}
- */
-export function emitReservationWarning(reservation, rawHotkey, console_ = console, bindOptions) {
-  const msg = formatReservationWarning(reservation, rawHotkey, bindOptions)
-  const loud = severityIsHard(reservation.severity) ||
-    (reservation.severity === 'preventable' && !bindOptions?.preventDefault)
-  const fn = loud ? console_.warn : console_.info
-  fn.call(console_, msg)
-}
-
-// --- installer ----------------------------------------------------------------
-//
-// Wire reservation warnings into a hotkey-router instance. Importing this
-// function is the opt-in: bundlers that don't see this import tree-shake the
-// entire data table out of the build (this module minified: ~23 KB,
-// ~5.5 KB gzipped; measured 0.3.2).
-//
-//   import hotkeys from 'hotkey-router'
-//   import { installReservationWarnings } from 'hotkey-router/reservations'
-//   installReservationWarnings(hotkeys)
-//
-// Returns an `uninstall()` function. Per-bind opt-out still works:
-//   hotkeys.bind('meta+shift+f', fn, null, { warnOnReserved: false })
-//
-// Options:
-//   platform — override auto-detected 'mac' | 'windows' | 'linux'
-//   browser  — override auto-detected 'firefox' | 'chrome' | 'safari' | 'edge'
-//   console  — inject a custom console-like object (used by tests)
-/**
- * @param {object} hotkeys  a hotkey-router default-export instance
- * @param {{
- *   platform?: Platform,
- *   browser?: Browser,
- *   console?: Console
- * }} [opts]
- * @returns {() => void} uninstall function
- */
-export function installReservationWarnings(hotkeys, opts = {}) {
-  if (!hotkeys || typeof hotkeys.onBind !== 'function') {
-    throw new TypeError(
-      'installReservationWarnings(hotkeys) requires a hotkey-router instance with onBind() (>= v0.2.0)'
-    )
-  }
-  const platform = opts.platform !== undefined ? opts.platform : detectPlatform()
-  const browser = opts.browser !== undefined ? opts.browser : detectBrowser()
-  const console_ = opts.console || console
-
-  return hotkeys.onBind(({ combo, raw, options }) => {
-    if (options?.warnOnReserved === false) return
-    if (!platform || !browser) return
-    const reservation = lookupReservation(combo, { platform, browser })
-    if (reservation) emitReservationWarning(reservation, raw, console_, options)
-  })
 }
 
 export const SCHEMA_VERSION = HOTKEY_DATA?.version?.schema

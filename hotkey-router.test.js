@@ -613,31 +613,15 @@ describe('0.3.3 repairs', () => {
     })
   })
 
-  describe('shifted punctuation', () => {
-    it('warns once at bind that a key-based shift+punctuation combo never fires on US layouts', () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      hotkeys.bind('ctrl+shift+,', log)
-      hotkeys.bind('ctrl+shift+,', log)
-      expect(warn).toHaveBeenCalledOnce()
-      expect(warn.mock.calls[0][0]).toContain('ctrl+shift+code:Comma')
-    })
-
-    it('keeps the way the combo was written in the suggestion', () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      hotkeys.bind('mod+shift+/ up', log)
-      hotkeys.bind('^+.', log)
-      expect(warn.mock.calls[0][0]).toContain('"mod+shift+code:Slash up"')
-      expect(warn.mock.calls[1][0]).toContain('"^+code:Period"')
-    })
-
-    it('does not warn for code: bindings, unshifted punctuation, or shifted letters', () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      hotkeys.bind('ctrl+shift+code:Comma', log)
-      hotkeys.bind('ctrl+,', log)
-      hotkeys.bind('ctrl+shift+k', log)
-      hotkeys.bind('shift+?', log)
+  it('keeps the default router quiet for shifted punctuation and reserved keys', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      hotkeys.bind('ctrl+alt+shift+;', log)
+      hotkeys.bind('ctrl+t', log)
       expect(warn).not.toHaveBeenCalled()
-    })
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   describe('once and plugins', () => {

@@ -1,7 +1,7 @@
 // auto.js
 //
 // Ergonomic one-import entry: same default export as `hotkey-router`, but
-// with reservation conflict warnings pre-installed.
+// with reservation and shifted-punctuation warnings pre-installed.
 //
 //   import hotkeys from 'hotkey-router/auto'
 //   hotkeys.bind('meta+shift+f', toggleFullscreen)
@@ -15,8 +15,8 @@
 // the data file is tree-shaken out entirely.
 
 import hotkeys from './hotkey-router.js'
-import { installReservationWarnings } from './reservations.js'
+import { installDevWarnings } from './dev.js'
 
-installReservationWarnings(hotkeys)
+installDevWarnings(hotkeys)
 
 export default hotkeys

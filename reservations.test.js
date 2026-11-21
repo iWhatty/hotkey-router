@@ -5,11 +5,10 @@ import {
   detectBrowser,
   lookupReservation,
   lookupKeyFromCombo,
-  formatReservationWarning,
   severityIsHard,
   severityIsSoft,
-  installReservationWarnings,
 } from './reservations.js'
+import { formatReservationWarning, installReservationWarnings } from './dev.js'
 import hotkeys from './hotkey-router.js'
 import { trigger } from './testing.js'
 

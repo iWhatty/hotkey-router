@@ -4,10 +4,8 @@
 // window at load in browsers. Import `hotkey-router/core` instead for a
 // module that does nothing at import (createRouter and the helpers only).
 //
-// This entry ships ZERO reservation data — opt in via `hotkey-router/auto`
-// or by calling `installReservationWarnings(hotkeys)` from the separate
-// `hotkey-router/reservations` module. Bundlers tree-shake the data file
-// out entirely when neither is imported.
+// Development warnings live in `hotkey-router/dev` and are installed by
+// `hotkey-router/auto` for the default router.
 
 import { createRouter, parseHotkey, comboFromEvent, detectPlatform } from './core.js'
 

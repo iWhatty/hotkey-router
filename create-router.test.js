@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import hotkeys, { createRouter } from './hotkey-router.js'
 import { trigger } from './testing.js'
-import { installReservationWarnings } from './reservations.js'
+import { installDevWarnings } from './dev.js'
 
 const key = (type, k, init = {}) =>
   new KeyboardEvent(type, { key: k, bubbles: true, composed: true, cancelable: true, ...init })
@@ -261,7 +261,7 @@ describe('createRouter', () => {
       const warnings = { warn: vi.fn(), info: vi.fn(), debug: vi.fn() }
       const r1 = make()
       const r2 = make()
-      const off = installReservationWarnings(r1, { platform: 'windows', browser: 'chrome', console: warnings })
+      const off = installDevWarnings(r1, { platform: 'windows', browser: 'chrome', console: warnings })
       r2.bind('ctrl+t', () => {})
       expect(warnings.warn).not.toHaveBeenCalled()
       r1.bind('ctrl+t', () => {})
@@ -302,10 +302,17 @@ describe('createRouter', () => {
     })
 
     it('the shifted-punctuation warning is once per combo across routers', () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-      make().bind('ctrl+shift+;', () => {})
-      make().bind('ctrl+shift+;', () => {})
-      expect(warn).toHaveBeenCalledOnce()
+      const warnings = { warn: vi.fn(), info: vi.fn() }
+      const r1 = make()
+      const r2 = make()
+      installDevWarnings(r1, { platform: null, console: warnings })
+      installDevWarnings(r2, { platform: null, console: warnings })
+      r1.bind('ctrl+shift+;', () => {})
+      r2.bind('^+;', () => {})
+      expect(warnings.warn).toHaveBeenCalledOnce()
+      r2.bind('ctrl+shift+; up', () => {})
+      expect(warnings.warn).toHaveBeenCalledTimes(2)
+      expect(warnings.warn.mock.calls[1][0]).toContain('ctrl+shift+code:Semicolon up')
     })
   })
 })
