@@ -108,8 +108,11 @@ warnings", "`code:` binding", "hotkey / combo / binding".
   warnings and shifted-punctuation hints through `onBind`. `/auto` installs
   both on the default router. `/validate` shares the hint logic with `/dev`.
   The minified CDN core fell from 10,480 B to 9,740 B (4,533 B to 4,143 B gzip).
-- Drop `router.comboFromEvent`, `router.parseHotkey`,
-  `router.detectPlatform` properties; the named exports stay.
+- Removed the instance properties `comboFromEvent`, `parseHotkey`, and
+  `detectPlatform`. The named exports are available from `hotkey-router` and
+  `hotkey-router/core`. With esbuild ES2020 IIFE output, a default-router-only
+  bundle fell from 9,624 B to 9,178 B (4,094 B to 3,915 B gzip). The CDN build
+  includes the named exports and fell from 9,740 B to 9,691 B minified.
 - Lower the budget in `build.js` to lock the gain in (e.g. 9 KB).
 - Optional: strip prose from the bundled reservation JSON.
 

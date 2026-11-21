@@ -803,11 +803,6 @@ export function createRouter({
     ignoreInput,
 
     dispatch,
-
-    // helpers
-    parseHotkey,
-    comboFromEvent,
-    detectPlatform,
   }
 }
 
