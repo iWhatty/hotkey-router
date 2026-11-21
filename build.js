@@ -3,6 +3,7 @@
 // Production build script for hotkey-router.
 //
 // Outputs:
+//  - dist/{parse,platform,lookup}.js (private modules shared by the ESM entries)
 //  - dist/core.js                (ESM, readable, sourcemap; does nothing at import)
 //  - dist/hotkey-router.js       (ESM, readable, sourcemap; imports ./core.js)
 //  - dist/hotkey-router.min.js   (ESM, minified for CDN; one file, core inlined)
@@ -10,9 +11,8 @@
 //  - the other entries: reservations, sites, format, validate, auto
 //
 // Notes:
-//  - We bundle (bundle: true) so local modules (parse.js, platform.js) and
-//    the data JSON are inlined into the dist files. Library is still
-//    zero-dependency.
+//  - Data JSON is inlined. ESM package entries share the parser and its
+//    helpers; the standalone CDN and CommonJS bundles inline them.
 //  - We target modern environments (ES2020).
 //  - dist/ is fully recreated on every build to avoid stale artifacts.
 
@@ -42,6 +42,20 @@ const common = {
   loader: { '.json': 'json' },
 }
 
+// --- Shared parser and helpers (private ESM) ---
+// Keep the parser's dependencies shared too: both core and the add-ons also
+// import the detector and lookup helper directly.
+const shared = ['./parse.js', './platform.js', './lookup.js']
+await build({
+  ...common,
+  bundle: false,
+  entryPoints: shared,
+  outdir: 'dist',
+  format: 'esm',
+  sourcemap: true,
+  banner,
+})
+
 // --- Core (ESM, readable + sourcemap) ---
 // `import { createRouter } from 'hotkey-router/core'`. No router, no
 // listeners, no reservation data.
@@ -51,6 +65,7 @@ await build({
   outfile: 'dist/core.js',
   format: 'esm',
   sourcemap: true,
+  external: shared,
   banner,
 })
 
@@ -97,31 +112,33 @@ await build({
   outfile: 'dist/reservations.js',
   format: 'esm',
   sourcemap: true,
+  external: shared,
   banner,
 })
 
 // --- Sites module (ESM) ---
 // `import { siteAware, lookupSiteConflicts } from 'hotkey-router/sites'`.
-// Website shortcut table inlined; self-contained (no core import).
+// Website shortcut table inlined; no core import.
 await build({
   ...common,
   entryPoints: ['sites.js'],
   outfile: 'dist/sites.js',
   format: 'esm',
   sourcemap: true,
+  external: shared,
   banner,
 })
 
 // --- Format module (ESM) ---
 // `import { formatCombo, comboTokens } from 'hotkey-router/format'`. No data
-// tables; inlines the shared parser and detector (parse.js, platform.js),
-// which are stateless, so a second copy is harmless.
+// tables; imports the shared parser without importing the router.
 await build({
   ...common,
   entryPoints: ['format.js'],
   outfile: 'dist/format.js',
   format: 'esm',
   sourcemap: true,
+  external: shared,
   banner,
 })
 
@@ -136,7 +153,7 @@ await build({
   outfile: 'dist/validate.js',
   format: 'esm',
   sourcemap: true,
-  external: ['./reservations.js', './sites.js', './format.js'],
+  external: ['./reservations.js', './sites.js', './format.js', ...shared],
   banner,
 })
 
@@ -207,6 +224,16 @@ if (main.createRouter !== coreEntry.createRouter) {
 }
 if ('default' in coreEntry) throw new Error('build: dist/core.js must not have a default export (no ready router)')
 
+// The public entries must use the private parser module in the package build.
+const parserEntry = await import('./dist/parse.js')
+const reservationsEntry = await import('./dist/reservations.js')
+if (coreEntry.parseHotkey !== parserEntry.parseHotkey || reservationsEntry.lookupKeyFromCombo !== parserEntry.lookupKey) {
+  throw new Error('build: dist/core.js and dist/reservations.js must share dist/parse.js')
+}
+if (coreEntry.detectPlatform !== reservationsEntry.detectPlatform) {
+  throw new Error('build: dist/core.js and dist/reservations.js must share dist/platform.js')
+}
+
 // --- Size budget ---
 // The minified core (dist/hotkey-router.min.js: the core plus the default
 // router) must stay at or under 12 KB. Raise it only on purpose.
@@ -224,6 +251,7 @@ const report = (file) => {
 }
 
 console.log('✓ Built dist/')
+for (const entry of shared) console.log('  ' + report(`dist/${entry.slice(2)}`))
 console.log('  ' + report('dist/core.js'))
 console.log('  ' + report('dist/hotkey-router.js'))
 console.log('  ' + report('dist/hotkey-router.min.js'))
