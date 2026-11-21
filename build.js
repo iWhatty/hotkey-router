@@ -3,12 +3,12 @@
 // Production build script for hotkey-router.
 //
 // Outputs:
-//  - dist/{parse,platform,lookup}.js (private modules shared by the ESM entries)
+//  - private shared modules: parse, platform, lookup, shifted-punctuation
 //  - dist/core.js                (ESM, readable, sourcemap; does nothing at import)
 //  - dist/hotkey-router.js       (ESM, readable, sourcemap; imports ./core.js)
 //  - dist/hotkey-router.min.js   (ESM, minified for CDN; one file, core inlined)
 //  - dist/hotkey-router.cjs      (CommonJS for require() consumers; one file)
-//  - the other entries: reservations, sites, format, validate, testing, auto
+//  - the other entries: reservations, sites, format, validate, testing, dev, auto
 //
 // Notes:
 //  - Data JSON is inlined. ESM package entries share the parser and its
@@ -43,9 +43,7 @@ const common = {
 }
 
 // --- Shared parser and helpers (private ESM) ---
-// Keep the parser's dependencies shared too: both core and the add-ons also
-// import the detector and lookup helper directly.
-const shared = ['./parse.js', './platform.js', './lookup.js']
+const shared = ['./parse.js', './platform.js', './lookup.js', './shifted-punctuation.js']
 await build({
   ...common,
   bundle: false,
@@ -104,8 +102,7 @@ await build({
 })
 
 // --- Reservations module (ESM) ---
-// Lets consumers `import { installReservationWarnings, lookupReservation }
-// from 'hotkey-router/reservations'`. JSON data inlined.
+// Reservation lookup and data. JSON inlined.
 await build({
   ...common,
   entryPoints: ['reservations.js'],
@@ -169,9 +166,21 @@ await build({
   banner,
 })
 
+// --- Development warnings (ESM) ---
+// Share the reservation table with other entries and leave the router up to callers.
+await build({
+  ...common,
+  entryPoints: ['dev.js'],
+  outfile: 'dist/dev.js',
+  format: 'esm',
+  sourcemap: true,
+  external: ['./reservations.js', ...shared],
+  banner,
+})
+
 // --- Auto entry (ESM) ---
-// One-import: same default export as core, with warnings pre-installed.
-// Imports dist/hotkey-router.js and dist/reservations.js instead of inlining
+// Same default export as hotkey-router, with development warnings pre-installed.
+// Imports dist/hotkey-router.js and dist/dev.js instead of inlining
 // them, so an app that imports both `hotkey-router` and `hotkey-router/auto`
 // gets one router (one registry, one set of listeners), and the warnings
 // cover bindings made through either import.
@@ -181,7 +190,7 @@ await build({
   outfile: 'dist/auto.js',
   format: 'esm',
   sourcemap: true,
-  external: ['./hotkey-router.js', './reservations.js'],
+  external: ['./hotkey-router.js', './dev.js'],
   banner,
 })
 
@@ -199,7 +208,7 @@ await build({
 
 // --- Tree-shaking check ---
 // Bundle a bare import of each entry through package.json, as an app's
-// bundler would. The core and `auto` attach listeners (and `auto` installs
+// bundler would. The main entry and `auto` attach listeners (and `auto` installs
 // warnings) at import, so they must survive; the others have no side
 // effects and must drop out. Guards the `sideEffects` list.
 const bareImport = async (spec) => {
@@ -215,7 +224,7 @@ const bareImport = async (spec) => {
 for (const spec of ['hotkey-router', 'hotkey-router/auto']) {
   if (!(await bareImport(spec))) throw new Error(`build: \`import '${spec}'\` was tree-shaken away; check "sideEffects" in package.json`)
 }
-for (const spec of ['hotkey-router/core', 'hotkey-router/reservations', 'hotkey-router/sites', 'hotkey-router/format', 'hotkey-router/validate', 'hotkey-router/testing']) {
+for (const spec of ['hotkey-router/core', 'hotkey-router/reservations', 'hotkey-router/sites', 'hotkey-router/format', 'hotkey-router/validate', 'hotkey-router/testing', 'hotkey-router/dev']) {
   if (await bareImport(spec)) throw new Error(`build: \`import '${spec}'\` kept code; it should have no side effects`)
 }
 
@@ -273,6 +282,7 @@ console.log('  ' + report('dist/sites.js'))
 console.log('  ' + report('dist/format.js'))
 console.log('  ' + report('dist/validate.js'))
 console.log('  ' + report('dist/testing.js'))
+console.log('  ' + report('dist/dev.js'))
 console.log('  ' + report('dist/auto.js'))
 console.log('  ' + report('dist/auto.min.js'))
 

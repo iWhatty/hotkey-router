@@ -11,13 +11,11 @@
 // Does nothing at import: no router, no listeners. `hotkey-router` (the main
 // entry, hotkey-router.js) is this plus a default router started on window.
 //
-// This core ships ZERO reservation data — opt in via `hotkey-router/auto`
-// or by calling `installReservationWarnings(hotkeys)` from the separate
-// `hotkey-router/reservations` module. Bundlers tree-shake the data file
-// out entirely when neither is imported.
+// Development warnings live in `hotkey-router/dev` and are installed by
+// `hotkey-router/auto` for the default router.
 
 import { ownValue } from './lookup.js'
-import { parseHotkey, normalizeKey, shiftedPunctuationHint } from './parse.js'
+import { parseHotkey, normalizeKey } from './parse.js'
 import { detectPlatform } from './platform.js'
 
 // -----------------------------------------------------------------------------
@@ -64,6 +62,7 @@ import { detectPlatform } from './platform.js'
  *
  * @typedef {{
  *   combo: ReturnType<typeof parseHotkey>['combo'],
+ *   type: ReturnType<typeof parseHotkey>['type'],
  *   raw: string,
  *   options: BindOptions,
  *   plugin: string | null,
@@ -99,10 +98,6 @@ const MODIFIER_KEY_TOKEN = Object.freeze({
   Meta: 'meta',
   OS: 'meta',
 })
-
-// Combo strings already warned about (shifted punctuation), so each warns
-// once per loaded copy of this module, whichever router binds it.
-const warnedShifted = new Set()
 
 // --- helpers ---
 function comboKeyFromParts({ ctrl, shift, alt, meta, key, code, bareModifier }) {
@@ -238,7 +233,7 @@ function inputMode(value) {
 //    and binding ctrl+alt+X would swallow the character the user typed)
 //  composing (true: also fire during IME composition; skipped by default)
 //  warnOnReserved (false: no reservation warning for this bind; read by
-//    installReservationWarnings from hotkey-router/reservations)
+//    the warning installers from hotkey-router/dev)
 function normalizeOptions(type, options) {
   const o = options ? { ...options } : {}
   if (type === 'keydown' && o.repeat == null) o.repeat = false
@@ -460,21 +455,11 @@ export function createRouter({
     ensureSlot(comboStr, type).push(binding)
     bindingIndex.set(binding.id, { comboStr, type })
 
-    const warnKey = `${comboStr} ${type}`
-    if (!warnedShifted.has(warnKey)) {
-      const hint = shiftedPunctuationHint(hotkeyStr)
-      if (hint) {
-        warnedShifted.add(warnKey)
-        // eslint-disable-next-line no-console
-        console.warn(`[hotkey-router] ${hint.message}`)
-      }
-    }
-
     // Notify bind subscribers. Hook errors must never break the bind itself.
     if (bindHooks.length) {
       for (const hook of bindHooks) {
         try {
-          hook({ combo, raw, options: opts, plugin, id: binding.id })
+          hook({ combo, type, raw, options: opts, plugin, id: binding.id })
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('[hotkey-router] onBind hook threw:', err)
@@ -489,9 +474,9 @@ export function createRouter({
   }
 
   // Subscribe to bind events. The hook receives
-  //   { combo, raw, options, plugin, id }
+  //   { combo, type, raw, options, plugin, id }
   // after the binding is registered. Returns an unsubscribe function. Used by
-  // extensions like `installReservationWarnings` from `hotkey-router/reservations`.
+  // extensions like `installDevWarnings` from `hotkey-router/dev`.
 
   /**
    * Subscribe to {@link bind} events. The hook is called after each successful

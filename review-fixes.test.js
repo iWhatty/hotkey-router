@@ -3,7 +3,8 @@
 // in 0.5.1, proven with real-shaped events or real data rows.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createRouter } from './core.js'
-import { parseHotkey, keyToBase, lookupKey, shiftedPunctuationHint } from './parse.js'
+import { parseHotkey, keyToBase, lookupKey } from './parse.js'
+import { shiftedPunctuationHint } from './shifted-punctuation.js'
 import { lookupReservation } from './reservations.js'
 import { validateCombo } from './validate.js'
 import { matchSites } from './sites.js'

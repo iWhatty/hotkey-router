@@ -1,24 +1,32 @@
 // auto.test.js
-// Confirms the `hotkey-router/auto` entry pre-installs reservation warnings.
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import hotkeys from './auto.js'
+import main from './hotkey-router.js'
+
+vi.mock('./platform.js', async (importOriginal) => ({
+  ...await importOriginal(),
+  detectPlatform: () => 'windows',
+  detectBrowser: () => 'chrome',
+}))
 
 describe('hotkey-router/auto', () => {
-  it('exports the same default as core', () => {
-    expect(typeof hotkeys.bind).toBe('function')
-    expect(typeof hotkeys.onBind).toBe('function')
-    expect(typeof hotkeys.dispatch).toBe('function')
+  it('exports the same default as the main entry', () => {
+    expect(hotkeys).toBe(main)
   })
 
-  it('has a reservation hook already registered', () => {
-    // Direct, env-independent check: registering a probe hook and binding a
-    // combo means BOTH our probe AND the auto-installed reservation hook run.
-    // We assert the probe sees the bind — the auto-installed one is what
-    // makes auto.js worth importing.
-    let probeSaw = null
-    const off = hotkeys.onBind(({ raw }) => { probeSaw = raw })
-    hotkeys.bind('ctrl+alt+meta+shift+f7', () => {}, null, { warnOnReserved: false })
-    off()
-    expect(probeSaw).toBe('ctrl+alt+meta+shift+f7')
+  it('installs both warnings on the shared router', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const offReserved = main.bind('ctrl+t', () => {})
+      const offShifted = main.bind('shift+2', () => {})
+      offReserved()
+      offShifted()
+      expect(warn.mock.calls.map(([message]) => message)).toEqual([
+        expect.stringContaining('reserved by chrome on Windows'),
+        expect.stringContaining('shift+code:Digit2'),
+      ])
+    } finally {
+      warn.mockRestore()
+    }
   })
 })

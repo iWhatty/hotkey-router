@@ -4,7 +4,7 @@ hotkey-router ships two tables that are read off vendor help pages by hand:
 
 | Table | File | Date field | Used by |
 | --- | --- | --- | --- |
-| Browser and OS shortcuts (keys the page never sees) | `data/browser-hotkeys.json` | `version.generated` | `hotkey-router/reservations`, `/auto`, `/validate` |
+| Browser and OS shortcuts (keys the page never sees) | `data/browser-hotkeys.json` | `version.generated` | `hotkey-router/reservations`, `/dev`, `/auto`, `/validate` |
 | Website shortcuts (keys popular sites use) | `data/site-hotkeys.json`, compiled to `data/site-hotkeys.runtime.json` | `version.researched` | `hotkey-router/sites`, `/validate` |
 
 Nothing updates them on its own; the scrapers in `scripts/scrape/` are stubs
