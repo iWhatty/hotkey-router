@@ -159,9 +159,10 @@ export function severityIsSoft(severity) {
 export const SCHEMA_VERSION = HOTKEY_DATA?.version?.schema
 export const DATA_GENERATED = HOTKEY_DATA?.version?.generated
 /**
- * The bundled table as loaded from data/browser-hotkeys.json.
+ * Runtime reservation data. The production build bundles the schema, date,
+ * shortcut rows and table references from data/browser-hotkeys.json.
  *
- * @type {{ version: { schema: string, generated: string, sources: string[] }, platforms: Record<string, object> } & Record<string, any>}
+ * @type {{ version: { schema: string, generated: string }, platforms: Record<string, object> }}
  */
 const BUNDLED_DATA = HOTKEY_DATA
 export { BUNDLED_DATA as HOTKEY_DATA }

@@ -336,10 +336,10 @@ are minified (gzipped) in an app bundle.
 
 | Entry | What it does | Size |
 | --- | --- | --- |
-| `hotkey-router/auto` | The default router with development warnings installed | ~35 KB (~9.5 KB), router included |
-| `hotkey-router/dev` | Installs reservation and shifted-punctuation warnings on a router | ~27.8 KB (~6.9 KB), reservation table included |
-| `hotkey-router/reservations` | Looks up keys reserved by the browser or OS | ~25.7 KB (~5.9 KB) |
-| `hotkey-router/validate` | Checks a recorded hotkey before you save it | ~69 KB (~16 KB), both tables |
+| `hotkey-router/auto` | The default router with development warnings installed | ~30.8 KB (~7.8 KB), router included |
+| `hotkey-router/dev` | Installs reservation and shifted-punctuation warnings on a router | ~24.3 KB (~5.3 KB), reservation table included |
+| `hotkey-router/reservations` | Looks up keys reserved by the browser or OS | ~22.2 KB (~4.4 KB) |
+| `hotkey-router/validate` | Checks a recorded hotkey before you save it | ~62.6 KB (~13.9 KB), both tables |
 | `hotkey-router/format` | Shows a hotkey to people: `Ctrl+Shift+.`, `⇧⌘.`, keycaps | ~8.6 KB (~3.5 KB) |
 | `hotkey-router/sites` | Which keys popular websites use; a `when` gate that yields to them | ~38 KB (~9 KB) |
 | `hotkey-router/testing` | Fires a router binding from a hotkey string in tests | ~1.5 KB (~0.6 KB) with `/core` already bundled |

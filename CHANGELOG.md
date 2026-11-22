@@ -16,6 +16,9 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 - `comboFromEvent`, `parseHotkey`, and `detectPlatform` are now named exports
   only. Import them from `hotkey-router` or `hotkey-router/core` when upgrading
   code that calls them on the default router or on an instance from `createRouter()`.
+- The bundled `HOTKEY_DATA` omits research notes, severity descriptions, and
+  source URLs. Import `hotkey-router/data/browser-hotkeys.json` for the full
+  table and its source metadata.
 
 ## 0.5.2 — 2026-11-16
 

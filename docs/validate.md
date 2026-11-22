@@ -5,7 +5,7 @@ keys" setting, before the app saves it. It answers in plain sentences that
 are ready to show next to the field.
 
 It loads both data tables (the browser/OS reservations and the website
-shortcuts): about 69 KB minified, ~16 KB gzipped, in an app bundle. Import
+shortcuts): about 62.6 KB minified (~13.9 KB gzipped) in an app bundle. Import
 it in the settings page that records keys, not in code that runs on every
 page.
 
