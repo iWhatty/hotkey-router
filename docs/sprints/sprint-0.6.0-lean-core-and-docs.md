@@ -113,7 +113,8 @@ warnings", "`code:` binding", "hotkey / combo / binding".
   `hotkey-router/core`. With esbuild ES2020 IIFE output, a default-router-only
   bundle fell from 9,624 B to 9,178 B (4,094 B to 3,915 B gzip). The CDN build
   includes the named exports and fell from 9,740 B to 9,691 B minified.
-- Lower the budget in `build.js` to lock the gain in (e.g. 9 KB).
+- Tightened the standalone minified core budget in `build.js` from 12,288 B
+  to 10,000 B. The 9,691 B build leaves 309 B of headroom.
 - Optional: strip prose from the bundled reservation JSON.
 
 ### D. Fleet bumps (each in its own repo, own PR)

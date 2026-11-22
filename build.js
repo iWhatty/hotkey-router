@@ -256,9 +256,9 @@ if (coreEntry.detectPlatform !== reservationsEntry.detectPlatform) {
 }
 
 // --- Size budget ---
-// The minified core (dist/hotkey-router.min.js: the core plus the default
-// router) must stay at or under 12 KB. Raise it only on purpose.
-const SIZE_BUDGET = 12 * 1024
+// Cap the minified standalone core, including the default router and named
+// exports. The 0.6.0 lean-core build measured 9,691 bytes.
+const SIZE_BUDGET = 10_000
 const coreSize = statSync('dist/hotkey-router.min.js').size
 if (coreSize > SIZE_BUDGET) {
   throw new Error(`build: dist/hotkey-router.min.js is ${coreSize} B, over the ${SIZE_BUDGET} B budget`)
