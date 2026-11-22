@@ -77,7 +77,7 @@ Only the main entry has a CommonJS build. The subpaths (`/core`, `/auto`, `/rese
 CDN (ESM), pinned to a version:
 
 ```js
-import hotkeys from 'https://cdn.jsdelivr.net/npm/hotkey-router@0.5.2/dist/hotkey-router.min.js'
+import hotkeys from 'https://cdn.jsdelivr.net/npm/hotkey-router@0.6.0/dist/hotkey-router.min.js'
 ```
 
 `dist/auto.min.js` at the same path is the router with reservation warnings. It is a standalone build with its
