@@ -54,7 +54,7 @@ Everything runs locally; there is no hosted CI.
   `npx vitest run --environment jsdom --exclude ".claude/**" --exclude "**/node_modules/**"`.
 - `node build.js`: builds `dist/`, checks that the side-effect-free entries
   tree-shake away, that `hotkey-router` and `hotkey-router/auto` share one
-  router, that the minified core stays within its 12 KB budget, and prints
+  router, that the minified core stays within its 10,000-byte budget, and prints
   each file's size.
 - `npm run build:types`: the TypeScript declarations in `dist/types/`, from
   the JSDoc.
