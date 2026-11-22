@@ -43,10 +43,6 @@ The owner took the recommendation on all three decisions (2026-10-29).
 Taking the three "move" rows out: **8,681 B min / 3,796 B gzip** (−22% min,
 −1 KB gzip), measured.
 
-Data: the reservations bundle ships the JSON's comments and source URLs.
-Stripping them at build time saves ~1.1 KB gzip, but changes what the
-exported `HOTKEY_DATA` contains.
-
 ## Design rules (from the survey)
 
 1. **Opt-in by import, never by environment sniffing.** `NODE_ENV`,
@@ -115,7 +111,12 @@ warnings", "`code:` binding", "hotkey / combo / binding".
   includes the named exports and fell from 9,740 B to 9,691 B minified.
 - Tightened the standalone minified core budget in `build.js` from 12,288 B
   to 10,000 B. The 9,691 B build leaves 309 B of headroom.
-- Optional: strip prose from the bundled reservation JSON.
+- The build projects the reservation JSON to its schema, date, shortcut
+  actions, severity codes, and table references. The raw JSON export still
+  has the research notes and sources. In an esbuild ES2020 IIFE, the lookup
+  fell from 25,716 B to 22,243 B minified (5,947 B to 4,375 B gzip). The
+  standalone auto CDN bundle fell from 34,308 B to 30,835 B minified
+  (9,345 B to 7,813 B gzip).
 
 ### D. Fleet bumps (each in its own repo, own PR)
 - **SpellBolt → `^0.5.0`** (then 0.6): no code change expected for

@@ -42,6 +42,33 @@ const common = {
   loader: { '.json': 'json' },
 }
 
+function reservationRows(table) {
+  if (typeof table === 'string' && table.startsWith('$ref:')) return table
+  return Object.fromEntries(Object.entries(table ?? {})
+    .filter(([, row]) => row && typeof row === 'object' && 'severity' in row)
+    .map(([key, { action, severity }]) => [key, { action, severity }]))
+}
+
+// Bundle only the fields used by lookups and warnings. The raw JSON export
+// still serves the full source, including its research notes and citations.
+const reservationRuntimeData = {
+  name: 'reservation-runtime-data',
+  setup(build) {
+    build.onLoad({ filter: /[\\/]browser-hotkeys\.json$/ }, ({ path }) => {
+      const { version: { generated, schema }, platforms } = JSON.parse(readFileSync(path, 'utf8'))
+      const runtimePlatforms = Object.fromEntries(Object.entries(platforms).map(([name, { browsers, system }]) => {
+        const runtimeBrowsers = Object.fromEntries(Object.entries(browsers ?? {})
+          .map(([browser, table]) => [browser, reservationRows(table)]))
+        return [name, { browsers: runtimeBrowsers, system: reservationRows(system) }]
+      }))
+      return {
+        contents: JSON.stringify({ version: { generated, schema }, platforms: runtimePlatforms }),
+        loader: 'json',
+      }
+    })
+  },
+}
+
 // --- Shared parser and helpers (private ESM) ---
 const shared = ['./parse.js', './platform.js', './lookup.js', './shifted-punctuation.js']
 await build({
@@ -102,7 +129,7 @@ await build({
 })
 
 // --- Reservations module (ESM) ---
-// Reservation lookup and data. JSON inlined.
+// Reservation lookup with the runtime JSON inlined.
 await build({
   ...common,
   entryPoints: ['reservations.js'],
@@ -110,6 +137,7 @@ await build({
   format: 'esm',
   sourcemap: true,
   external: shared,
+  plugins: [reservationRuntimeData],
   banner,
 })
 
@@ -195,7 +223,7 @@ await build({
 })
 
 // --- Auto entry (minified, for CDN) ---
-// Standalone: inlines the core and the table for a single <script> tag.
+// Standalone: inlines the core and the runtime table for a single <script> tag.
 // It is its own router, so don't mix it with other hotkey-router imports.
 await build({
   ...common,
@@ -203,6 +231,7 @@ await build({
   outfile: 'dist/auto.min.js',
   format: 'esm',
   minify: true,
+  plugins: [reservationRuntimeData],
   banner,
 })
 

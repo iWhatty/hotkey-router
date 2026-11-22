@@ -1,8 +1,8 @@
 // browser-tests/entries.browser.mjs
 //
 // Sprint 0.4.0 slice D: the built package as an app bundles it. esbuild
-// bundles small apps through package.json (`hotkey-router`, `/auto`,
-// `/core`), the way an app's bundler would, and each runs in a real page.
+// bundles small apps through package.json, the way an app's bundler would,
+// and each runs in a real page.
 // build.js already checks what survives tree-shaking; this checks that what
 // survives works. Needs dist/ (npm run test:browser builds first).
 
@@ -36,6 +36,15 @@ const CORE_APP = `
 import { createRouter } from 'hotkey-router/core'
 window.router = createRouter()
 window.router.bind('ctrl+i', () => window.fired.push('core'), null, { preventDefault: true })
+`
+
+const RESERVATIONS_APP = `
+import { parseHotkey } from 'hotkey-router/core'
+import { HOTKEY_DATA, lookupReservation } from 'hotkey-router/reservations'
+window.reservationData = HOTKEY_DATA
+window.reservedKey = lookupReservation(parseHotkey('ctrl+shift+i').combo, {
+  platform: 'linux', browser: 'chrome',
+})
 `
 
 after(closeServer)
@@ -72,6 +81,23 @@ for (const channel of CHANNELS) {
       await page.evaluate(() => window.router.init())
       await page.keyboard.press('Control+i')
       assert.deepEqual(await takeFired(page), ['core'])
+    })
+
+    test('/reservations bundles lookup data without editorial metadata', async (page) => {
+      await page.addScriptTag({ type: 'module', content: await bundle(RESERVATIONS_APP) })
+      await page.waitForFunction(() => 'reservedKey' in window)
+      const { data, reservation } = await page.evaluate(() => ({
+        data: window.reservationData,
+        reservation: window.reservedKey,
+      }))
+
+      assert.deepEqual(Object.keys(data).sort(), ['platforms', 'version'])
+      assert.deepEqual(Object.keys(data.version).sort(), ['generated', 'schema'])
+      assert.deepEqual(Object.keys(data.platforms.linux).sort(), ['browsers', 'system'])
+      assert.equal('$comment' in data.platforms.linux.system, false)
+      assert.equal(data.platforms.linux.browsers.chrome, '$ref:platforms.windows.browsers.chrome')
+      assert.match(reservation.action, /DevTools/)
+      assert.equal(reservation.severity, 'hard')
     })
   })
 }

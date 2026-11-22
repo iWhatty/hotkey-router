@@ -5,7 +5,7 @@ browser or operating system. `hotkey-router/dev` uses it to warn when you
 bind one of those keys. `hotkey-router/auto` installs the development
 warnings on the default router.
 
-The lookup is about 25.7 KB minified (~5.9 KB gzipped), mostly the table in
+The lookup is about 22.2 KB minified (~4.4 KB gzipped), mostly the table from
 [`data/browser-hotkeys.json`](https://github.com/iWhatty/hotkey-router/blob/main/data/browser-hotkeys.json).
 Load it in development builds, a settings page or a key picker, not on every
 page in production, unless you need `lookupReservation` at runtime.
@@ -132,9 +132,12 @@ Everything `hotkey-router/reservations` exports:
 | `lookupKeyFromCombo(combo)` | The table's key for a combo: `ctrl+meta+alt+shift+base`, e.g. `ctrl+shift+period`. |
 | `severityIsHard(severity)` / `severityIsSoft(severity)` | Which group a severity is in. |
 | `detectPlatform(navigator?, { chromeos? })` / `detectBrowser(navigator?)` | The detectors the module uses. |
-| `HOTKEY_DATA`, `SCHEMA_VERSION`, `DATA_GENERATED` | The raw table, its schema version and its date. |
+| `HOTKEY_DATA`, `SCHEMA_VERSION`, `DATA_GENERATED` | The bundled lookup table, its schema version and its date. |
 
-The raw table is also importable as `hotkey-router/data/browser-hotkeys.json`.
+`HOTKEY_DATA` includes shortcut actions, severity codes, table references,
+`version.schema`, and `version.generated`. Import
+`hotkey-router/data/browser-hotkeys.json` for the full research data,
+including source URLs, comments, and severity descriptions.
 
 ## Caveats
 

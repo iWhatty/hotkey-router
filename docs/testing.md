@@ -62,7 +62,8 @@ Everything runs locally; there is no hosted CI.
   and Edge installed on this machine through `playwright-core`. That covers
   real key events through shadow roots, routers scoped to a dialog, a shadow
   root and an iframe, capture against a page that stops keys, the `'text'`
-  mode on real controls, and the built entries as an app bundles them.
+  mode on real controls, and the built entries as an app bundles them,
+  including reservation lookup through the compact table.
   Nothing is downloaded; a browser that isn't installed is skipped.
   `BROWSERS=chrome` runs one. Needs Node 22 or later. Each launch goes
   through `scripts/safe-chromium.mjs` (with its sibling
