@@ -3,7 +3,7 @@
 Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 `git log`, so they list commits rather than describe changes.
 
-## Unreleased
+## 0.6.0 — 2026-11-21
 
 - `router.trigger(hotkey, options)` moved to `trigger(router, hotkey, options)`
   in `hotkey-router/testing`. Routers expose `dispatch(event, type)` for direct
@@ -19,6 +19,8 @@ Releases are tagged `vX.Y.Z`. Entries before 0.2.3 were reconstructed from
 - The bundled `HOTKEY_DATA` omits research notes, severity descriptions, and
   source URLs. Import `hotkey-router/data/browser-hotkeys.json` for the full
   table and its source metadata.
+- The ESM entries share one parser, so an app using the router and reservation
+  lookup can bundle a single copy.
 
 ## 0.5.2 — 2026-11-16
 
