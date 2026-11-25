@@ -3,6 +3,9 @@
 Status: **in progress**. Slice C started on 2026-11-21 with parser sharing
 across the ESM package entries.
 
+See the [2026-11-25 post-release PM and CTO review](../notes/2026-11-25-post-release-review.md)
+for the verified release state and proposals for the next sprint.
+
 Inputs, all from 2026-10-29: a fleet usage survey (static-web-watt3d and
 sibling repos), a measured cost map of the core bundle, and a README audit.
 The owner took the recommendation on all three decisions (2026-10-29).
