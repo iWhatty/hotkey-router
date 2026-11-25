@@ -85,6 +85,13 @@ Fixes, data and docs; no new API. When upgrading, check for two things:
 - `vitest.config.js` leaves `.claude/**` out of the run, so agent worktrees'
   copies of the suite no longer run with it.
 
+### Added
+
+- `npm run key-check:sandbox`: runs the real-key AHK checks in Windows
+  Sandbox, so they don't take over the PC; notes come back to `docs/notes/`.
+  `key-check-server.mjs` takes `KEY_CHECK_NOTES` and `KEY_CHECK_PROBE_LOG`.
+  See `docs/data-review.md`.
+
 ### Docs
 
 - **README restructured** (about 820 lines to about 440): first five

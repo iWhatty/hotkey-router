@@ -12,7 +12,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PROBE_LOG } from './key-check-server.mjs'
+import { NOTES, PROBE_LOG } from './key-check-server.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const TABLE = JSON.parse(await readFile(join(ROOT, 'data', 'browser-hotkeys.json'), 'utf8'))
@@ -124,6 +124,6 @@ for (const [b, keys] of Object.entries(results)) {
   }
 }
 
-const out = join(ROOT, 'docs', 'notes', `key-check-reserved-${date}.md`)
+const out = join(NOTES, `key-check-reserved-${date}.md`)
 await writeFile(out, lines.join('\n') + '\n')
 console.log(`wrote ${out}`)
