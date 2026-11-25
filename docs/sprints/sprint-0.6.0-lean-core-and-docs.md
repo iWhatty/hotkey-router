@@ -1,10 +1,23 @@
 # Sprint 0.6.0 — lean core, opt-in add-ons, clean docs
 
-Status: **in progress**. Slice C started on 2026-11-21 with parser sharing
-across the ESM package entries.
+Status: **shipped**. Closeout recorded 2026-11-25. The `v0.6.0` tag points to
+`7f3c7f171ea4e227180bc27292fda7652897e3f9`. The published standalone core
+measures 9,691 B minified and 4,130 B gzipped against a 10,000 B minified
+budget. Release verification covered 314 unit tests, 24 Chrome and Edge
+integration tests, TypeScript declarations, and a clean tarball install.
+[npm package](https://www.npmjs.com/package/hotkey-router/v/0.6.0) ·
+[GitHub Release](https://github.com/iWhatty/hotkey-router/releases/tag/v0.6.0)
 
-See the [2026-11-25 post-release PM and CTO review](../notes/2026-11-25-post-release-review.md)
-for the verified release state and proposals for the next sprint.
+SpellBolt, WebX, and WebRadar are locked to `0.6.0`. The host pinned the
+package and both extension merges, and the consumer report marks all three
+upgrades current. [SpellBolt #41](https://github.com/iWhatty/SpellBolt-ChromeExt/pull/41) ·
+[WebX #5](https://github.com/iWhatty/DeleteMe-ChromeExt/pull/5) ·
+[WebRadar #4](https://github.com/iWhatty/fps-devtools-js/pull/4) ·
+[Host package pin](https://github.com/iWhatty/static-web-watt3d/commit/8a267d85ab2e3f20827a54f6ab7b7caa435d27ce) ·
+[Host extension pins and report](https://github.com/iWhatty/static-web-watt3d/commit/61058863db3ce4f56e03e81e6db39f52cfbb9021)
+
+The [2026-11-25 post-release PM and CTO review](../notes/2026-11-25-post-release-review.md)
+records the release baseline and proposals for the next sprint.
 
 Inputs, all from 2026-10-29: a fleet usage survey (static-web-watt3d and
 sibling repos), a measured cost map of the core bundle, and a README audit.
@@ -64,7 +77,7 @@ Taking the three "move" rows out: **8,681 B min / 3,796 B gzip** (−22% min,
 
 ## Slices
 
-### A. README fixes now (docs only, 0.5.1) — in progress
+### A. README fixes for 0.5.1 (docs only)
 Stale after 0.5.0, small, worth shipping before the restructure:
 - API examples `bind('mod+k', …)` and `ctrl+s` with `once` have no
   `preventDefault` (the browser acts too): add it, or use free keys.
