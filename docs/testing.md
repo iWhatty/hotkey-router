@@ -80,3 +80,42 @@ Everything runs locally; there is no hosted CI.
 - `scripts/key-check-reserved.ahk` (Windows, AutoHotkey 1.1): whether the
   page or the browser gets each Ctrl+letter, with real key presses; see
   [docs/reservations.md](https://github.com/iWhatty/hotkey-router/blob/main/docs/reservations.md#how-the-table-is-checked).
+
+## Verify a release tarball
+
+From the repo root, run the verifier with a commit or tag whose package
+version has the stable `X.Y.Z` form. Prerelease versions are rejected before
+installation or build. The verifier uses the selected commit’s files in a
+temporary directory, so local edits stay out of the tarball.
+
+```sh
+npm run release:verify -- v0.6.0
+```
+
+Use Node 22 or later, Git, `tar`, and installed copies of Chrome and Edge.
+The verifier uses the locked development dependencies, builds the package
+and declarations once, and runs both browsers through the guarded launcher.
+Any skipped browser test fails release verification. A clean consumer
+installs the tarball and checks it on the invoking Node runtime and Node
+18.20.8. npm provides the pinned Node 18 binary. A strict TypeScript smoke
+test checks the declarations from that same install.
+
+A successful run saves the verified artifact in `release-artifacts/` and
+prints the commit, version, SHA-512 integrity, core size, and publish command
+for the repo root. The verifier itself never publishes. When releasing, run
+the printed command to publish that tarball and complete the browser approval
+from your terminal.
+
+### 0.6.0 rehearsal
+
+On 2026-11-25, the verifier built `v0.6.0` at
+`7f3c7f171ea4e227180bc27292fda7652897e3f9`. All 314 tagged unit tests and
+24 browser tests passed, with zero skips. The 9,691-byte standalone core
+passed the budget. The packed runtime passed on Node 18.20.8 and 24.20.0,
+and the packed declarations passed strict TypeScript checking. The
+[mismatched-lockfile regression](../release-verify.test.js) returned a
+failure before printing a publish command and preserved the caller’s edits.
+
+The tag rebuild was a rehearsal. Comparing its extracted files with the
+original npm upload found only line-ending differences in five source maps.
+The rehearsal tarball stayed local.
